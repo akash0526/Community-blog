@@ -57,6 +57,7 @@ CREATE TABLE public.articles (
     content text NOT NULL,
     seo_score integer DEFAULT 85 NOT NULL,
     pageviews integer DEFAULT 1 NOT NULL,
+    claps integer DEFAULT 0 NOT NULL,
     status text DEFAULT 'published'::text NOT NULL
 );
 
@@ -87,7 +88,7 @@ CREATE POLICY "Allow individual author or guest update"
     ON public.articles FOR UPDATE 
     USING (auth.uid() = author_id OR author_id = '00000000-0000-0000-0000-000000000000'::uuid);
 
--- Secure Atomic Pageview Increment Function (Replaces wide-open UPDATE policy)
+-- Secure Atomic Pageview Increment Function
 CREATE OR REPLACE FUNCTION public.increment_pageview(article_id uuid)
 RETURNS void AS $$
 BEGIN
@@ -97,8 +98,46 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Secure Atomic Claps Increment Function
+CREATE OR REPLACE FUNCTION public.increment_claps(article_id uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE public.articles
+  SET claps = claps + 1
+  WHERE id = article_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 3. Create Storage Bucket for Interactive Community Image Uploads
+
+-- 3. Create Multi-User Community Comments Discussion Table
+CREATE TABLE public.comments (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+    article_slug text NOT NULL,
+    author_name text NOT NULL,
+    author_avatar text NOT NULL,
+    author_role text DEFAULT 'Community Reader'::text NOT NULL,
+    content text NOT NULL,
+    likes integer DEFAULT 0 NOT NULL
+);
+
+ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read live comments" ON public.comments FOR SELECT USING (true);
+CREATE POLICY "Anyone can insert comments" ON public.comments FOR INSERT WITH CHECK (true);
+
+-- Secure Atomic Comment Likes Increment Function
+CREATE OR REPLACE FUNCTION public.increment_comment_likes(comment_row_id uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE public.comments
+  SET likes = likes + 1
+  WHERE id = comment_row_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+-- 4. Create Storage Bucket for Interactive Community Image Uploads
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('article_images', 'article_images', true);
 

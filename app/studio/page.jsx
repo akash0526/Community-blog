@@ -316,6 +316,17 @@ function StudioForm() {
 
 	// Save or Publish Live
 	const handleSave = async (targetStatus = "published") => {
+		// Failsafe prompt if user is publishing live but score is below optimal
+		if (targetStatus === "published" && audit.totalScore < 80) {
+			if (
+				!confirm(
+					`⚠️ Your story currently has an AI Readability & Reach Score of ${audit.totalScore}/100.\n\nAre you sure you want to drop it live right now?\n\n(Note: We always celebrate authentic human storytelling and premium substance over rigid AI reach guidelines! Click OK to drop live.)`,
+				)
+			) {
+				return;
+			}
+		}
+
 		if (targetStatus === "draft") setSavingDraft(true);
 		else setPublishing(true);
 
@@ -495,7 +506,7 @@ function StudioForm() {
 						<button
 							type="button"
 							onClick={() => handleSave("published")}
-							disabled={publishing || savingDraft || audit.totalScore < 50}
+							disabled={publishing || savingDraft}
 							className={`btn px-6 py-2.5 rounded-xl text-xs font-black shadow-lg flex items-center justify-center gap-1.5 flex-1 sm:flex-none transition transform hover:scale-105 cursor-pointer ${
 								audit.totalScore >= 80
 									? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/30"

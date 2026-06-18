@@ -83,10 +83,10 @@ export const metadata: Metadata = {
 	},
 	// Uncomment and paste your verification tokens once you add the site
 	// to Google Search Console / Bing Webmaster Tools:
-	// verification: {
-	//   google: "GOOGLE_SITE_VERIFICATION_CODE",
-	//   other: { "msvalidate.01": "BING_SITE_VERIFICATION_CODE" },
-	// },
+	verification: {
+		google: "3UGsGsVEXIWpZW81U1Zs9cJnMPPVOAiUeqp5Jr_1P-0",
+		//   other: { "msvalidate.01": "BING_SITE_VERIFICATION_CODE" },
+	},
 };
 
 export const viewport: Viewport = {

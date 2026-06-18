@@ -107,10 +107,17 @@ export default async function StandardArticleProseView({ params }) {
 		!article.id.startsWith("post-")
 	) {
 		try {
-			await supabase
-				.from("articles")
-				.update({ pageviews: (article.pageviews || 1) + 1 })
-				.eq("id", article.id);
+			// Try secure RPC atomic increment first
+			const { error: rpcErr } = await supabase.rpc("increment_pageview", {
+				article_id: article.id,
+			});
+			if (rpcErr) {
+				// Fallback to update if RPC is not deployed yet on user's cloud
+				await supabase
+					.from("articles")
+					.update({ pageviews: (article.pageviews || 1) + 1 })
+					.eq("id", article.id);
+			}
 		} catch (err) {
 			// Silently fail — pageview tracking is non-critical
 		}

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Eye, Clock, Award, Sparkles, User, ArrowLeft, Share2, Flame, HelpCircle } from 'lucide-react';
 
-export const revalidate = 5; // Incremental Static Regeneration (ISR)
+export const revalidate = 60; // Incremental Static Regeneration (ISR) every 60s
 
 async function getArticle(slug) {
   try {
@@ -28,8 +28,42 @@ async function getArticle(slug) {
   return null;
 }
 
+/**
+ * Pre-generate static pages for all seed data articles at build time,
+ * plus any published articles from Supabase for instant loading.
+ */
+export async function generateStaticParams() {
+  const slugs = [];
+
+  // 1. Add all seed data slugs
+  for (const article of fallbackArticles) {
+    slugs.push({ slug: article.slug });
+  }
+
+  // 2. Try to fetch any published slugs from Supabase
+  try {
+    const { data } = await supabase
+      .from('articles')
+      .select('slug')
+      .eq('status', 'published');
+
+    if (data && data.length > 0) {
+      for (const row of data) {
+        if (!slugs.find(s => s.slug === row.slug)) {
+          slugs.push({ slug: row.slug });
+        }
+      }
+    }
+  } catch(err) {
+    // Supabase may not be configured yet — seed data slugs are enough
+  }
+
+  return slugs;
+}
+
 export async function generateMetadata({ params }) {
-  const article = await getArticle(params.slug);
+  const { slug } = await params;               // ✅ FIX: await params (Next.js 15+)
+  const article = await getArticle(slug);
   if (!article) return { title: 'Dispatch Not Found' };
 
   return {
@@ -39,7 +73,7 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: article.title,
       description: article.meta_description,
-      url: `https://apex-community-platform.com/blog/${article.slug}`,
+      url: `https://community-blog-six.vercel.app/blog/${article.slug}`,
       siteName: 'Apex Community Platform',
       images: [{ url: article.image_url, width: 1200, height: 630 }],
       type: 'article',
@@ -56,27 +90,32 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function StandardArticleProseView({ params }) {
-  const article = await getArticle(params.slug);
+  const { slug } = await params;               // ✅ FIX: await params (Next.js 15+)
+  const article = await getArticle(slug);
   if (!article) return notFound();
 
-  // Async non-blocking genuine traffic summation
+  // Async non-blocking pageview increment
   if (!article.id.startsWith('seed-')) {
-    await supabase
-      .from('articles')
-      .update({ pageviews: (article.pageviews || 1) + 1 })
-      .eq('id', article.id);
+    try {
+      await supabase
+        .from('articles')
+        .update({ pageviews: (article.pageviews || 1) + 1 })
+        .eq('id', article.id);
+    } catch(err) {
+      // Silently fail — pageview tracking is non-critical
+    }
   }
 
   return (
     <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-32 pt-8 transition text-left">
       <div className="max-w-4xl mx-auto px-6">
-        
+
         {/* Top Breadcrumb Header */}
         <div className="py-6 mb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
           <Link href="/" className="btn btn-secondary px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 bg-slate-50 dark:bg-slate-900 shadow-sm hover:bg-slate-100 border-slate-200/80">
             <ArrowLeft className="w-4 h-4" /> Back to Explore Feed
           </Link>
-          
+
           <div className="flex items-center gap-2">
             <span className="bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 border border-emerald-500/30 text-xs font-black px-3.5 py-2 rounded-xl flex items-center gap-1.5">
               ⚡ {article.seo_score}/100 Technical SEO Checklist Passed
@@ -109,7 +148,7 @@ export default async function StandardArticleProseView({ params }) {
               <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{article.profiles?.professional_role || 'Software Architect'}</div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4 text-xs font-black text-slate-500 dark:text-slate-400 sm:ml-auto">
             <span className="bg-white dark:bg-slate-800 px-3.5 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-1.5">
               <Eye className="w-4 h-4 text-indigo-500" /> {(article.pageviews || 1).toLocaleString()} Genuine Hits
@@ -141,7 +180,7 @@ export default async function StandardArticleProseView({ params }) {
             <h3 className="text-2xl sm:text-3xl font-black mb-2">Enjoyed this technical deep dive?</h3>
             <p className="text-slate-300 text-sm mb-0">Write your own technical architecture guides, verify your structure using our 100-point technical checklist, and publish to our global community ledger instantly.</p>
           </div>
-          
+
           <Link href="/studio" className="btn btn-primary px-8 py-4 rounded-2xl font-black text-sm whitespace-nowrap shadow-xl shadow-indigo-600/30 transform hover:scale-105 transition">
             ✍️ Write Your Dispatch &rarr;
           </Link>

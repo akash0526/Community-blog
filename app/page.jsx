@@ -1,29 +1,15 @@
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { fallbackArticles } from '@/lib/seedData';
+import { getAllPublishedArticles } from '@/lib/articles';
 import { Eye, Clock, Sparkles, Flame, Award } from 'lucide-react';
 import CommunityFeed from '@/components/CommunityFeed';
 
 export const revalidate = 10; // Incremental Static Regeneration (ISR) every 10 seconds
 
 export default async function HomepageExplore() {
-  // Try fetching canonical live dispatches from Supabase Cloud
-  let articles = [];
-  try {
-    const { data, error } = await supabase
-      .from('articles')
-      .select('*, profiles(full_name, professional_role, avatar_url)')
-      .eq('status', 'published')
-      .order('created_at', { ascending: false });
-    
-    if (!error && data && data.length > 0) {
-      articles = data;
-    } else {
-      articles = fallbackArticles;
-    }
-  } catch(err) {
-    articles = fallbackArticles;
-  }
+  // Fetch canonical live dispatches via centralized helper (Supabase + seed fallback)
+  const articles = await getAllPublishedArticles();
 
   // Identify featured leader piece
   const featuredLeader = articles[0] || fallbackArticles[0];

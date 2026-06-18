@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
+import { SITE_URL } from "@/lib/articles";
 import "./globals.css";
 
 const inter = Inter({
@@ -13,10 +14,80 @@ const geistMono = Geist_Mono({
 	subsets: ["latin"],
 });
 
+const siteName = "Apex Community Platform";
+const description =
+	"Apex Community is an open publishing platform where creators share personal stories, technical guides, startup lessons, and culture writing with a global audience. Write, publish, and reach the world.";
+const keywords = [
+	"community blog",
+	"write articles online",
+	"developer blogging platform",
+	"publish stories",
+	"open community publishing",
+	"multi-author blog",
+	"tech articles",
+	"personal stories",
+];
+
 export const metadata: Metadata = {
-	title: "Apex Community Platform — Live Multi-User Developer Blogging",
-	description:
-		"An open software engineering blogging and expert CMS platform tailored for technical SEO dominance, long-tail keyword clusters, and flawless Core Web Vitals.",
+	metadataBase: new URL(SITE_URL),
+	title: {
+		default: `${siteName} — Write & Share Stories With the World`,
+		template: `%s | ${siteName}`,
+	},
+	description,
+	applicationName: siteName,
+	keywords,
+	authors: [{ name: "Apex Community" }],
+	creator: "Apex Community",
+	publisher: siteName,
+	category: "technology",
+	alternates: {
+		canonical: "/",
+	},
+	openGraph: {
+		type: "website",
+		locale: "en_US",
+		url: SITE_URL,
+		siteName,
+		title: `${siteName} — Write & Share Stories With the World`,
+		description,
+		images: [
+			{
+				url: "/opengraph-image",
+				width: 1200,
+				height: 630,
+				alt: siteName,
+			},
+		],
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: `${siteName} — Write & Share Stories With the World`,
+		description,
+		images: ["/opengraph-image"],
+	},
+	robots: {
+		index: true,
+		follow: true,
+		googleBot: {
+			index: true,
+			follow: true,
+			"max-image-preview": "large",
+			"max-snippet": -1,
+			"max-video-preview": -1,
+		},
+	},
+	// Uncomment and paste your verification tokens once you add the site
+	// to Google Search Console / Bing Webmaster Tools:
+	// verification: {
+	//   google: "GOOGLE_SITE_VERIFICATION_CODE",
+	//   other: { "msvalidate.01": "BING_SITE_VERIFICATION_CODE" },
+	// },
+};
+
+export const viewport: Viewport = {
+	themeColor: "#4f46e5",
+	colorScheme: "light dark",
 };
 
 export default function RootLayout({
@@ -24,11 +95,40 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	// JSON-LD structured data — helps Google show rich results (logo, site name,
+	// breadcrumb eligibility). Read by crawlers, invisible to users.
+	const websiteSchema = {
+		"@context": "https://schema.org",
+		"@type": "WebSite",
+		name: siteName,
+		url: SITE_URL,
+		description,
+		inLanguage: "en",
+	};
+	const orgSchema = {
+		"@context": "https://schema.org",
+		"@type": "Organization",
+		name: siteName,
+		url: SITE_URL,
+		logo: `${SITE_URL}/icon.svg`,
+		sameAs: [],
+	};
+
 	return (
 		<html
 			lang="en"
 			className={`${inter.variable} ${geistMono.variable} antialiased selection:bg-indigo-500 selection:text-white`}
 		>
+			<head>
+				<script
+					type="application/ld+json"
+					dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+				/>
+				<script
+					type="application/ld+json"
+					dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+				/>
+			</head>
 			<body className="font-sans flex flex-col min-h-screen">
 				<Navbar />
 

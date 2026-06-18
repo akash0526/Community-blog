@@ -5,11 +5,13 @@ import ArticleContent from "./ArticleContent";
 export const revalidate = 60; // Incremental Static Regeneration (ISR) every 60s
 
 async function getArticle(slug) {
+	// Master failsafe: Automatically translate percent-encoded incoming URLs back to Devanagari script
+	const decodedSlug = decodeURIComponent(slug);
 	try {
 		const { data, error } = await supabase
 			.from("articles")
 			.select("*, profiles(full_name, professional_role, avatar_url)")
-			.eq("slug", slug)
+			.eq("slug", decodedSlug)
 			.single();
 
 		if (!error && data) {
@@ -18,25 +20,19 @@ async function getArticle(slug) {
 	} catch (err) {}
 
 	// Fallback check
-	const seedMatch = fallbackArticles.find((a) => a.slug === slug);
+	const seedMatch = fallbackArticles.find(
+		(a) => decodeURIComponent(a.slug) === decodedSlug,
+	);
 	if (seedMatch) return seedMatch;
 
 	return null;
 }
 
-/**
- * Pre-generate static pages for all seed data articles at build time,
- * plus any published articles from Supabase for instant loading.
- */
 export async function generateStaticParams() {
 	const slugs = [];
-
-	// 1. Add all seed data slugs
 	for (const article of fallbackArticles) {
 		slugs.push({ slug: article.slug });
 	}
-
-	// 2. Try to fetch any published slugs from Supabase
 	try {
 		const { data } = await supabase
 			.from("articles")
@@ -50,10 +46,7 @@ export async function generateStaticParams() {
 				}
 			}
 		}
-	} catch (err) {
-		// Supabase may not be configured yet — seed data slugs are enough
-	}
-
+	} catch (err) {}
 	return slugs;
 }
 
@@ -63,7 +56,7 @@ export async function generateMetadata({ params }) {
 
 	if (!article) {
 		return {
-			title: "Dispatch Not Found | Apex Community Platform",
+			title: "Story Not Found | Apex Community Platform",
 			description: "The requested article could not be found.",
 		};
 	}
@@ -73,7 +66,7 @@ export async function generateMetadata({ params }) {
 		description: article.meta_description,
 		keywords: [
 			article.target_keyword,
-			"Software Engineering",
+			"Human Storytelling",
 			article.category,
 			"Apex Community",
 		],
@@ -84,7 +77,7 @@ export async function generateMetadata({ params }) {
 			siteName: "Apex Community Platform",
 			images: [{ url: article.image_url, width: 1200, height: 630 }],
 			type: "article",
-			authors: [article.profiles?.full_name || "Akash"],
+			authors: [article.profiles?.full_name || "Community Storyteller"],
 			publishedTime: article.created_at,
 		},
 		twitter: {
@@ -107,23 +100,17 @@ export default async function StandardArticleProseView({ params }) {
 		!article.id.startsWith("post-")
 	) {
 		try {
-			// Try secure RPC atomic increment first
 			const { error: rpcErr } = await supabase.rpc("increment_pageview", {
 				article_id: article.id,
 			});
 			if (rpcErr) {
-				// Fallback to update if RPC is not deployed yet on user's cloud
 				await supabase
 					.from("articles")
 					.update({ pageviews: (article.pageviews || 1) + 1 })
 					.eq("id", article.id);
 			}
-		} catch (err) {
-			// Silently fail — pageview tracking is non-critical
-		}
+		} catch (err) {}
 	}
 
-	// Pass the server-fetched article (or null) to the client wrapper
-	// The client wrapper will also check localStorage for demo-published articles
 	return <ArticleContent serverArticle={article} slug={slug} />;
 }

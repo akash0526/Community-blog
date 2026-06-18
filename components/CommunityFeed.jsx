@@ -22,7 +22,9 @@ export default function CommunityFeed({ initialArticles = [] }) {
 
 				const uniqueLocal = stored.filter(
 					(localItem) =>
-						!existingIds.has(localItem.id) && !existingSlugs.has(localItem.slug),
+						localItem.status === "published" &&
+						!existingIds.has(localItem.id) &&
+						!existingSlugs.has(localItem.slug),
 				);
 
 				if (uniqueLocal.length > 0) {

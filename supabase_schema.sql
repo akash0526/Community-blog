@@ -5,7 +5,7 @@
 
 -- 1. Create Community Profiles (Authors) Table
 CREATE TABLE public.profiles (
-    id uuid REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+    id uuid PRIMARY KEY,
     email text UNIQUE NOT NULL,
     full_name text NOT NULL,
     avatar_url text NOT NULL,
@@ -30,8 +30,8 @@ BEGIN
   VALUES (
     new.id,
     new.email,
-    raw_user_meta_data->>'full_name',
-    raw_user_meta_data->>'avatar_url'
+    COALESCE(raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+    COALESCE(raw_user_meta_data->>'avatar_url', 'https://api.dicebear.com/7.x/bottts/svg?seed=' || new.id)
   );
   RETURN new;
 END;
@@ -64,19 +64,38 @@ ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
 
 -- Policy A: Anyone on the internet can read published dispatches
 CREATE POLICY "Allow public read access on live articles" 
-    ON public.articles FOR SELECT USING (status = 'published');
+    ON public.articles FOR SELECT USING (status = 'published' OR auth.uid() = author_id);
 
--- Policy B: Only authenticated community authors can write and insert new dispatches
-CREATE POLICY "Allow individual author insert" 
-    ON public.articles FOR INSERT WITH CHECK (auth.uid() = author_id);
+-- Universal Community Guest Profile (For open anonymous submissions)
+INSERT INTO public.profiles (id, email, full_name, avatar_url, professional_role, bio)
+VALUES (
+  '00000000-0000-0000-0000-000000000000'::uuid, 
+  'guest@community.apex', 
+  'Community Storyteller', 
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Guest', 
+  'Guest Contributor', 
+  'Independent creative contributor.'
+) ON CONFLICT (id) DO NOTHING;
 
--- Policy C: Only the genuine author can edit their articles
-CREATE POLICY "Allow individual author update" 
-    ON public.articles FOR UPDATE USING (auth.uid() = author_id);
+-- Policy B: Authenticated community authors or universal guests can insert dispatches
+CREATE POLICY "Allow individual author or guest insert" 
+    ON public.articles FOR INSERT 
+    WITH CHECK (auth.uid() = author_id OR author_id = '00000000-0000-0000-0000-000000000000'::uuid);
 
--- Policy D: Allow incrementing pageviews without requiring authentication
-CREATE POLICY "Allow pageview increments" 
-    ON public.articles FOR UPDATE USING (true) WITH CHECK (true);
+-- Policy C: Genuine authors or guests can edit their articles
+CREATE POLICY "Allow individual author or guest update" 
+    ON public.articles FOR UPDATE 
+    USING (auth.uid() = author_id OR author_id = '00000000-0000-0000-0000-000000000000'::uuid);
+
+-- Secure Atomic Pageview Increment Function (Replaces wide-open UPDATE policy)
+CREATE OR REPLACE FUNCTION public.increment_pageview(article_id uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE public.articles
+  SET pageviews = pageviews + 1
+  WHERE id = article_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- 3. Create Storage Bucket for Interactive Community Image Uploads

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { analyzeSeo, generateCleanSlug } from "@/lib/seoEngine";
 import ReactMarkdown from "react-markdown";
@@ -19,12 +19,14 @@ import {
 	Compass,
 	Cpu,
 	Feather,
+	Save,
 } from "lucide-react";
 
 // Inspiring Starter Templates Across Technical & Creative Genres
 const starterTemplates = {
 	story: {
-		title: "How Two Years in the Mountains Redefined My Approach to Deep Work",
+		title:
+			"How Two Years in the Mountains Redefined My Approach to Deep Work",
 		targetKeyword: "Deep Work",
 		category: "Personal Stories",
 		metaDescription:
@@ -129,9 +131,28 @@ Instead, we must route all edge lambda transactions through a centralized transa
 };
 
 export default function AuthorStudio() {
-	const router = useRouter();
+	return (
+		<Suspense
+			fallback={
+				<div className="py-20 text-center font-black text-lg">
+					⚡ Initializing Creator Studio...
+				</div>
+			}
+		>
+			<StudioForm />
+		</Suspense>
+	);
+}
 
-	// Initialize with Personal Story by default to emphasize non-technical storytelling
+function StudioForm() {
+	const router = useRouter();
+	const searchParams = useSearchParams();
+	const editSlug = searchParams.get("edit");
+
+	const [editingId, setEditingId] = useState(null);
+	const [existingStatus, setExistingStatus] = useState("published");
+
+	// State fields
 	const [title, setTitle] = useState(starterTemplates.story.title);
 	const [targetKeyword, setTargetKeyword] = useState(
 		starterTemplates.story.targetKeyword,
@@ -145,7 +166,7 @@ export default function AuthorStudio() {
 
 	const [activeTab, setActiveTab] = useState("write"); // write vs preview
 
-	// Scoring state
+	// Scoring & Auth state
 	const [audit, setAudit] = useState({
 		totalScore: 85,
 		wordCount: 150,
@@ -153,13 +174,60 @@ export default function AuthorStudio() {
 	});
 	const [uploading, setUploading] = useState(false);
 	const [publishing, setPublishing] = useState(false);
+	const [savingDraft, setSavingDraft] = useState(false);
 	const [error, setError] = useState(null);
 	const [user, setUser] = useState(null);
+
+	// Load existing post if edit mode is triggered
+	useEffect(() => {
+		if (!editSlug) return;
+
+		const fetchEditArticle = async () => {
+			let found = null;
+			// 1. Try Supabase cloud
+			try {
+				const { data, error } = await supabase
+					.from("articles")
+					.select("*")
+					.eq("slug", editSlug)
+					.single();
+				if (!error && data) {
+					found = data;
+				}
+			} catch (err) {}
+
+			// 2. Try localStorage
+			if (!found) {
+				try {
+					const stored = JSON.parse(
+						localStorage.getItem("apex_articles_v1") || "[]",
+					);
+					found = stored.find((a) => a.slug === editSlug);
+				} catch (e) {}
+			}
+
+			// Populate form if found
+			if (found) {
+				setEditingId(found.id);
+				setExistingStatus(found.status || "published");
+				setTitle(found.title || "");
+				setTargetKeyword(found.target_keyword || "");
+				setCategory(found.category || "Personal Stories");
+				setMetaDescription(found.meta_description || "");
+				setImageUrl(found.image_url || "");
+				setContent(found.content || "");
+			}
+		};
+
+		fetchEditArticle();
+	}, [editSlug]);
 
 	// Load a selected preset template
 	const loadTemplate = (type) => {
 		const t = starterTemplates[type];
 		if (!t) return;
+		setEditingId(null);
+		setExistingStatus("published");
 		setTitle(t.title);
 		setTargetKeyword(t.targetKeyword);
 		setCategory(t.category);
@@ -246,8 +314,11 @@ export default function AuthorStudio() {
 		}
 	};
 
-	const handlePublish = async () => {
-		setPublishing(true);
+	// Save or Publish Live
+	const handleSave = async (targetStatus = "published") => {
+		if (targetStatus === "draft") setSavingDraft(true);
+		else setPublishing(true);
+
 		setError(null);
 
 		try {
@@ -260,9 +331,11 @@ export default function AuthorStudio() {
 			const isDemoUser =
 				user?.id?.startsWith("demo-") || user?.id?.startsWith("community-");
 
-			// Build the full article object
-			const newDispatch = {
-				id: "post-" + Date.now(),
+			const currentId = editingId || "post-" + Date.now();
+
+			// Build full article object
+			const updatedDispatch = {
+				id: currentId,
 				created_at: new Date().toISOString(),
 				published_at: new Date().toISOString().split("T")[0],
 				author_id: user?.id || "demo-1",
@@ -283,16 +356,37 @@ export default function AuthorStudio() {
 				content,
 				seo_score: audit.totalScore,
 				pageviews: 1,
-				status: "published",
+				status: targetStatus,
 			};
 
-			// 1. Try Supabase insert (only if user is a real authenticated user with a valid UUID)
+			// 1. Try Supabase Cloud update or insert (works for both authentic users and community guests)
 			let supabaseSuccess = false;
-			if (!isDemoUser && user?.id) {
-				try {
-					const { error: dbErr } = await supabase.from("articles").insert([
+			const authorUuid = (!isDemoUser && user?.id) ? user.id : "00000000-0000-0000-0000-000000000000";
+
+			try {
+				let dbErr = null;
+				if (editingId && !editingId.startsWith("post-")) {
+					// Update existing row in cloud DB
+					const { error } = await supabase
+						.from("articles")
+						.update({
+							title,
+							slug,
+							category,
+							target_keyword: targetKeyword,
+							meta_description: metaDescription,
+							image_url: imageUrl,
+							content,
+							seo_score: audit.totalScore,
+							status: targetStatus,
+						})
+						.eq("id", editingId);
+					dbErr = error;
+				} else {
+					// Insert brand new row into cloud DB
+					const { error } = await supabase.from("articles").insert([
 						{
-							author_id: user.id,
+							author_id: authorUuid,
 							title,
 							slug,
 							category,
@@ -302,40 +396,55 @@ export default function AuthorStudio() {
 							content,
 							seo_score: audit.totalScore,
 							pageviews: 1,
-							status: "published",
+							status: targetStatus,
 						},
 					]);
-
-					if (dbErr) {
-						console.warn("Supabase Insert Notice:", dbErr.message);
-					} else {
-						supabaseSuccess = true;
-					}
-				} catch (cloudErr) {
-					console.warn("Supabase Insert Error:", cloudErr);
+					dbErr = error;
 				}
-			}
 
-			// 2. Always save to localStorage as fallback
+				if (!dbErr) {
+					supabaseSuccess = true;
+				} else {
+					console.warn("Supabase Save Warning:", dbErr.message);
+				}
+			} catch (cloudErr) {}
+
+			// 2. Always update/save in localStorage
 			const fallbackStore = JSON.parse(
 				localStorage.getItem("apex_articles_v1") || "[]",
 			);
-			fallbackStore.unshift(newDispatch);
+			const existingIndex = fallbackStore.findIndex(
+				(a) => a.id === currentId || a.slug === (editSlug || slug),
+			);
+
+			if (existingIndex >= 0) {
+				fallbackStore[existingIndex] = {
+					...fallbackStore[existingIndex],
+					...updatedDispatch,
+				};
+			} else {
+				fallbackStore.unshift(updatedDispatch);
+			}
 			localStorage.setItem("apex_articles_v1", JSON.stringify(fallbackStore));
 
 			if (supabaseSuccess) {
-				// Success cloud insert
+				// Cloud success
 			} else if (!isDemoUser && user?.id) {
 				setError(
-					"⚠️ Cloud save unavailable — saved locally to your browser. You can view it, but other users won't see it until Supabase is connected.",
+					"⚠️ Cloud save unavailable — saved locally to your browser. Your progress is fully backed up locally.",
 				);
 			}
 
-			// Navigate to the new article
-			router.push(`/blog/${slug}`);
+			// Direct user appropriately
+			if (targetStatus === "draft") {
+				router.push("/dashboard");
+			} else {
+				router.push(`/blog/${slug}`);
+			}
 		} catch (err) {
-			setError(err.message || "An unexpected error occurred while publishing.");
+			setError(err.message || "An unexpected error occurred while saving.");
 			setPublishing(false);
+			setSavingDraft(false);
 		}
 	};
 
@@ -346,96 +455,121 @@ export default function AuthorStudio() {
 				<div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm text-left">
 					<div>
 						<div className="flex items-center gap-2">
-							<span className="w-3 h-3 rounded-full bg-indigo-600"></span>
+							<span
+								className={`w-3 h-3 rounded-full ${editingId ? "bg-amber-500 animate-pulse" : "bg-indigo-600"}`}
+							></span>
 							<span className="text-xs font-black uppercase text-slate-400 tracking-wider">
-								Universal Writing Studio & Reach Engine
+								{editingId
+									? "Mode: Resuming Live Editing"
+									: "Universal Writing Studio & Reach Engine"}
 							</span>
 						</div>
 						<h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1">
-							Craft & Polish Your Story
+							{editingId ? `Editing: ${title}` : "Craft & Polish Your Story"}
 						</h1>
 					</div>
 
-					<div className="flex items-center gap-3 w-full md:w-auto">
+					<div className="flex items-center gap-2.5 w-full md:w-auto flex-wrap">
 						<button
+							type="button"
 							onClick={() =>
 								setActiveTab(activeTab === "write" ? "preview" : "write")
 							}
-							className="btn btn-secondary px-5 py-2.5 rounded-xl text-xs font-black flex-1 md:flex-none"
+							className="btn btn-secondary px-4 py-2.5 rounded-xl text-xs font-black flex-1 sm:flex-none cursor-pointer"
 						>
 							{activeTab === "write" ? "👁️ Preview Story" : "✍️ Edit Markdown"}
 						</button>
+
+						{/* Save Draft Trigger */}
 						<button
-							onClick={handlePublish}
-							disabled={publishing || audit.totalScore < 50}
-							className={`btn px-7 py-2.5 rounded-xl text-xs font-black shadow-lg flex items-center gap-2 flex-1 md:flex-none transition transform hover:scale-105 ${
+							type="button"
+							onClick={() => handleSave("draft")}
+							disabled={publishing || savingDraft}
+							className="btn px-4 py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20 transition transform hover:scale-105 flex-1 sm:flex-none cursor-pointer"
+						>
+							<Save className="w-3.5 h-3.5" />
+							<span>{savingDraft ? "Saving..." : "💾 Save Draft"}</span>
+						</button>
+
+						{/* Publish Live Trigger */}
+						<button
+							type="button"
+							onClick={() => handleSave("published")}
+							disabled={publishing || savingDraft || audit.totalScore < 50}
+							className={`btn px-6 py-2.5 rounded-xl text-xs font-black shadow-lg flex items-center justify-center gap-1.5 flex-1 sm:flex-none transition transform hover:scale-105 cursor-pointer ${
 								audit.totalScore >= 80
 									? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/30"
 									: "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30"
 							}`}
 						>
-							<Rocket className="w-4 h-4" />
+							<Rocket className="w-3.5 h-3.5" />
 							<span>
-								{publishing ? "Publishing..." : "⚡ Publish Story Live"}
+								{publishing
+									? "Publishing..."
+									: editingId
+										? "⚡ Update Live"
+										: "⚡ Publish Live"}
 							</span>
 						</button>
 					</div>
 				</div>
 
-				{/* Starter Template Quick Triggers Deck */}
-				<div className="mb-8 bg-gradient-to-r from-slate-900 to-indigo-950 p-6 rounded-3xl text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 text-left border border-slate-800">
-					<div className="flex items-center gap-3">
-						<span className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-lg shadow-inner">
-							✨
-						</span>
-						<div>
-							<div className="text-xs font-black uppercase text-indigo-300 tracking-wider">
-								Writer&apos;s Block Failsafe
-							</div>
-							<div className="text-sm font-extrabold text-slate-200">
-								Choose an instant story structure or start from scratch
+				{/* Starter Template Quick Triggers Deck (Hide if already editing an existing specific post) */}
+				{!editingId && (
+					<div className="mb-8 bg-gradient-to-r from-slate-900 to-indigo-950 p-6 rounded-3xl text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 text-left border border-slate-800">
+						<div className="flex items-center gap-3">
+							<span className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-lg shadow-inner">
+								✨
+							</span>
+							<div>
+								<div className="text-xs font-black uppercase text-indigo-300 tracking-wider">
+									Writer&apos;s Block Failsafe
+								</div>
+								<div className="text-sm font-extrabold text-slate-200">
+									Choose an instant story structure or start from scratch
+								</div>
 							</div>
 						</div>
+
+						<div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-end">
+							<button
+								type="button"
+								onClick={() => loadTemplate("story")}
+								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5"
+							>
+								<Feather className="w-3.5 h-3.5 text-pink-400" />
+								<span>Personal Story</span>
+							</button>
+
+							<button
+								type="button"
+								onClick={() => loadTemplate("philosophy")}
+								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5"
+							>
+								<BookOpen className="w-3.5 h-3.5 text-amber-400" />
+								<span>Philosophy</span>
+							</button>
+
+							<button
+								type="button"
+								onClick={() => loadTemplate("travel")}
+								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5"
+							>
+								<Compass className="w-3.5 h-3.5 text-emerald-400" />
+								<span>Travel Guide</span>
+							</button>
+
+							<button
+								type="button"
+								onClick={() => loadTemplate("tech")}
+								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5"
+							>
+								<Cpu className="w-3.5 h-3.5 text-indigo-400" />
+								<span>Tech & Architecture</span>
+							</button>
+						</div>
 					</div>
-
-					<div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-end">
-						<button
-							type="button"
-							onClick={() => loadTemplate("story")}
-							className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5"
-						>
-							<Feather className="w-3.5 h-3.5 text-pink-400" />
-							<span>Personal Story</span>
-						</button>
-
-						<button
-							type="button"
-							onClick={() => loadTemplate("philosophy")}
-							className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5"
-						>
-							<BookOpen className="w-3.5 h-3.5 text-amber-400" />
-							<span>Philosophy</span>
-						</button>
-
-						<button
-							type="button"
-							onClick={() => loadTemplate("travel")}
-							className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5"
-						>
-							<Compass className="w-3.5 h-3.5 text-emerald-400" />
-							<span>Travel Guide</span>
-						</button>
-
-						<button
-							type="button"
-							onClick={() => loadTemplate("tech")}
-							className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5"
-						>
-							<Cpu className="w-3.5 h-3.5 text-indigo-400" />
-							<span>Tech & Architecture</span>
-						</button>
-					</div>
-				</div>
+				)}
 
 				{error && (
 					<div className="mb-8 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400 text-xs font-bold flex items-center gap-3 text-left">
@@ -583,7 +717,7 @@ export default function AuthorStudio() {
 										/>
 										<button
 											type="button"
-											className="btn btn-secondary w-full px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+											className="btn btn-secondary w-full px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 cursor-pointer"
 										>
 											<Upload className="w-4 h-4 text-indigo-500" />
 											<span>
@@ -593,7 +727,7 @@ export default function AuthorStudio() {
 									</div>
 								</div>
 
-								{/* Instant Photography Presets */}
+								{/* Instant Creative Presets */}
 								<div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1 scrollbar-none">
 									<span className="text-[11px] font-extrabold text-slate-400 uppercase mr-1">
 										Creative Presets:
@@ -657,8 +791,11 @@ export default function AuthorStudio() {
 										</span>
 										<button
 											type="button"
-											onClick={() => setContent("")}
-											className="text-rose-500 hover:underline"
+											onClick={() => {
+												setContent("");
+												setEditingId(null);
+											}}
+											className="text-rose-500 hover:underline cursor-pointer"
 										>
 											Clear Canvas
 										</button>
@@ -691,9 +828,7 @@ export default function AuthorStudio() {
 										}`}
 									>
 										⚡{" "}
-										{audit.totalScore >= 80
-											? "Well Structured"
-											: "Needs Polish"}
+										{audit.totalScore >= 80 ? "Well Structured" : "Needs Polish"}
 									</span>
 								</div>
 
@@ -781,9 +916,8 @@ export default function AuthorStudio() {
 								<HelpCircle className="w-4 h-4" /> Storytelling Guidelines
 							</div>
 							<p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
-								1. Write authentically. We celebrate unique personal essays,
-								arts, and deep reflections alongside technical deep dives.{" "}
-								<br />
+								1. Write authentically. We celebrate unique personal essays, arts,
+								and deep reflections alongside technical deep dives. <br />
 								2. Use helpful links to give your readers context. <br />
 								3. Connect with other creators by interlinking related stories!
 							</p>

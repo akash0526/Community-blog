@@ -142,13 +142,11 @@ export default function RootLayout({
 				<footer className="bg-slate-950 text-slate-300 py-16 border-t border-slate-800 mt-auto transition">
 					<div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 text-left">
 						<div className="flex items-center gap-3 text-white font-black text-xl">
-							<span className="w-8 h-8 rounded-xl bg-indigo-600 text-white text-xs flex items-center justify-center font-black shadow-lg shadow-indigo-500/30">
-								⚡
-							</span>
-							<span>
-								Apex
-								<span className="text-indigo-400 font-black">Community</span>
-							</span>
+							<img
+								src="/apex-community-logo.svg"
+								alt="Apex Community logo"
+								className="w-44 sm:w-56 h-auto max-h-12 object-contain brightness-0 invert"
+							/>
 						</div>
 
 						<div className="flex flex-wrap items-center gap-8 text-sm font-extrabold text-slate-300">
@@ -161,7 +159,7 @@ export default function RootLayout({
 						</div>
 
 						<div className="text-xs text-slate-500 font-extrabold">
-							© 2026 Open Engineering Community. Built with Next.js & Supabase.
+							© 2026 Open Community Platform. Built with Next.js & Supabase.
 						</div>
 					</div>
 				</footer>

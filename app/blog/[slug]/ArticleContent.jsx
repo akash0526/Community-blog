@@ -448,6 +448,11 @@ export default function ArticleContent({ serverArticle, slug }) {
 								{article.profiles?.professional_role ||
 									"Creator & Thought Leader"}
 							</div>
+							{article.profiles?.bio && (
+								<p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-1 max-w-xl line-clamp-2">
+									{article.profiles.bio}
+								</p>
+							)}
 						</div>
 					</div>
 

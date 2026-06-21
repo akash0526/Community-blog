@@ -26,12 +26,14 @@ CREATE POLICY "Allow users to update their own profile"
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, full_name, avatar_url)
+  INSERT INTO public.profiles (id, email, full_name, avatar_url, professional_role, bio)
   VALUES (
     new.id,
     new.email,
     COALESCE(raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
-    COALESCE(raw_user_meta_data->>'avatar_url', 'https://api.dicebear.com/7.x/bottts/svg?seed=' || new.id)
+    COALESCE(raw_user_meta_data->>'avatar_url', 'https://api.dicebear.com/7.x/bottts/svg?seed=' || new.id),
+    COALESCE(raw_user_meta_data->>'professional_role', 'Community Creator'),
+    COALESCE(raw_user_meta_data->>'bio', 'Writing and sharing stories with the open community.')
   );
   RETURN new;
 END;

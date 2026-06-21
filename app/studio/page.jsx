@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { analyzeSeo, generateCleanSlug } from "@/lib/seoEngine";
+import { storyCategories } from "@/lib/categories";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -267,6 +268,8 @@ function StudioForm() {
 						email: "creative.author@example.com",
 						user_metadata: {
 							full_name: "Community Storyteller",
+							professional_role: "Community Creator",
+							bio: "Writing and sharing stories with the open community.",
 							avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=Story",
 						},
 					};
@@ -338,6 +341,12 @@ function StudioForm() {
 			const activeAuthorAvatar =
 				user?.user_metadata?.avatar_url ||
 				"https://api.dicebear.com/7.x/bottts/svg?seed=Comm";
+			const activeAuthorRole =
+				user?.user_metadata?.professional_role ||
+				user?.user_metadata?.profession ||
+				(category === "Web Development" || category === "Tech & AI"
+					? "Software Architect"
+					: "Creator & Writer");
 			const isDemoUser =
 				user?.id?.startsWith("demo-") || user?.id?.startsWith("community-");
 
@@ -351,10 +360,10 @@ function StudioForm() {
 				author_id: user?.id || "demo-1",
 				profiles: {
 					full_name: activeAuthorName,
-					professional_role:
-						category === "Web Development" || category === "Tech & AI"
-							? "Software Architect"
-							: "Creator & Writer",
+					professional_role: activeAuthorRole,
+					bio:
+						user?.user_metadata?.bio ||
+						"Writing and sharing stories with the open community.",
 					avatar_url: activeAuthorAvatar,
 				},
 				title,
@@ -664,24 +673,14 @@ function StudioForm() {
 										onChange={(e) => setCategory(e.target.value)}
 										className="input font-bold text-sm py-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 dark:border-slate-700 cursor-pointer"
 									>
-										<option value="Personal Stories">
-											📖 Personal Stories & Life
-										</option>
-										<option value="Philosophy & Culture">
-											🎭 Philosophy & Culture
-										</option>
-										<option value="Travel & Lifestyle">
-											🌴 Travel & Lifestyle
-										</option>
-										<option value="Arts & Fiction">
-											🎨 Arts & Creative Fiction
-										</option>
-										<option value="Web Development">💻 Web Development</option>
-										<option value="Tech & AI">⚡ Tech & AI</option>
-										<option value="Startups & Growth">
-											🚀 Startups & Growth
-										</option>
-										<option value="SEO Strategy">🎯 SEO Strategy</option>
+										{storyCategories.map((storyCategory) => (
+											<option
+												key={storyCategory.value}
+												value={storyCategory.value}
+											>
+												{storyCategory.label}
+											</option>
+										))}
 									</select>
 								</div>
 							</div>

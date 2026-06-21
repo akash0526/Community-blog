@@ -93,17 +93,14 @@ export default function Navbar() {
 					{/* Brand */}
 					<Link
 						href="/"
-						className="flex items-center gap-2 sm:gap-3 font-black text-lg sm:text-2xl text-slate-900 dark:text-white group"
+						className="flex items-center gap-2 sm:gap-3 font-black text-slate-900 dark:text-white group min-w-0"
+						aria-label="Apex Community home"
 					>
-						<span className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center text-xs sm:text-base font-black shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition transform">
-							⚡
-						</span>
-						<span>
-							Apex
-							<span className="text-indigo-600 dark:text-indigo-400 font-black">
-								Community
-							</span>
-						</span>
+						<img
+							src="/apex-community-logo.svg"
+							alt="Apex Community logo"
+							className="w-36 sm:w-52 md:w-56 h-auto max-h-12 object-contain dark:brightness-0 dark:invert group-hover:scale-[1.02] transition transform flex-shrink-0"
+						/>
 					</Link>
 
 					{/* Desktop Nav */}
@@ -167,7 +164,7 @@ export default function Navbar() {
 											className="flex items-center gap-2.5 px-5 py-2.5 text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition"
 										>
 											<LayoutDashboard className="w-4 h-4 text-indigo-500" />
-											<span>My Published Articles</span>
+											<span>Dashboard & Profile</span>
 										</Link>
 
 										<button

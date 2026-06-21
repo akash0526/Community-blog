@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Eye, Clock, Search, Sparkles } from "lucide-react";
+import { storyCategoryValues } from "@/lib/categories";
 
 export default function CommunityFeed({ initialArticles = [] }) {
 	const [articles, setArticles] = useState(initialArticles);
@@ -38,17 +39,7 @@ export default function CommunityFeed({ initialArticles = [] }) {
 
 	// Extract unique categories dynamically plus core ones
 	const categories = useMemo(() => {
-		const set = new Set([
-			"All Feed",
-			"Tech & AI",
-			"Startups & Growth",
-			"SEO Strategy",
-			"Web Development",
-			"Personal Stories",
-			"Philosophy & Culture",
-			"Travel & Lifestyle",
-			"Arts & Fiction",
-		]);
+		const set = new Set(["All Feed", ...storyCategoryValues]);
 		articles.forEach((art) => {
 			if (art.category) set.add(art.category);
 		});

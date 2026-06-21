@@ -93,9 +93,9 @@ export default function Navbar() {
 					{/* Brand */}
 					<Link
 						href="/"
-						className="flex items-center gap-3 font-black text-2xl text-slate-900 dark:text-white group"
+						className="flex items-center gap-2 sm:gap-3 font-black text-lg sm:text-2xl text-slate-900 dark:text-white group"
 					>
-						<span className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center text-base font-black shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition transform">
+						<span className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center text-xs sm:text-base font-black shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition transform">
 							⚡
 						</span>
 						<span>
@@ -183,10 +183,10 @@ export default function Navbar() {
 						) : (
 							<button
 								onClick={() => setAuthModalOpen(true)}
-								className="btn btn-secondary px-4 py-2.5 rounded-xl font-extrabold text-xs flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+								className="btn btn-secondary px-3 py-2.5 sm:px-4 rounded-xl font-extrabold text-xs flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
 							>
 								<User className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-								<span>Log In / Join</span>
+								<span className="hidden sm:inline">Log In / Join</span>
 							</button>
 						)}
 
@@ -223,9 +223,23 @@ export default function Navbar() {
 						<Link
 							href="/"
 							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600"
+							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
 						>
 							Explore Feed
+						</Link>
+						<Link
+							href="/studio"
+							onClick={() => setMobileMenuOpen(false)}
+							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
+						>
+							✍️ Writing Studio
+						</Link>
+						<Link
+							href="/kanban"
+							onClick={() => setMobileMenuOpen(false)}
+							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
+						>
+							📅 Workflow Kanban
 						</Link>
 						{user && (
 							<Link

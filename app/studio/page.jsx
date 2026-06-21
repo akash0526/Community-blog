@@ -25,8 +25,7 @@ import {
 // Inspiring Starter Templates Across Technical & Creative Genres
 const starterTemplates = {
 	story: {
-		title:
-			"How Two Years in the Mountains Redefined My Approach to Deep Work",
+		title: "How Two Years in the Mountains Redefined My Approach to Deep Work",
 		targetKeyword: "Deep Work",
 		category: "Personal Stories",
 		metaDescription:
@@ -372,7 +371,10 @@ function StudioForm() {
 
 			// 1. Try Supabase Cloud update or insert (works for both authentic users and community guests)
 			let supabaseSuccess = false;
-			const authorUuid = (!isDemoUser && user?.id) ? user.id : "00000000-0000-0000-0000-000000000000";
+			const authorUuid =
+				!isDemoUser && user?.id
+					? user.id
+					: "00000000-0000-0000-0000-000000000000";
 
 			try {
 				let dbErr = null;
@@ -478,6 +480,17 @@ function StudioForm() {
 						<h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1">
 							{editingId ? `Editing: ${title}` : "Craft & Polish Your Story"}
 						</h1>
+						<div className="lg:hidden mt-2.5 inline-flex items-center gap-2 bg-slate-900 dark:bg-slate-800 text-white px-3.5 py-1.5 rounded-2xl text-xs font-black shadow-md border border-slate-800">
+							<span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+							<span>⚡ AI Score:</span>
+							<span
+								className={
+									audit.totalScore >= 80 ? "text-emerald-400" : "text-amber-400"
+								}
+							>
+								{audit.totalScore}/100
+							</span>
+						</div>
 					</div>
 
 					<div className="flex items-center gap-2.5 w-full md:w-auto flex-wrap">
@@ -542,11 +555,11 @@ function StudioForm() {
 							</div>
 						</div>
 
-						<div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-end">
+						<div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 w-full sm:w-auto justify-start sm:justify-end scrollbar-none">
 							<button
 								type="button"
 								onClick={() => loadTemplate("story")}
-								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5"
+								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5 flex-shrink-0"
 							>
 								<Feather className="w-3.5 h-3.5 text-pink-400" />
 								<span>Personal Story</span>
@@ -555,7 +568,7 @@ function StudioForm() {
 							<button
 								type="button"
 								onClick={() => loadTemplate("philosophy")}
-								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5"
+								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5 flex-shrink-0"
 							>
 								<BookOpen className="w-3.5 h-3.5 text-amber-400" />
 								<span>Philosophy</span>
@@ -564,7 +577,7 @@ function StudioForm() {
 							<button
 								type="button"
 								onClick={() => loadTemplate("travel")}
-								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5"
+								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5 flex-shrink-0"
 							>
 								<Compass className="w-3.5 h-3.5 text-emerald-400" />
 								<span>Travel Guide</span>
@@ -573,7 +586,7 @@ function StudioForm() {
 							<button
 								type="button"
 								onClick={() => loadTemplate("tech")}
-								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5"
+								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5 flex-shrink-0"
 							>
 								<Cpu className="w-3.5 h-3.5 text-indigo-400" />
 								<span>Tech & Architecture</span>
@@ -839,7 +852,9 @@ function StudioForm() {
 										}`}
 									>
 										⚡{" "}
-										{audit.totalScore >= 80 ? "Well Structured" : "Needs Polish"}
+										{audit.totalScore >= 80
+											? "Well Structured"
+											: "Needs Polish"}
 									</span>
 								</div>
 
@@ -927,8 +942,9 @@ function StudioForm() {
 								<HelpCircle className="w-4 h-4" /> Storytelling Guidelines
 							</div>
 							<p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
-								1. Write authentically. We celebrate unique personal essays, arts,
-								and deep reflections alongside technical deep dives. <br />
+								1. Write authentically. We celebrate unique personal essays,
+								arts, and deep reflections alongside technical deep dives.{" "}
+								<br />
 								2. Use helpful links to give your readers context. <br />
 								3. Connect with other creators by interlinking related stories!
 							</p>

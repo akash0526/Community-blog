@@ -199,7 +199,7 @@ export default function CommunityFeed({ initialArticles = [] }) {
 								</div>
 
 								{/* Prose Card */}
-								<div className="p-7 sm:p-8 flex flex-col flex-1 justify-between">
+								<div className="p-5 sm:p-8 flex flex-col flex-1 justify-between">
 									<div>
 										<div className="flex items-center gap-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 mb-3">
 											<Clock className="w-3.5 h-3.5" />

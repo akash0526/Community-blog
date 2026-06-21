@@ -229,16 +229,45 @@ export default function ArticleContent({ serverArticle, slug }) {
 				{children}
 			</ol>
 		),
-		a: ({ children, href }) => (
-			<a
-				href={href}
-				target="_blank"
-				rel="noopener noreferrer"
-				className="text-indigo-600 dark:text-indigo-400 font-extrabold underline decoration-indigo-300 dark:decoration-indigo-800 hover:decoration-indigo-600 dark:hover:decoration-indigo-400 transition cursor-pointer"
-			>
-				{children}
-			</a>
-		),
+		a: ({ children, href }) => {
+			// Extract YouTube Video ID
+			const getYouTubeId = (url) => {
+				if (!url) return null;
+				const regExp =
+					/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+				const match = url.match(regExp);
+				return match && match[2].length === 11 ? match[2] : null;
+			};
+
+			const ytId = getYouTubeId(href);
+
+			// If the link text is exactly "youtube" and it's a valid YouTube link, render an embed Player!
+			if (ytId && String(children).toLowerCase() === "youtube") {
+				return (
+					<div className="my-10 aspect-video w-full overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl bg-slate-950">
+						<iframe
+							src={`https://www.youtube.com/embed/${ytId}`}
+							title="YouTube video player"
+							frameBorder="0"
+							allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+							allowFullScreen
+							className="w-full h-full"
+						></iframe>
+					</div>
+				);
+			}
+
+			return (
+				<a
+					href={href}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-indigo-600 dark:text-indigo-400 font-extrabold underline decoration-indigo-300 dark:decoration-indigo-800 hover:decoration-indigo-600 dark:hover:decoration-indigo-400 transition cursor-pointer"
+				>
+					{children}
+				</a>
+			);
+		},
 		img: ({ src, alt }) => (
 			<figure className="my-12 text-center">
 				<img

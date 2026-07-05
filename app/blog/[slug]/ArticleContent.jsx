@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
@@ -13,7 +12,6 @@ import {
 	Award,
 	Bookmark,
 	Share2,
-	Heart,
 	Check,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -22,7 +20,6 @@ import DiscussionThread from "@/components/DiscussionThread";
 export default function ArticleContent({ serverArticle, slug }) {
 	const [article, setArticle] = useState(serverArticle);
 	const [loading, setLoading] = useState(!serverArticle);
-	const router = useRouter();
 
 	// Social & Reaction States
 	const [bookmarked, setBookmarked] = useState(false);
@@ -32,41 +29,64 @@ export default function ArticleContent({ serverArticle, slug }) {
 	const [shareToast, setShareToast] = useState(false);
 
 	useEffect(() => {
-		const decodedSlug = decodeURIComponent(slug);
+		let cancelled = false;
 
-		// If the server didn't find it, try localStorage (articles published by demo creators)
-		if (!serverArticle) {
-			try {
-				const stored = JSON.parse(
-					localStorage.getItem("apex_articles_v1") || "[]",
-				);
-				const localArticle = stored.find(
-					(a) => decodeURIComponent(a.slug || "") === decodedSlug,
-				);
-				if (localArticle) {
-					setArticle(localArticle);
-					if (localArticle.claps) setClaps(localArticle.claps);
+		const hydrateClientState = async () => {
+			const decodedSlug = decodeURIComponent(slug);
+			let resolvedArticle = serverArticle || null;
+			let nextClaps = serverArticle?.claps || 0;
+			let nextBookmarked = false;
+			let nextFollowing = false;
+
+			// If the server didn't find it, try localStorage (articles published by demo creators)
+			if (!resolvedArticle) {
+				try {
+					const stored = JSON.parse(
+						localStorage.getItem("apex_articles_v1") || "[]",
+					);
+					const localArticle = stored.find(
+						(a) => decodeURIComponent(a.slug || "") === decodedSlug,
+					);
+					if (localArticle) {
+						resolvedArticle = localArticle;
+						nextClaps = localArticle.claps || 0;
+					}
+				} catch (e) {
+					console.warn("Could not read local fallback articles:", e);
 				}
-			} catch (e) {
-				console.warn("Could not read local fallback articles:", e);
 			}
-		}
 
-		// Check existing reading list bookmarks and creator follows
-		try {
-			const bms = JSON.parse(localStorage.getItem("apex_bookmarks_v1") || "[]");
-			if (bms.some((b) => decodeURIComponent(b.slug || "") === decodedSlug))
-				setBookmarked(true);
+			// Check existing reading list bookmarks and creator follows
+			try {
+				const bms = JSON.parse(
+					localStorage.getItem("apex_bookmarks_v1") || "[]",
+				);
+				nextBookmarked = bms.some(
+					(b) => decodeURIComponent(b.slug || "") === decodedSlug,
+				);
 
-			const creatorName =
-				serverArticle?.profiles?.full_name || "Community Storyteller";
-			const fols = JSON.parse(
-				localStorage.getItem("apex_following_v1") || "[]",
-			);
-			if (fols.includes(creatorName)) setFollowing(true);
-		} catch (e) {}
+				const creatorName =
+					resolvedArticle?.profiles?.full_name || "Community Storyteller";
+				const fols = JSON.parse(
+					localStorage.getItem("apex_following_v1") || "[]",
+				);
+				nextFollowing = fols.includes(creatorName);
+			} catch {}
 
-		setLoading(false);
+			await Promise.resolve();
+			if (cancelled) return;
+
+			setArticle(resolvedArticle);
+			setClaps(nextClaps);
+			setBookmarked(nextBookmarked);
+			setFollowing(nextFollowing);
+			setLoading(false);
+		};
+
+		hydrateClientState();
+		return () => {
+			cancelled = true;
+		};
 	}, [serverArticle, slug]);
 
 	const handleToggleBookmark = () => {
@@ -89,7 +109,7 @@ export default function ArticleContent({ serverArticle, slug }) {
 					setBookmarked(true);
 				}
 			}
-		} catch (e) {}
+		} catch {}
 	};
 
 	const handleToggleFollow = () => {
@@ -108,7 +128,7 @@ export default function ArticleContent({ serverArticle, slug }) {
 				localStorage.setItem("apex_following_v1", JSON.stringify(fols));
 				setFollowing(true);
 			}
-		} catch (e) {}
+		} catch {}
 	};
 
 	const handleClap = async () => {
@@ -123,9 +143,11 @@ export default function ArticleContent({ serverArticle, slug }) {
 		) {
 			try {
 				await supabase.rpc("increment_claps", { article_id: article.id });
-			} catch (e) {}
+			} catch {}
 		} else if (article) {
-			article.claps = (article.claps || 0) + 1;
+			setArticle((prev) =>
+				prev ? { ...prev, claps: (prev.claps || 0) + 1 } : prev,
+			);
 		}
 	};
 
@@ -282,7 +304,7 @@ export default function ArticleContent({ serverArticle, slug }) {
 				)}
 			</figure>
 		),
-		code({ node, inline, className, children, ...props }) {
+		code({ inline, className, children, ...props }) {
 			const match = /language-(\w+)/.exec(className || "");
 			const codeString = String(children).replace(/\n$/, "");
 

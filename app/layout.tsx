@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import Link from "next/link";
+import { Geist_Mono, Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import { SITE_URL } from "@/lib/articles";
 import "./globals.css";
@@ -150,12 +151,12 @@ export default function RootLayout({
 						</div>
 
 						<div className="flex flex-wrap items-center gap-8 text-sm font-extrabold text-slate-300">
-							<a href="/" className="hover:text-white transition">
+							<Link href="/" className="hover:text-white transition">
 								Explore Ledger
-							</a>
-							<a href="/studio" className="hover:text-white transition">
+							</Link>
+							<Link href="/studio" className="hover:text-white transition">
 								Author Studio
-							</a>
+							</Link>
 						</div>
 
 						<div className="text-xs text-slate-500 font-extrabold">

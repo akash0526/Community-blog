@@ -26,13 +26,17 @@ export default function Navbar() {
 
 	useEffect(() => {
 		// Sync theme
-		const saved = localStorage.getItem("apex_theme") || "light";
-		setTheme(saved);
-		if (saved === "dark") {
-			document.documentElement.classList.add("dark");
-		} else {
-			document.documentElement.classList.remove("dark");
-		}
+		const syncTheme = async () => {
+			const saved = localStorage.getItem("apex_theme") || "light";
+			if (saved === "dark") {
+				document.documentElement.classList.add("dark");
+			} else {
+				document.documentElement.classList.remove("dark");
+			}
+			await Promise.resolve();
+			setTheme(saved);
+		};
+		syncTheme();
 
 		// Check active user session
 		const getSession = async () => {
@@ -46,7 +50,7 @@ export default function Navbar() {
 				if (demo) {
 					try {
 						setUser(JSON.parse(demo));
-					} catch (e) {}
+					} catch {}
 				}
 			}
 		};

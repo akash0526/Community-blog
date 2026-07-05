@@ -6,36 +6,48 @@ import { Eye, Clock, Search, Sparkles } from "lucide-react";
 import { storyCategoryValues } from "@/lib/categories";
 
 export default function CommunityFeed({ initialArticles = [] }) {
-	const [articles, setArticles] = useState(initialArticles);
+	const [localArticles, setLocalArticles] = useState([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState("All Feed");
 
-	// Synchronize with demo articles published to localStorage
+	// Synchronize with browser-published articles from localStorage
 	useEffect(() => {
-		try {
-			const stored = JSON.parse(
-				localStorage.getItem("apex_articles_v1") || "[]",
-			);
-			if (stored && stored.length > 0) {
-				// Merge stored items that aren't already in the server list
+		let cancelled = false;
+
+		const loadLocalArticles = async () => {
+			try {
+				const stored = JSON.parse(
+					localStorage.getItem("apex_articles_v1") || "[]",
+				);
 				const existingIds = new Set(initialArticles.map((a) => a.id));
 				const existingSlugs = new Set(initialArticles.map((a) => a.slug));
 
-				const uniqueLocal = stored.filter(
+				const uniqueLocal = (stored || []).filter(
 					(localItem) =>
 						localItem.status === "published" &&
 						!existingIds.has(localItem.id) &&
 						!existingSlugs.has(localItem.slug),
 				);
 
-				if (uniqueLocal.length > 0) {
-					setArticles([...uniqueLocal, ...initialArticles]);
-				}
+				await Promise.resolve();
+				if (cancelled) return;
+				setLocalArticles(uniqueLocal);
+			} catch (e) {
+				console.warn("Could not read local fallback articles:", e);
+				if (!cancelled) setLocalArticles([]);
 			}
-		} catch (e) {
-			console.warn("Could not read local fallback articles:", e);
-		}
+		};
+
+		loadLocalArticles();
+		return () => {
+			cancelled = true;
+		};
 	}, [initialArticles]);
+
+	const articles = useMemo(() => {
+		if (localArticles.length === 0) return initialArticles;
+		return [...localArticles, ...initialArticles];
+	}, [initialArticles, localArticles]);
 
 	// Extract unique categories dynamically plus core ones
 	const categories = useMemo(() => {
@@ -71,7 +83,7 @@ export default function CommunityFeed({ initialArticles = [] }) {
 			{/* Categories Bar & Active Ledger Grid */}
 			<div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-200 dark:border-slate-800 pb-6 mb-10">
 				<div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 scrollbar-none">
-					{categories.map((cat, idx) => {
+					{categories.map((cat) => {
 						const isActive = selectedCategory === cat;
 						return (
 							<button

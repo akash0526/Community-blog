@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { analyzeSeo, generateCleanSlug } from "@/lib/seoEngine";
@@ -8,7 +8,6 @@ import { storyCategories } from "@/lib/categories";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
-	Sparkles,
 	Image as ImageIcon,
 	CheckCircle2,
 	AlertCircle,
@@ -16,118 +15,17 @@ import {
 	HelpCircle,
 	FileText,
 	Upload,
-	BookOpen,
-	Compass,
-	Cpu,
-	Feather,
 	Save,
 } from "lucide-react";
 
-// Inspiring Starter Templates Across Technical & Creative Genres
-const starterTemplates = {
-	story: {
-		title: "How Two Years in the Mountains Redefined My Approach to Deep Work",
-		targetKeyword: "Deep Work",
-		category: "Personal Stories",
-		metaDescription:
-			"A personal reflection on stepping away from constant notifications to rediscover sustained focus, solitude, and authentic creative output.",
-		imageUrl:
-			"https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
-		content: `# Silence and Strategy: Lessons from High Altitude Solitude
-
-For over a decade, my daily routine was dictated by pinging desktop alerts, endless status update syncs, and the fragmented attention typical of modern knowledge work. In search of sustained deep work, I packed two suitcases and relocated to a remote cabin.
-
----
-
-## 1. Reclaiming Our Internal Bandwidth
-
-The hardest part of extreme intentional solitude isn't the physical isolation; it's the psychological withdrawal from the instant dopamine loops of our digital tools. Within three weeks, my baseline anxiety evaporated, replacing fragmented thoughts with calm, unbroken attention.
-
-### Key Turning Points:
-* Designing an intentional morning reading and journaling ritual.
-* Protecting unbroken blocks of four to six hours for primary deep work tasks.
-* Connecting deeply with profound philosophy works like [Cal Newport's Deep Work](https://www.calnewport.com).
-`,
-	},
-
-	philosophy: {
-		title:
-			"The Art of Digital Minimalism: Cultivating Meaning in an Attention Economy",
-		targetKeyword: "Digital Minimalism",
-		category: "Philosophy & Culture",
-		metaDescription:
-			"An exploration of how intentional technological constraints can help us reclaim agency over our time, relationships, and mental well-being.",
-		imageUrl:
-			"https://images.unsplash.com/photo-1507842229456-3a097394c662?auto=format&fit=crop&w=1200&q=80",
-		content: `# The Quiet Revolution of Curation
-
-We live in an unprecedented era of abundant information. Yet, without ruthless personal curation, this infinite novelty quickly degrades into cognitive overload and alienation.
-
----
-
-## 1. Designing Intentional Friction
-
-True digital minimalism isn't about rejecting technology outright; it is about introducing highly deliberate friction into our consumption habits so that we remain the active authors of our attention.
-
-### Foundational Principles:
-* Conduct a seasonal digital declutter to audit active subscriptions.
-* Embrace high-quality leisure activities that require active skill mastery.
-* Read essential essays on intentional living and philosophy at [The Marginalian](https://www.themarginalian.org).
-`,
-	},
-
-	travel: {
-		title:
-			"Savoring Kathmandu: A Slow Culinary Guide to Hidden Himalayan Alleyways",
-		targetKeyword: "Kathmandu Culinary",
-		category: "Travel & Lifestyle",
-		metaDescription:
-			"A curated slow travel guide exploring authentic local teahouses, artisanal spice markets, and timeless culinary traditions across Kathmandu.",
-		imageUrl:
-			"https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=1200&q=80",
-		content: `# Beyond the Tourist Trail: The Authentic Flavors of Kathmandu
-
-While most travelers view Kathmandu merely as a bustling trekking transit hub, its ancient alleyways harbor one of the most sophisticated, aromatic, and deeply historical culinary ecosystems in South Asia.
-
----
-
-## 1. The Art of the Perfect Dumpling
-
-True Himalayan gastronomy centers on slow, mindful preparation. From steaming bamboo baskets of delicate spices to rich, simmered lentil broths, every meal tells a generational story of trade routes and artisanal heritage.
-
-### Curated Culinary Highlights:
-* Seek out family-run teahouses tucked behind historical palace squares.
-* Sample authentic hand-pulled noodles and yak cheese delicacies.
-* Discover more Himalayan travel stories and cultural guides at [Lonely Planet Nepal](https://www.lonelyplanet.com/nepal).
-`,
-	},
-
-	tech: {
-		title: "Why Connection Pooling is Mandatory in Serverless App Routers",
-		targetKeyword: "Connection Pooling",
-		category: "Web Development",
-		metaDescription:
-			"An comprehensive developer guide exploring how to scale database connections in Serverless Next.js App Routers using PgBouncer and connection multiplexing.",
-		imageUrl:
-			"https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80",
-		content: `# Modern Serverless Architecture: Scaling Database Connections
-
-The next era of web development centers on high-performance edge components. In this architectural guide, we break down exactly how to construct highly resilient connection pools using PgBouncer and Vercel Edge Functions.
-
----
-
-## 1. Why Direct Connections Fail at the Edge
-
-When multiple concurrent serverless runtimes execute database operations, standard HTTP request and process lifecycles break down. Ephemeral edge functions attempt to spawn hundreds of persistent TCP processes simultaneously, exhausting PostgreSQL memory buffers instantly.
-
-Instead, we must route all edge lambda transactions through a centralized transaction-mode connection proxy.
-
-### Core Architectural Best Practices:
-* Maintain highly lightweight individual connection pools.
-* Utilize connection multiplexing via PgBouncer.
-* Enforce rigorous structured headings and outbound documentation links like [Next.js App Router](https://nextjs.org).
-`,
-	},
+// Blank author draft defaults
+const emptyDraft = {
+	title: "",
+	targetKeyword: "",
+	category: "Personal Stories",
+	metaDescription: "",
+	imageUrl: "",
+	content: "",
 };
 
 export default function AuthorStudio() {
@@ -150,28 +48,21 @@ function StudioForm() {
 	const editSlug = searchParams.get("edit");
 
 	const [editingId, setEditingId] = useState(null);
-	const [existingStatus, setExistingStatus] = useState("published");
 
 	// State fields
-	const [title, setTitle] = useState(starterTemplates.story.title);
-	const [targetKeyword, setTargetKeyword] = useState(
-		starterTemplates.story.targetKeyword,
-	);
-	const [category, setCategory] = useState(starterTemplates.story.category);
+	const [title, setTitle] = useState(emptyDraft.title);
+	const [targetKeyword, setTargetKeyword] = useState(emptyDraft.targetKeyword);
+	const [category, setCategory] = useState(emptyDraft.category);
 	const [metaDescription, setMetaDescription] = useState(
-		starterTemplates.story.metaDescription,
+		emptyDraft.metaDescription,
 	);
-	const [imageUrl, setImageUrl] = useState(starterTemplates.story.imageUrl);
-	const [content, setContent] = useState(starterTemplates.story.content);
+	const [imageUrl, setImageUrl] = useState(emptyDraft.imageUrl);
+	const [content, setContent] = useState(emptyDraft.content);
+	const [customSlug, setCustomSlug] = useState("");
 
 	const [activeTab, setActiveTab] = useState("write"); // write vs preview
 
 	// Scoring & Auth state
-	const [audit, setAudit] = useState({
-		totalScore: 85,
-		wordCount: 150,
-		checklist: [],
-	});
 	const [uploading, setUploading] = useState(false);
 	const [publishing, setPublishing] = useState(false);
 	const [savingDraft, setSavingDraft] = useState(false);
@@ -194,7 +85,7 @@ function StudioForm() {
 				if (!error && data) {
 					found = data;
 				}
-			} catch (err) {}
+			} catch {}
 
 			// 2. Try localStorage
 			if (!found) {
@@ -203,49 +94,52 @@ function StudioForm() {
 						localStorage.getItem("apex_articles_v1") || "[]",
 					);
 					found = stored.find((a) => a.slug === editSlug);
-				} catch (e) {}
+				} catch {}
 			}
 
 			// Populate form if found
 			if (found) {
 				setEditingId(found.id);
-				setExistingStatus(found.status || "published");
 				setTitle(found.title || "");
 				setTargetKeyword(found.target_keyword || "");
 				setCategory(found.category || "Personal Stories");
 				setMetaDescription(found.meta_description || "");
 				setImageUrl(found.image_url || "");
 				setContent(found.content || "");
+				setCustomSlug(found.slug || "");
 			}
 		};
 
 		fetchEditArticle();
 	}, [editSlug]);
 
-	// Load a selected preset template
-	const loadTemplate = (type) => {
-		const t = starterTemplates[type];
-		if (!t) return;
+	const resetComposer = () => {
 		setEditingId(null);
-		setExistingStatus("published");
-		setTitle(t.title);
-		setTargetKeyword(t.targetKeyword);
-		setCategory(t.category);
-		setMetaDescription(t.metaDescription);
-		setImageUrl(t.imageUrl);
-		setContent(t.content);
+		setTitle(emptyDraft.title);
+		setTargetKeyword(emptyDraft.targetKeyword);
+		setCategory(emptyDraft.category);
+		setMetaDescription(emptyDraft.metaDescription);
+		setImageUrl(emptyDraft.imageUrl);
+		setContent(emptyDraft.content);
+		setCustomSlug("");
 	};
 
-	// Real-time evaluation effect
-	useEffect(() => {
-		const result = analyzeSeo({
-			title,
-			targetKeyword,
-			metaDescription,
-			content,
-		});
-		setAudit(result);
-	}, [title, targetKeyword, metaDescription, content]);
+	const resolvedSlugPreview = customSlug.trim()
+		? generateCleanSlug(customSlug)
+		: title.trim()
+			? generateCleanSlug(title)
+			: "";
+
+	const audit = useMemo(
+		() =>
+			analyzeSeo({
+				title,
+				targetKeyword,
+				metaDescription,
+				content,
+			}),
+		[title, targetKeyword, metaDescription, content],
+	);
 
 	// Auth synchronization
 	useEffect(() => {
@@ -260,7 +154,7 @@ function StudioForm() {
 				if (demo) {
 					try {
 						setUser(JSON.parse(demo));
-					} catch (e) {}
+					} catch {}
 				} else {
 					// Auto create a demo session if anonymous so anyone can test the studio instantly
 					const autoDemo = {
@@ -304,7 +198,7 @@ function StudioForm() {
 			} = supabase.storage.from("article_images").getPublicUrl(fileName);
 
 			setImageUrl(publicUrl);
-		} catch (err) {
+		} catch {
 			setError(
 				"⚡ Storage Notice: Using live professional backup CDNs for instant preview.",
 			);
@@ -318,6 +212,19 @@ function StudioForm() {
 
 	// Save or Publish Live
 	const handleSave = async (targetStatus = "published") => {
+		if (!title.trim()) {
+			setError("Please add a headline before saving your story.");
+			return;
+		}
+
+		const slugSource = customSlug.trim() || title.trim();
+		const slug = generateCleanSlug(slugSource);
+
+		if (!slug) {
+			setError("Please provide a valid slug or headline before saving.");
+			return;
+		}
+
 		// Failsafe prompt if user is publishing live but score is below optimal
 		if (targetStatus === "published" && audit.totalScore < 80) {
 			if (
@@ -335,7 +242,6 @@ function StudioForm() {
 		setError(null);
 
 		try {
-			const slug = generateCleanSlug(title);
 			const activeAuthorName =
 				user?.user_metadata?.full_name || "Community Storyteller";
 			const activeAuthorAvatar =
@@ -351,6 +257,49 @@ function StudioForm() {
 				user?.id?.startsWith("demo-") || user?.id?.startsWith("community-");
 
 			const currentId = editingId || "post-" + Date.now();
+
+			const fallbackStore = JSON.parse(
+				localStorage.getItem("apex_articles_v1") || "[]",
+			);
+
+			const duplicateLocal = fallbackStore.find(
+				(a) =>
+					String(a?.slug || "").normalize("NFC") === slug.normalize("NFC") &&
+					a.id !== currentId &&
+					a.slug !== editSlug,
+			);
+
+			if (duplicateLocal) {
+				setError(
+					"That slug is already used by another local article. Please choose a different slug.",
+				);
+				setPublishing(false);
+				setSavingDraft(false);
+				return;
+			}
+
+			try {
+				const { data: existingSlugRow, error: slugLookupError } = await supabase
+					.from("articles")
+					.select("id, slug")
+					.eq("slug", slug)
+					.maybeSingle();
+
+				if (
+					!slugLookupError &&
+					existingSlugRow &&
+					existingSlugRow.id !== editingId
+				) {
+					setError(
+						"That slug is already taken by another published article. Please choose a different slug.",
+					);
+					setPublishing(false);
+					setSavingDraft(false);
+					return;
+				}
+			} catch {
+				// If slug validation cannot reach the database, continue and let the real save decide.
+			}
 
 			// Build full article object
 			const updatedDispatch = {
@@ -427,14 +376,22 @@ function StudioForm() {
 				if (!dbErr) {
 					supabaseSuccess = true;
 				} else {
+					if (
+						dbErr.code === "23505" ||
+						/duplicate key|duplicate/i.test(dbErr.message || "")
+					) {
+						setError(
+							"That slug already exists in the database. Please choose a different slug.",
+						);
+						setPublishing(false);
+						setSavingDraft(false);
+						return;
+					}
 					console.warn("Supabase Save Warning:", dbErr.message);
 				}
-			} catch (cloudErr) {}
+			} catch {}
 
 			// 2. Always update/save in localStorage
-			const fallbackStore = JSON.parse(
-				localStorage.getItem("apex_articles_v1") || "[]",
-			);
 			const existingIndex = fallbackStore.findIndex(
 				(a) => a.id === currentId || a.slug === (editSlug || slug),
 			);
@@ -547,63 +504,6 @@ function StudioForm() {
 					</div>
 				</div>
 
-				{/* Starter Template Quick Triggers Deck (Hide if already editing an existing specific post) */}
-				{!editingId && (
-					<div className="mb-8 bg-gradient-to-r from-slate-900 to-indigo-950 p-6 rounded-3xl text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 text-left border border-slate-800">
-						<div className="flex items-center gap-3">
-							<span className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-lg shadow-inner">
-								✨
-							</span>
-							<div>
-								<div className="text-xs font-black uppercase text-indigo-300 tracking-wider">
-									Writer&apos;s Block Failsafe
-								</div>
-								<div className="text-sm font-extrabold text-slate-200">
-									Choose an instant story structure or start from scratch
-								</div>
-							</div>
-						</div>
-
-						<div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 w-full sm:w-auto justify-start sm:justify-end scrollbar-none">
-							<button
-								type="button"
-								onClick={() => loadTemplate("story")}
-								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5 flex-shrink-0"
-							>
-								<Feather className="w-3.5 h-3.5 text-pink-400" />
-								<span>Personal Story</span>
-							</button>
-
-							<button
-								type="button"
-								onClick={() => loadTemplate("philosophy")}
-								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5 flex-shrink-0"
-							>
-								<BookOpen className="w-3.5 h-3.5 text-amber-400" />
-								<span>Philosophy</span>
-							</button>
-
-							<button
-								type="button"
-								onClick={() => loadTemplate("travel")}
-								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5 flex-shrink-0"
-							>
-								<Compass className="w-3.5 h-3.5 text-emerald-400" />
-								<span>Travel Guide</span>
-							</button>
-
-							<button
-								type="button"
-								onClick={() => loadTemplate("tech")}
-								className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 transition cursor-pointer border border-white/5 flex-shrink-0"
-							>
-								<Cpu className="w-3.5 h-3.5 text-indigo-400" />
-								<span>Tech & Architecture</span>
-							</button>
-						</div>
-					</div>
-				)}
-
 				{error && (
 					<div className="mb-8 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400 text-xs font-bold flex items-center gap-3 text-left">
 						<AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -647,6 +547,46 @@ function StudioForm() {
 									>
 										{title.length} chars
 									</span>
+								</div>
+
+								<div className="mt-4 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-end">
+									<div>
+										<label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+											Custom Slug (Optional)
+										</label>
+										<input
+											type="text"
+											value={customSlug}
+											onChange={(e) => setCustomSlug(e.target.value)}
+											placeholder="Leave blank to auto-generate from the headline"
+											className="input font-mono text-sm py-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 dark:border-slate-700"
+										/>
+										<div className="flex flex-wrap items-center justify-between text-[11px] font-bold text-slate-400 mt-1.5 px-1 gap-2">
+											<span>
+												Preview: /blog/
+												{resolvedSlugPreview || "your-story-slug"}
+											</span>
+											<span
+												className={
+													customSlug.trim()
+														? "text-indigo-600 dark:text-indigo-400"
+														: "text-emerald-500"
+												}
+											>
+												{customSlug.trim()
+													? "Manual slug"
+													: "Auto from headline"}
+											</span>
+										</div>
+									</div>
+
+									<button
+										type="button"
+										onClick={() => setCustomSlug("")}
+										className="btn btn-secondary px-4 py-3 rounded-xl text-xs font-black whitespace-nowrap cursor-pointer"
+									>
+										Use Auto Slug
+									</button>
 								</div>
 							</div>
 
@@ -814,10 +754,7 @@ function StudioForm() {
 										</span>
 										<button
 											type="button"
-											onClick={() => {
-												setContent("");
-												setEditingId(null);
-											}}
+											onClick={resetComposer}
 											className="text-rose-500 hover:underline cursor-pointer"
 										>
 											Clear Canvas

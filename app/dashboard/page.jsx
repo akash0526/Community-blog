@@ -4,13 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import {
-	Eye,
-	Clock,
 	Trash2,
 	Edit3,
 	Bookmark,
 	Users,
-	Sparkles,
 	LayoutDashboard,
 	Rocket,
 	ArrowRight,
@@ -43,6 +40,7 @@ export default function AuthorDashboard() {
 
 			// 1. Identify active user session or demo identity
 			let activeUser = null;
+			let loadedArticles = [];
 			const {
 				data: { session },
 			} = await supabase.auth.getSession();
@@ -53,7 +51,7 @@ export default function AuthorDashboard() {
 				if (demo) {
 					try {
 						activeUser = JSON.parse(demo);
-					} catch (e) {}
+					} catch {}
 				}
 			}
 			setUser(activeUser);
@@ -92,7 +90,7 @@ export default function AuthorDashboard() {
 						initialProfile.avatarUrl =
 							profile.avatar_url || initialProfile.avatarUrl;
 					}
-				} catch (e) {}
+				} catch {}
 
 				setProfileForm(initialProfile);
 			}
@@ -113,13 +111,14 @@ export default function AuthorDashboard() {
 						.order("created_at", { ascending: false });
 
 					if (!supaErr && data && data.length > 0) {
+						loadedArticles = data;
 						setArticles(data);
 					}
-				} catch (cloudErr) {}
+				} catch {}
 			}
 
 			// Fallback local memory stories
-			if (articles.length === 0) {
+			if (loadedArticles.length === 0) {
 				try {
 					const local = localStorage.getItem("apex_articles_v1");
 					if (local) {
@@ -134,7 +133,7 @@ export default function AuthorDashboard() {
 								: parsed,
 						);
 					}
-				} catch (e) {}
+				} catch {}
 			}
 
 			// 3. Load Bookmarks Reading List
@@ -143,7 +142,7 @@ export default function AuthorDashboard() {
 					localStorage.getItem("apex_bookmarks_v1") || "[]",
 				);
 				setBookmarks(bms);
-			} catch (e) {}
+			} catch {}
 
 			// 4. Load Following Network
 			try {
@@ -151,13 +150,13 @@ export default function AuthorDashboard() {
 					localStorage.getItem("apex_following_v1") || "[]",
 				);
 				setFollowing(fols);
-			} catch (e) {}
+			} catch {}
 
 			setLoading(false);
 		};
 
 		fetchSessionAndVaults();
-	}, [articles.length]);
+	}, []);
 
 	const handleDeleteStory = async (articleId) => {
 		if (
@@ -170,7 +169,7 @@ export default function AuthorDashboard() {
 		// Mutate cloud DB
 		try {
 			await supabase.from("articles").delete().eq("id", articleId);
-		} catch (e) {}
+		} catch {}
 
 		// Mutate local storage
 		const updated = articles.filter((a) => a.id !== articleId);
@@ -182,7 +181,7 @@ export default function AuthorDashboard() {
 			);
 			const filtered = allLocal.filter((a) => a.id !== articleId);
 			localStorage.setItem("apex_articles_v1", JSON.stringify(filtered));
-		} catch (e) {}
+		} catch {}
 	};
 
 	const handleRemoveBookmark = (slug) => {
@@ -190,7 +189,7 @@ export default function AuthorDashboard() {
 		setBookmarks(updated);
 		try {
 			localStorage.setItem("apex_bookmarks_v1", JSON.stringify(updated));
-		} catch (e) {}
+		} catch {}
 	};
 
 	const handleUnfollow = (creatorName) => {
@@ -198,7 +197,7 @@ export default function AuthorDashboard() {
 		setFollowing(updated);
 		try {
 			localStorage.setItem("apex_following_v1", JSON.stringify(updated));
-		} catch (e) {}
+		} catch {}
 	};
 
 	const handleProfileChange = (field, value) => {

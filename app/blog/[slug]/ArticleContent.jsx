@@ -19,8 +19,6 @@ import DiscussionThread from "@/components/DiscussionThread";
 import { sanitizeCmsField } from "@/lib/seoUtils";
 
 export default function ArticleContent({ serverArticle, slug }) {
-
-export default function ArticleContent({ serverArticle, slug }) {
 	const [article, setArticle] = useState(serverArticle);
 	const [loading, setLoading] = useState(!serverArticle);
 

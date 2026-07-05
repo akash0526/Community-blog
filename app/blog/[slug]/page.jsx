@@ -1,13 +1,12 @@
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { getArticleBySlug } from "@/lib/articles";
-import { SITE_URL } from "@/lib/articles";
+import { getArticleBySlug, SITE_URL } from "@/lib/articles";
 import { sanitizeCmsField, detectLanguage } from "@/lib/seoUtils";
 import ArticleContent from "./ArticleContent";
 
 export const revalidate = 60; // Incremental Static Regeneration (ISR) every 60s
 
-// Pre-render known published articles at build time (static + ISR combo = fast + SEO-friendly)
+// Pre-render known published articles at build time
 export async function generateStaticParams() {
 	try {
 		const { data } = await supabase
@@ -26,19 +25,21 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }) {
 	const { slug } = await params;
 	const article = await getArticleBySlug(slug);
-	const canonicalUrl = `${SITE_URL}/blog/${encodeURIComponent(decodeURIComponent(slug).normalize("NFC"))}`;
 
+	// IF ARTICLE NOT FOUND: Return minimal metadata and NO canonical.
+	// Providing a canonical to a fake URL is a major SEO error.
 	if (!article) {
 		return {
-			title: "Story Not Found",
+			title: "Story Not Found | Apex Community",
 			description: "The requested article could not be found.",
-			alternates: { canonical: canonicalUrl },
 			robots: { index: false, follow: false },
+			// We explicitly omit 'alternates: { canonical: ... }' here
 		};
 	}
 
 	const cleanTitle = sanitizeCmsField(article.title);
 	const cleanDescription = sanitizeCmsField(article.meta_description);
+	const canonicalUrl = `${SITE_URL}/blog/${encodeURIComponent(decodeURIComponent(slug).normalize("NFC"))}`;
 	const authorName = article.profiles?.full_name || "Apex Community";
 
 	return {
@@ -84,8 +85,8 @@ export default async function StandardArticleProseView({ params }) {
 	const { slug } = await params;
 	const article = await getArticleBySlug(slug);
 
-	// CRITICAL SEO FIX: Force a real 404 status code if article is missing.
-	// This prevents "Soft 404s" which hurt Google indexing.
+	// CRITICAL FIX: This MUST be the first thing that happens.
+	// If no article is found, Next.js will immediately return a 404 status code.
 	if (!article) {
 		notFound();
 	}
@@ -107,7 +108,7 @@ export default async function StandardArticleProseView({ params }) {
 		}
 	}
 
-	// Article structured data (JSON-LD) — drives rich results in Google.
+	// Article structured data (JSON-LD)
 	const cleanTitle = sanitizeCmsField(article.title);
 	const cleanDescription = sanitizeCmsField(article.meta_description);
 	const lang = detectLanguage(article.content || article.title);

@@ -61,7 +61,6 @@ community-platform/
 │   ├── AuthModal.jsx         # Supabase Auth Login/Signup + One-click demo failsafe
 │   └── Navbar.jsx            # Sticky responsive top navigation deck
 ├── lib/
-│   ├── seedData.js           # Fallback engineering dispatches for robust testing
 │   ├── seoEngine.js          # The 100-point real-time algorithmic evaluator
 │   └── supabase.js           # Supabase REST cloud helper
 ├── supabase_schema.sql       # Master PostgreSQL production schema & RLS policies
@@ -73,4 +72,4 @@ community-platform/
 ## 🛡️ Cyber-Security Failsafes Enabled
 * **Row Level Security (RLS):** Authenticated users can only publish under their own verified Supabase `auth.uid()`.
 * **Sanitization:** All raw Markdown submitted in the Writer Studio is scrubbed using `isomorphic-dompurify` before reaching your PostgreSQL tables to block Cross-Site Scripting (XSS).
-* **Graceful Cloud Failovers:** If Supabase is unreachable or missing keys, the application seamlessly auto-injects pristine persistent workspace memory structures (`lib/seedData.js`) so that local testing always works beautifully out of the box!
+* **Graceful Empty-State UX:** If there are no published articles yet, the homepage and feed now render clean empty states instead of showing seeded demo blogs.

@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
-import { fallbackArticles } from "@/lib/seedData";
 import { getAllPublishedArticles } from "@/lib/articles";
 import { Eye, Clock, Sparkles, Flame, Award } from "lucide-react";
 import CommunityFeed from "@/components/CommunityFeed";
@@ -8,12 +6,9 @@ import CommunityFeed from "@/components/CommunityFeed";
 export const revalidate = 10; // Incremental Static Regeneration (ISR) every 10 seconds
 
 export default async function HomepageExplore() {
-	// Fetch canonical live dispatches via centralized helper (Supabase + seed fallback)
 	const articles = await getAllPublishedArticles();
-
-	// Identify featured leader piece
-	const featuredLeader = articles[0] || fallbackArticles[0];
-	const regularLedger = articles.slice(1);
+	const featuredLeader = articles[0] || null;
+	const regularLedger = featuredLeader ? articles.slice(1) : [];
 
 	return (
 		<main className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-8 transition text-left">
@@ -66,91 +61,124 @@ export default async function HomepageExplore() {
 					</div>
 				</div>
 
-				{/* Featured Leader Card */}
-				<div id="community-feed" className="mb-14">
-					<div className="flex items-center justify-between mb-6">
-						<h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
-							<Flame className="w-7 h-7 text-amber-500 fill-amber-500/20" />
-							<span>Top Featured Spotlight Dispatch</span>
-						</h2>
-						<span className="bg-indigo-50 dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 font-extrabold text-xs px-3 py-1.5 rounded-xl border border-indigo-100 dark:border-slate-800">
-							Community Dominance
-						</span>
-					</div>
-
-					<Link
-						href={`/blog/${featuredLeader.slug}`}
-						className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-2xl transition hover:shadow-indigo-500/10 group flex flex-col lg:flex-row text-left"
-					>
-						{/* Featured Media */}
-						<div
-							className="lg:w-1/2 h-72 lg:h-auto bg-cover bg-center relative overflow-hidden flex-shrink-0"
-							style={{ backgroundImage: `url('${featuredLeader.image_url}')` }}
-						>
-							<div className="absolute top-4 left-4 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-widest shadow-sm">
-								{featuredLeader.category}
-							</div>
-							<div className="absolute bottom-4 left-4 bg-slate-950/90 text-white backdrop-blur-md px-4 py-2 rounded-2xl text-xs font-black flex items-center gap-2 border border-slate-800">
-								<Award className="w-4 h-4 text-emerald-400" />
-								<span>
-									⚡ {featuredLeader.seo_score}/100 AI Readability Score
+				{featuredLeader ? (
+					<>
+						{/* Featured Leader Card */}
+						<div id="community-feed" className="mb-14">
+							<div className="flex items-center justify-between mb-6">
+								<h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
+									<Flame className="w-7 h-7 text-amber-500 fill-amber-500/20" />
+									<span>Top Featured Spotlight Dispatch</span>
+								</h2>
+								<span className="bg-indigo-50 dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 font-extrabold text-xs px-3 py-1.5 rounded-xl border border-indigo-100 dark:border-slate-800">
+									Community Dominance
 								</span>
 							</div>
-						</div>
 
-						{/* Featured Prose */}
-						<div className="lg:w-1/2 p-5 sm:p-12 flex flex-col justify-between">
-							<div>
-								<div className="flex items-center gap-2.5 sm:gap-3 text-xs font-bold text-slate-500 dark:text-slate-400 mb-4">
-									<Clock className="w-4 h-4" />
-									<span>{featuredLeader.published_at}</span>
-									<span>•</span>
-									<span className="text-indigo-600 dark:text-indigo-400 font-extrabold flex items-center gap-1">
-										<Eye className="w-4 h-4" />{" "}
-										{(featuredLeader.pageviews || 1).toLocaleString()} Genuine
-										Hits
-									</span>
-								</div>
-
-								<h3 className="text-xl sm:text-4xl font-black text-slate-900 dark:text-white leading-tight mb-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
-									{featuredLeader.title}
-								</h3>
-
-								<p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base line-clamp-3 mb-6 sm:mb-8 leading-relaxed font-normal">
-									{featuredLeader.meta_description}
-								</p>
-							</div>
-
-							{/* Author Bar */}
-							<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
-								<div className="flex items-center gap-3">
-									<img
-										src={
-											featuredLeader.profiles?.avatar_url ||
-											"https://avatars.githubusercontent.com/akash0526"
-										}
-										alt="Author"
-										className="w-11 h-11 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700"
-									/>
-									<div>
-										<div className="text-sm font-black text-slate-900 dark:text-white">
-											{featuredLeader.profiles?.full_name || "Akash"}
-										</div>
-										<div className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
-											{featuredLeader.profiles?.professional_role || "Creator"}
-										</div>
+							<Link
+								href={`/blog/${featuredLeader.slug}`}
+								className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-2xl transition hover:shadow-indigo-500/10 group flex flex-col lg:flex-row text-left"
+							>
+								{/* Featured Media */}
+								<div
+									className="lg:w-1/2 h-72 lg:h-auto bg-cover bg-center relative overflow-hidden flex-shrink-0"
+									style={{
+										backgroundImage: `url('${featuredLeader.image_url}')`,
+									}}
+								>
+									<div className="absolute top-4 left-4 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-widest shadow-sm">
+										{featuredLeader.category}
+									</div>
+									<div className="absolute bottom-4 left-4 bg-slate-950/90 text-white backdrop-blur-md px-4 py-2 rounded-2xl text-xs font-black flex items-center gap-2 border border-slate-800">
+										<Award className="w-4 h-4 text-emerald-400" />
+										<span>
+											⚡ {featuredLeader.seo_score}/100 AI Readability Score
+										</span>
 									</div>
 								</div>
-								<span className="text-sm font-black text-indigo-600 dark:text-indigo-400 group-hover:translate-x-1.5 transition flex items-center gap-1 whitespace-nowrap self-end sm:self-auto">
-									Read Full Story &rarr;
-								</span>
-							</div>
-						</div>
-					</Link>
-				</div>
 
-				{/* Interactive Multi-Category Community Feed Deck */}
-				<CommunityFeed initialArticles={regularLedger} />
+								{/* Featured Prose */}
+								<div className="lg:w-1/2 p-5 sm:p-12 flex flex-col justify-between">
+									<div>
+										<div className="flex items-center gap-2.5 sm:gap-3 text-xs font-bold text-slate-500 dark:text-slate-400 mb-4">
+											<Clock className="w-4 h-4" />
+											<span>{featuredLeader.published_at}</span>
+											<span>•</span>
+											<span className="text-indigo-600 dark:text-indigo-400 font-extrabold flex items-center gap-1">
+												<Eye className="w-4 h-4" />{" "}
+												{(featuredLeader.pageviews || 1).toLocaleString()}{" "}
+												Genuine Hits
+											</span>
+										</div>
+
+										<h3 className="text-xl sm:text-4xl font-black text-slate-900 dark:text-white leading-tight mb-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
+											{featuredLeader.title}
+										</h3>
+
+										<p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base line-clamp-3 mb-6 sm:mb-8 leading-relaxed font-normal">
+											{featuredLeader.meta_description}
+										</p>
+									</div>
+
+									{/* Author Bar */}
+									<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
+										<div className="flex items-center gap-3">
+											<img
+												src={
+													featuredLeader.profiles?.avatar_url ||
+													"https://avatars.githubusercontent.com/akash0526"
+												}
+												alt="Author"
+												className="w-11 h-11 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700"
+											/>
+											<div>
+												<div className="text-sm font-black text-slate-900 dark:text-white">
+													{featuredLeader.profiles?.full_name || "Akash"}
+												</div>
+												<div className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+													{featuredLeader.profiles?.professional_role ||
+														"Creator"}
+												</div>
+											</div>
+										</div>
+										<span className="text-sm font-black text-indigo-600 dark:text-indigo-400 group-hover:translate-x-1.5 transition flex items-center gap-1 whitespace-nowrap self-end sm:self-auto">
+											Read Full Story &rarr;
+										</span>
+									</div>
+								</div>
+							</Link>
+						</div>
+
+						{/* Interactive Multi-Category Community Feed Deck */}
+						<CommunityFeed initialArticles={regularLedger} />
+					</>
+				) : (
+					<div className="space-y-8">
+						<div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-12 shadow-sm text-left">
+							<div className="inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 px-4 py-2 rounded-full text-xs font-black mb-5 border border-indigo-100 dark:border-indigo-900/60">
+								<span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+								No published articles yet
+							</div>
+							<h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white mb-4">
+								Be the first to publish on the community blog
+							</h2>
+							<p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl mb-8">
+								Seed demo blogs have been removed, so the feed now shows only
+								real published content from your database. Create the first
+								article to populate the homepage.
+							</p>
+							<Link
+								href="/studio"
+								className="btn btn-primary px-7 py-3.5 rounded-2xl font-black text-sm shadow-xl shadow-indigo-600/30 inline-flex items-center gap-2"
+							>
+								<Sparkles className="w-4 h-4" />
+								Create the first story
+							</Link>
+						</div>
+
+						<CommunityFeed initialArticles={[]} />
+					</div>
+				)}
 			</div>
 		</main>
 	);

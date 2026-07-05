@@ -16,6 +16,9 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import DiscussionThread from "@/components/DiscussionThread";
+import { sanitizeCmsField } from "@/lib/seoUtils";
+
+export default function ArticleContent({ serverArticle, slug }) {
 
 export default function ArticleContent({ serverArticle, slug }) {
 	const [article, setArticle] = useState(serverArticle);
@@ -208,6 +211,8 @@ export default function ArticleContent({ serverArticle, slug }) {
 		);
 	}
 
+	const cleanTitle = sanitizeCmsField(article.title);
+	const cleanDescription = sanitizeCmsField(article.meta_description);
 	const isLocalArticle = article.id?.startsWith("post-");
 
 	// Custom Eye-Catching ReactMarkdown Renderers
@@ -405,12 +410,12 @@ export default function ArticleContent({ serverArticle, slug }) {
 
 						{/* Headline Title */}
 						<h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-white leading-tight sm:leading-none mb-8 tracking-tight break-words">
-							{article.title}
+							{cleanTitle}
 						</h1>
 
 						{/* Summary description subtitle */}
 						<p className="text-slate-300 text-base sm:text-xl max-w-3xl leading-relaxed font-normal mb-0 border-l-2 border-indigo-500 pl-4 py-1">
-							{article.meta_description}
+							{cleanDescription}
 						</p>
 					</div>
 				</div>
@@ -420,7 +425,7 @@ export default function ArticleContent({ serverArticle, slug }) {
 					<div className="my-10 relative rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 group flex-shrink-0 bg-slate-900">
 						<img
 							src={article.image_url}
-							alt={article.title}
+							alt={cleanTitle}
 							className="w-full h-72 sm:h-[520px] object-cover transition transform group-hover:scale-105 duration-700 flex-shrink-0"
 						/>
 						<div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end justify-between p-6 sm:p-8 flex-wrap gap-4">

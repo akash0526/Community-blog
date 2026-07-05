@@ -33,6 +33,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		for (const row of slugs) {
 			if (!row?.slug) continue;
 
+			// Filter out CMS leak slugs (e.g., those containing "-slug-")
+			if (String(row.slug).toLowerCase().includes("-slug-")) {
+				console.warn(`Excluding leaked slug from sitemap: ${row.slug}`);
+				continue;
+			}
+
 			const normalizedSlug = String(row.slug).normalize("NFC");
 
 			urls.push({

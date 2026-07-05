@@ -84,15 +84,14 @@ export default async function StandardArticleProseView({ params }) {
 	const { slug } = await params;
 	const article = await getArticleBySlug(slug);
 
+	// CRITICAL SEO FIX: Force a real 404 status code if article is missing.
+	// This prevents "Soft 404s" which hurt Google indexing.
 	if (!article) {
 		notFound();
 	}
 
 	// Bump pageviews asynchronously (fire-and-forget). Only for real DB rows.
-	if (
-		!article.id?.startsWith("seed-") &&
-		!article.id?.startsWith("post-")
-	) {
+	if (!article.id?.startsWith("seed-") && !article.id?.startsWith("post-")) {
 		try {
 			const { error: rpcErr } = await supabase.rpc("increment_pageview", {
 				article_id: article.id,

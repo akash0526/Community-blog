@@ -34,7 +34,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 							professional_role: profession || "Community Creator",
 							bio:
 								bio || "Writing and sharing stories with the open community.",
-							avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${fullName || email}`,
+							avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName || email.split("@")[0])}&background=4f46e5&color=fff`,
 						},
 					},
 				});

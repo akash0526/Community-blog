@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Geist_Mono, Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
+import CookieConsent from "@/components/CookieConsent";
 import { SITE_URL } from "@/lib/articles";
 import "./globals.css";
 
@@ -15,31 +16,34 @@ const geistMono = Geist_Mono({
 	subsets: ["latin"],
 });
 
-const siteName = "Apex Community Platform";
+const siteName = "Apex";
+const siteTagline = "Open stories from around the world";
 const description =
-	"Apex Community is an open publishing platform where creators share personal stories, technical guides, startup lessons, and culture writing with a global audience. Write, publish, and reach the world.";
+	"Apex is an open global publishing platform where independent writers share tested, cited stories. Personal essays, tech guides, Qatar expat resources, and cultural reporting – by real authors.";
 const keywords = [
-	"community blog",
+	"apex",
+	"global blog",
+	"community publishing",
 	"write articles online",
-	"developer blogging platform",
-	"publish stories",
-	"open community publishing",
-	"multi-author blog",
+	"qatar expat guide",
 	"tech articles",
 	"personal stories",
+	"remittance guides",
+	"doha",
+	"nepal community",
 ];
 
 export const metadata: Metadata = {
 	metadataBase: new URL(SITE_URL),
 	title: {
-		default: `${siteName} — Write & Share Stories With the World`,
+		default: `${siteName} — ${siteTagline}`,
 		template: `%s | ${siteName}`,
 	},
 	description,
 	applicationName: siteName,
 	keywords,
-	authors: [{ name: "Apex Community" }],
-	creator: "Apex Community",
+	authors: [{ name: "Apex Editorial", url: SITE_URL }],
+	creator: "Apex",
 	publisher: siteName,
 	category: "technology",
 	alternates: {
@@ -54,7 +58,7 @@ export const metadata: Metadata = {
 		locale: "en_US",
 		url: SITE_URL,
 		siteName,
-		title: `${siteName} — Write & Share Stories With the World`,
+		title: `${siteName} — ${siteTagline}`,
 		description,
 		images: [
 			{
@@ -67,7 +71,7 @@ export const metadata: Metadata = {
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: `${siteName} — Write & Share Stories With the World`,
+		title: `${siteName} — ${siteTagline}`,
 		description,
 		images: ["/opengraph-image"],
 	},
@@ -105,18 +109,41 @@ export default function RootLayout({
 	const websiteSchema = {
 		"@context": "https://schema.org",
 		"@type": "WebSite",
-		name: siteName,
-		url: SITE_URL,
+		"name": siteName,
+		"alternateName": ["Apex Community", "Apex Blog"],
+		"url": SITE_URL,
 		description,
-		inLanguage: "en",
+		"inLanguage": ["en", "ne"],
+		"potentialAction": {
+			"@type": "SearchAction",
+			"target": `${SITE_URL}/?q={search_term_string}`,
+			"query-input": "required name=search_term_string"
+		},
+		"publisher": {
+			"@type": "Organization",
+			"name": siteName,
+			"logo": {
+				"@type": "ImageObject",
+				"url": `${SITE_URL}/icon.svg`
+			}
+		}
 	};
 	const orgSchema = {
 		"@context": "https://schema.org",
 		"@type": "Organization",
-		name: siteName,
-		url: SITE_URL,
-		logo: `${SITE_URL}/icon.svg`,
-		sameAs: [],
+		"name": siteName,
+		"url": SITE_URL,
+		"logo": `${SITE_URL}/icon.svg`,
+		"sameAs": [
+			"https://github.com/akash0526"
+		],
+		"foundingDate": "2025-11-01",
+		"founders": [{
+			"@type": "Person",
+			"name": "Akash Adhikari",
+			"url": `${SITE_URL}/authors/akash-adhikari`
+		}],
+		"description": description,
 	};
 
 	return (
@@ -139,28 +166,59 @@ export default function RootLayout({
 
 				<div className="flex-1 flex flex-col">{children}</div>
 
-				{/* Universal Community Footer */}
+				<CookieConsent />
+
+				{/* Trust Footer */}
 				<footer className="bg-slate-950 text-slate-300 py-16 border-t border-slate-800 mt-auto transition">
-					<div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 text-left">
-						<div className="flex items-center gap-3 text-white font-black text-xl">
-							<img
-								src="/apex-community-logo.svg"
-								alt="Apex Community logo"
-								className="w-44 sm:w-56 h-auto max-h-12 object-contain brightness-0 invert"
-							/>
+					<div className="max-w-7xl mx-auto px-6">
+						<div className="grid gap-10 md:grid-cols-4 text-left text-sm mb-12">
+							<div className="md:col-span-2">
+								<div className="flex items-center gap-3 text-white font-black text-xl mb-4">
+									<img
+										src="/apex-community-logo.svg"
+										alt="Apex logo"
+										className="w-36 sm:w-44 h-auto max-h-10 object-contain brightness-0 invert"
+									/>
+									<span className="text-lg">Apex</span>
+								</div>
+								<p className="text-slate-400 max-w-md leading-relaxed">
+									Apex is an open global publishing platform where independent writers share tested, cited stories.
+								</p>
+								<p className="text-xs text-slate-500 mt-3">Editorial base: Doha, Qatar • Founded Nov 2025</p>
+							</div>
+
+							<div>
+								<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Platform</div>
+								<ul className="space-y-2 font-bold">
+									<li><Link href="/about" className="hover:text-white transition">About</Link></li>
+									<li><Link href="/contact" className="hover:text-white transition">Contact</Link></li>
+									<li><Link href="/editorial" className="hover:text-white transition">Editorial Policy</Link></li>
+									<li><Link href="/corrections" className="hover:text-white transition">Corrections</Link></li>
+									<li><Link href="/studio" className="hover:text-white transition">Write a story</Link></li>
+								</ul>
+							</div>
+
+							<div>
+								<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Legal</div>
+								<ul className="space-y-2 font-bold">
+									<li><Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
+									<li><Link href="/terms" className="hover:text-white transition">Terms of Service</Link></li>
+									<li><Link href="/disclaimer" className="hover:text-white transition">Disclaimer</Link></li>
+									<li><a href="mailto:editor@apex-nepal.com" className="hover:text-white transition">editor@apex-nepal.com</a></li>
+								</ul>
+							</div>
 						</div>
 
-						<div className="flex flex-wrap items-center gap-8 text-sm font-extrabold text-slate-300">
-							<Link href="/" className="hover:text-white transition">
-								Explore Ledger
-							</Link>
-							<Link href="/studio" className="hover:text-white transition">
-								Author Studio
-							</Link>
-						</div>
-
-						<div className="text-xs text-slate-500 font-extrabold">
-							© 2026 Open Community Platform. Built with Next.js & Supabase.
+						<div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+							<div className="font-bold">
+								© 2026 Apex. All rights reserved. • <span className="text-slate-400">Open stories from around the world.</span>
+							</div>
+							<div className="flex items-center gap-5 font-bold">
+								<Link href="/" className="hover:text-slate-300">Home</Link>
+								<Link href="/about" className="hover:text-slate-300">About</Link>
+								<Link href="/contact" className="hover:text-slate-300">Contact</Link>
+								<a href="https://github.com/akash0526/Community-blog" target="_blank" rel="noopener" className="hover:text-slate-300">GitHub</a>
+							</div>
 						</div>
 					</div>
 				</footer>

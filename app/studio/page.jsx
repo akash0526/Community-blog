@@ -164,7 +164,7 @@ function StudioForm() {
 							full_name: "Community Storyteller",
 							professional_role: "Community Creator",
 							bio: "Writing and sharing stories with the open community.",
-							avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=Story",
+							avatar_url: "https://ui-avatars.com/api/?name=Story&background=4f46e5&color=fff",
 						},
 					};
 					setUser(autoDemo);
@@ -229,7 +229,7 @@ function StudioForm() {
 		if (targetStatus === "published" && audit.totalScore < 80) {
 			if (
 				!confirm(
-					`⚠️ Your story currently has an AI Readability & Reach Score of ${audit.totalScore}/100.\n\nAre you sure you want to drop it live right now?\n\n(Note: We always celebrate authentic human storytelling and premium substance over rigid AI reach guidelines! Click OK to drop live.)`,
+					`⚠️ Your story currently has an Readability score of ${audit.totalScore}/100.\n\nAre you sure you want to drop it live right now?\n\n(Note: We always celebrate authentic human storytelling and premium substance over rigid AI reach guidelines! Click OK to drop live.)`,
 				)
 			) {
 				return;
@@ -246,7 +246,7 @@ function StudioForm() {
 				user?.user_metadata?.full_name || "Community Storyteller";
 			const activeAuthorAvatar =
 				user?.user_metadata?.avatar_url ||
-				"https://api.dicebear.com/7.x/bottts/svg?seed=Comm";
+				"https://ui-avatars.com/api/?name=Comm&background=4f46e5&color=fff";
 			const activeAuthorRole =
 				user?.user_metadata?.professional_role ||
 				user?.user_metadata?.profession ||
@@ -440,7 +440,7 @@ function StudioForm() {
 							<span className="text-xs font-black uppercase text-slate-400 tracking-wider">
 								{editingId
 									? "Mode: Resuming Live Editing"
-									: "Universal Writing Studio & Reach Engine"}
+									: "Universal Writing Studio & Publishing Tools"}
 							</span>
 						</div>
 						<h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1">
@@ -778,7 +778,7 @@ function StudioForm() {
 								{/* Meter Head */}
 								<div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
 									<span className="text-xs font-black uppercase tracking-widest text-slate-400">
-										Reach Assistant
+										Editor Assistant
 									</span>
 									<span
 										className={`text-xs font-black px-3 py-1 rounded-full uppercase flex items-center gap-1 shadow ${

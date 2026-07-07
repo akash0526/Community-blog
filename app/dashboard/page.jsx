@@ -70,8 +70,10 @@ export default function AuthorDashboard() {
 						activeUser.user_metadata?.bio ||
 						"Writing and sharing stories with the open community.",
 					avatarUrl:
-						activeUser.user_metadata?.avatar_url ||
-						`https://api.dicebear.com/7.x/bottts/svg?seed=${activeUser.id || activeUser.email}`,
+						activeUser.user_metadata?.avatar_url &&
+						!activeUser.user_metadata.avatar_url.includes("dicebear")
+							? activeUser.user_metadata.avatar_url
+							: `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUser.user_metadata?.full_name || activeUser.email?.split("@")[0] || "Apex")}&background=4f46e5&color=fff`,
 				};
 
 				try {
@@ -220,7 +222,7 @@ export default function AuthorDashboard() {
 				"Writing and sharing stories with the open community.",
 			avatarUrl:
 				profileForm.avatarUrl.trim() ||
-				`https://api.dicebear.com/7.x/bottts/svg?seed=${user.id || user.email}`,
+				`https://ui-avatars.com/api/?name=${encodeURIComponent(profileForm.fullName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Apex")}&background=4f46e5&color=fff`,
 		};
 
 		const updatedMetadata = {
@@ -687,7 +689,7 @@ export default function AuthorDashboard() {
 										>
 											<div className="flex items-center gap-3.5 min-w-0">
 												<img
-													src={`https://api.dicebear.com/7.x/bottts/svg?seed=${creator}`}
+													src={`https://ui-avatars.com/api/?name=${encodeURIComponent(creator)}&background=4f46e5&color=fff`}
 													alt="Creator"
 													className="w-12 h-12 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700 flex-shrink-0"
 												/>
@@ -750,7 +752,7 @@ export default function AuthorDashboard() {
 										<img
 											src={
 												profileForm.avatarUrl ||
-												`https://api.dicebear.com/7.x/bottts/svg?seed=${user.id}`
+												`https://ui-avatars.com/api/?name=${encodeURIComponent(profileForm.fullName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Apex")}&background=4f46e5&color=fff&size=256`
 											}
 											alt="Profile avatar preview"
 											className="w-28 h-28 rounded-3xl object-cover border-4 border-white dark:border-slate-900 shadow-xl mx-auto mb-4"

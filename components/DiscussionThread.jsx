@@ -54,7 +54,9 @@ export default function DiscussionThread({ articleSlug }) {
 				const local = JSON.parse(
 					localStorage.getItem("apex_comments_v1") || "[]",
 				);
-				const matchingLocal = local.filter((c) => c.article_slug === articleSlug);
+				const matchingLocal = local.filter(
+					(c) => c.article_slug === articleSlug,
+				);
 
 				// Merge unique
 				const existingIds = new Set(fetched.map((c) => c.id));
@@ -77,8 +79,10 @@ export default function DiscussionThread({ articleSlug }) {
 
 		const activeName = authorName.trim() || "Community Storyteller";
 		const activeAvatar =
-			user?.user_metadata?.avatar_url ||
-			"https://api.dicebear.com/7.x/bottts/svg?seed=" + activeName;
+			user?.user_metadata?.avatar_url &&
+			!user.user_metadata.avatar_url.includes("dicebear")
+				? user.user_metadata.avatar_url
+				: `https://ui-avatars.com/api/?name=${encodeURIComponent(activeName)}&background=4f46e5&color=fff`;
 		const activeRole =
 			user?.user_metadata?.professional_role || "Community Reader";
 
@@ -166,7 +170,8 @@ export default function DiscussionThread({ articleSlug }) {
 					</h3>
 				</div>
 				<span className="bg-slate-100 dark:bg-slate-800 px-3.5 py-1.5 rounded-full text-xs font-black text-slate-600 dark:text-slate-300">
-					{comments.length} {comments.length === 1 ? "Contribution" : "Contributions"}
+					{comments.length}{" "}
+					{comments.length === 1 ? "Contribution" : "Contributions"}
 				</span>
 			</div>
 
@@ -201,18 +206,21 @@ export default function DiscussionThread({ articleSlug }) {
 
 				<div className="flex items-center justify-between gap-3 pt-2">
 					<div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-						{["🔥 Flawless", "👏 Spectacular", "💡 Brilliant idea", "🚀 Launch it"].map(
-							(emoji) => (
-								<button
-									key={emoji}
-									type="button"
-									onClick={() => setContent((prev) => prev + " " + emoji)}
-									className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950 dark:hover:text-indigo-400 transition whitespace-nowrap cursor-pointer flex-shrink-0"
-								>
-									{emoji}
-								</button>
-							),
-						)}
+						{[
+							"🔥 Flawless",
+							"👏 Spectacular",
+							"💡 Brilliant idea",
+							"🚀 Launch it",
+						].map((emoji) => (
+							<button
+								key={emoji}
+								type="button"
+								onClick={() => setContent((prev) => prev + " " + emoji)}
+								className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950 dark:hover:text-indigo-400 transition whitespace-nowrap cursor-pointer flex-shrink-0"
+							>
+								{emoji}
+							</button>
+						))}
 					</div>
 
 					<button
@@ -240,7 +248,8 @@ export default function DiscussionThread({ articleSlug }) {
 						Start the open conversation
 					</h4>
 					<p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-						Be the first community member to drop a perspective, reflection, or question on this piece!
+						Be the first community member to drop a perspective, reflection, or
+						question on this piece!
 					</p>
 				</div>
 			) : (
@@ -256,8 +265,10 @@ export default function DiscussionThread({ articleSlug }) {
 									<div className="flex items-center gap-3">
 										<img
 											src={
-												comm.author_avatar ||
-												"https://api.dicebear.com/7.x/bottts/svg?seed=" + comm.id
+												comm.author_avatar &&
+												!comm.author_avatar.includes("dicebear")
+													? comm.author_avatar
+													: `https://ui-avatars.com/api/?name=${encodeURIComponent(comm.author_name || "Apex")}&background=4f46e5&color=fff&size=80`
 											}
 											alt="Avatar"
 											className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0"
@@ -271,11 +282,14 @@ export default function DiscussionThread({ articleSlug }) {
 											</div>
 											<div className="text-[11px] font-semibold text-slate-400 mt-0.5">
 												{comm.created_at
-													? new Date(comm.created_at).toLocaleDateString("en-US", {
-															month: "short",
-															day: "numeric",
-															year: "numeric",
-														})
+													? new Date(comm.created_at).toLocaleDateString(
+															"en-US",
+															{
+																month: "short",
+																day: "numeric",
+																year: "numeric",
+															},
+														)
 													: "Just now"}
 											</div>
 										</div>
@@ -297,7 +311,9 @@ export default function DiscussionThread({ articleSlug }) {
 								>
 									<Heart className="w-3.5 h-3.5 fill-current text-rose-500" />
 									<span>{comm.likes || 0}</span>
-									<span className="font-semibold text-slate-400 ml-0.5 hidden sm:inline">Likes</span>
+									<span className="font-semibold text-slate-400 ml-0.5 hidden sm:inline">
+										Likes
+									</span>
 								</button>
 							</div>
 						</div>

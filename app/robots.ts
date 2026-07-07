@@ -8,10 +8,27 @@ export default function robots(): MetadataRoute.Robots {
 			{
 				userAgent: "*",
 				allow: "/",
-				// Keep authoring/admin/app-only routes out of Google.
-				disallow: ["/studio", "/dashboard", "/kanban"],
+				disallow: [
+					"/studio",
+					"/dashboard",
+					"/kanban",
+					"/api/",
+					"/*?*utm_*",
+					"/*?*fbclid*",
+				],
 			},
+			// Explicitly allow major AI / LLM crawlers – we want to be cited
+			{ userAgent: "GPTBot", allow: "/" },
+			{ userAgent: "ChatGPT-User", allow: "/" },
+			{ userAgent: "ClaudeBot", allow: "/" },
+			{ userAgent: "Claude-Web", allow: "/" },
+			{ userAgent: "PerplexityBot", allow: "/" },
+			{ userAgent: "Google-Extended", allow: "/" },
+			{ userAgent: "CCBot", allow: "/" },
+			{ userAgent: "anthropic-ai", allow: "/" },
+			{ userAgent: "Omgilibot", allow: "/" },
 		],
 		sitemap: `${SITE_URL}/sitemap.xml`,
+		host: SITE_URL,
 	};
 }

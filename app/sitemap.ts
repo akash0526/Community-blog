@@ -18,14 +18,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
 	// Only include public, indexable pages here.
 	// Do NOT include /studio, /dashboard, /kanban, drafts, or private pages.
-	const urls: MetadataRoute.Sitemap = [
-		{
-			url: SITE_URL,
-			lastModified: now,
-			changeFrequency: "daily",
-			priority: 1,
-		},
+	// Static trust & core pages – critical for E-E-A-T
+	const staticPages = [
+		{ path: "", changeFrequency: "daily" as const, priority: 1 },
+		{ path: "/about", changeFrequency: "monthly" as const, priority: 0.8 },
+		{ path: "/contact", changeFrequency: "monthly" as const, priority: 0.7 },
+		{ path: "/editorial", changeFrequency: "monthly" as const, priority: 0.7 },
+		{ path: "/privacy", changeFrequency: "yearly" as const, priority: 0.5 },
+		{ path: "/terms", changeFrequency: "yearly" as const, priority: 0.5 },
+		{ path: "/disclaimer", changeFrequency: "yearly" as const, priority: 0.5 },
+		{ path: "/corrections", changeFrequency: "weekly" as const, priority: 0.6 },
+		{ path: "/authors", changeFrequency: "weekly" as const, priority: 0.7 },
 	];
+
+	const urls: MetadataRoute.Sitemap = staticPages.map(p => ({
+		url: `${SITE_URL}${p.path}`,
+		lastModified: now,
+		changeFrequency: p.changeFrequency,
+		priority: p.priority,
+	}));
 
 	try {
 		const slugs = await getAllPublishedSlugs();

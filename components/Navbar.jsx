@@ -98,11 +98,11 @@ export default function Navbar() {
 					<Link
 						href="/"
 						className="flex items-center gap-2 sm:gap-3 font-black text-slate-900 dark:text-white group min-w-0"
-						aria-label="Apex Community home"
+						aria-label="Apex home"
 					>
 						<img
 							src="/apex-community-logo.svg"
-							alt="Apex Community logo"
+							alt="Apex logo"
 							className="w-36 sm:w-52 md:w-56 h-auto max-h-12 object-contain dark:brightness-0 dark:invert group-hover:scale-[1.02] transition transform flex-shrink-0"
 						/>
 					</Link>
@@ -113,13 +113,13 @@ export default function Navbar() {
 							href="/"
 							className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}
 						>
-							Explore Feed
+							Stories
 						</Link>
 					</nav>
 
 					{/* Actions */}
 					<div className="flex items-center gap-3">
-						{/* Write Dispatch CTA */}
+						{/* Write CTA */}
 						<button
 							onClick={() => {
 								if (user) window.location.href = "/studio";
@@ -128,7 +128,7 @@ export default function Navbar() {
 							className="btn btn-primary px-4 py-2.5 rounded-xl font-black text-xs shadow-md shadow-indigo-600/25 flex items-center gap-1.5 transform hover:-translate-y-0.5 transition"
 						>
 							<Edit3 className="w-4 h-4" />
-							<span className="hidden sm:inline">Write Dispatch</span>
+							<span className="hidden sm:inline">Write</span>
 						</button>
 
 						{/* User Zone / Login Triggers */}
@@ -138,14 +138,18 @@ export default function Navbar() {
 									onClick={() => setDropdownOpen(!dropdownOpen)}
 									className="flex items-center gap-2 pl-2 pr-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition cursor-pointer"
 								>
-									<img
-										src={
-											user?.user_metadata?.avatar_url ||
-											"https://api.dicebear.com/7.x/bottts/svg?seed=Arch"
-										}
-										alt="Avatar"
-										className="w-7 h-7 rounded-full object-cover border border-white dark:border-slate-700 flex-shrink-0"
-									/>
+								<img
+									src={
+										user?.user_metadata?.avatar_url &&
+										!user.user_metadata.avatar_url.includes('dicebear')
+											? user.user_metadata.avatar_url
+											: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+													user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Apex'
+											  )}&background=4f46e5&color=fff&size=64`
+									}
+									alt="Avatar"
+									className="w-7 h-7 rounded-full object-cover border border-white dark:border-slate-700 flex-shrink-0"
+								/>
 									<span className="text-xs font-black text-slate-900 dark:text-white truncate max-w-[100px] sm:max-w-[140px]">
 										{user?.user_metadata?.full_name || "Architect"}
 									</span>
@@ -226,7 +230,7 @@ export default function Navbar() {
 							onClick={() => setMobileMenuOpen(false)}
 							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
 						>
-							Explore Feed
+							Stories
 						</Link>
 						<Link
 							href="/studio"

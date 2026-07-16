@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Share2, Bookmark, Check } from "lucide-react";
 import DiscussionThread from "@/components/DiscussionThread";
 import { sanitizeCmsField } from "@/lib/seoUtils";
@@ -16,7 +17,7 @@ function getAvatar(profile, fallbackSeed="apex"){
   const raw = profile?.avatar_url || "";
   if(!raw || raw.includes("dicebear") || raw.includes("bottts")){
     const name = encodeURIComponent(profile?.full_name || "Apex Editorial");
-    return `https://ui-avatars.com/api/?name=${name}&background=4f46e5&color=fff&size=256`;
+    return `https://ui-avatars.com/api/?name=${name}&background=4f46e5&color=fff&size=128`;
   }
   return raw;
 }
@@ -155,7 +156,7 @@ export default function ArticleContent({ serverArticle, slug }) {
 
         {/* Author box – real E-E-A-T */}
         <div className="flex items-start gap-4 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 mb-8">
-          <img src={authorAvatar} alt={authorName} className="w-14 h-14 rounded-full object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0" />
+          <Image src={authorAvatar} alt={authorName} width={56} height={56} className="rounded-full object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center flex-wrap gap-2">
               <Link href={`/authors/${encodeURIComponent((authorName||'').toLowerCase().replace(/\s+/g,'-'))}`} className="font-black text-slate-900 dark:text-white hover:text-indigo-600">
@@ -196,7 +197,9 @@ export default function ArticleContent({ serverArticle, slug }) {
         {/* Feature image */}
         {article.image_url && (
           <figure className="mb-10">
-            <img src={article.image_url} alt={title} className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 max-h-[520px] object-cover" />
+            <div className="relative w-full aspect-[16/9] max-h-[520px]">
+              <Image src={article.image_url} alt={title} fill className="rounded-2xl border border-slate-200 dark:border-slate-800 object-cover" sizes="(max-width: 768px) 100vw, 768px" priority />
+            </div>
           </figure>
         )}
 
@@ -231,7 +234,7 @@ export default function ArticleContent({ serverArticle, slug }) {
         {/* Author footer card */}
         <div className="mt-12 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-4">
-            <img src={authorAvatar} className="w-12 h-12 rounded-full" alt={authorName}/>
+            <Image src={authorAvatar} width={48} height={48} className="rounded-full" alt={authorName}/>
             <div>
               <div className="font-black">{authorName}</div>
               <div className="text-xs text-slate-600 dark:text-slate-400">{authorRole}</div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { MessageSquare, Heart, Send, User, Sparkles } from "lucide-react";
 
@@ -263,16 +264,18 @@ export default function DiscussionThread({ articleSlug }) {
 								{/* Author Header */}
 								<div className="flex items-center justify-between mb-4 flex-wrap gap-2">
 									<div className="flex items-center gap-3">
-										<img
-											src={
-												comm.author_avatar &&
-												!comm.author_avatar.includes("dicebear")
-													? comm.author_avatar
-													: `https://ui-avatars.com/api/?name=${encodeURIComponent(comm.author_name || "Apex")}&background=4f46e5&color=fff&size=80`
-											}
-											alt="Avatar"
-											className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0"
-										/>
+									<Image
+										src={
+											comm.author_avatar &&
+											!comm.author_avatar.includes("dicebear")
+												? comm.author_avatar
+												: `https://ui-avatars.com/api/?name=${encodeURIComponent(comm.author_name || "Apex")}&background=4f46e5&color=fff&size=64`
+										}
+										alt={comm.author_name || "Commenter"}
+										width={40}
+										height={40}
+										className="rounded-full object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0"
+									/>
 										<div>
 											<div className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
 												<span>{comm.author_name}</span>

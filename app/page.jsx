@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { getAllPublishedArticles } from "@/lib/articles";
-import { Clock } from "lucide-react";
+import Image from "next/image";
+import { getPaginatedArticles, getPublishedArticleCount } from "@/lib/articles";
 import CommunityFeed from "@/components/CommunityFeed";
 
 export const revalidate = 60;
@@ -9,10 +9,15 @@ export const metadata = {
   alternates: { canonical: "/" },
 };
 
+const PAGE_SIZE = 12;
+
 export default async function Homepage() {
-  const articles = await getAllPublishedArticles();
+  // Fetch featured (1) + first batch of cards in one paginated call
+  const articles = await getPaginatedArticles(PAGE_SIZE, 0);
+  const totalCount = await getPublishedArticleCount();
   const featured = articles[0] || null;
-  const rest = featured ? articles.slice(1) : [];
+  const rest = articles.slice(1);
+  const hasMore = totalCount > PAGE_SIZE;
 
   return (
     <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-8">
@@ -72,11 +77,17 @@ export default async function Homepage() {
                 href={`/blog/${featured.slug}`}
                 className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition group flex flex-col lg:flex-row"
               >
-                <div
-                  className="lg:w-[48%] h-64 lg:h-auto min-h-[320px] bg-cover bg-center"
-                  style={{ backgroundImage: `url('${featured.image_url}')` }}
-                >
-                  <div className="m-4 inline-block bg-white/95 dark:bg-slate-950/90 px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                {/* Featured image — uses next/image for auto WebP, responsive sizes, priority preload */}
+                <div className="lg:w-[48%] h-64 lg:h-auto min-h-[320px] relative bg-slate-100 dark:bg-slate-800">
+                  <Image
+                    src={featured.image_url || "/icon.svg"}
+                    alt={featured.title?.replace(/Slug:.*$/i, '').trim() || "Featured story"}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 48vw"
+                    className="object-cover"
+                    priority
+                  />
+                  <div className="m-4 inline-block bg-white/95 dark:bg-slate-950/90 px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 relative z-10">
                     {featured.category}
                   </div>
                 </div>
@@ -101,12 +112,18 @@ export default async function Homepage() {
                   </p>
 
                   <div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <img
-                      src={featured.profiles?.avatar_url?.includes('dicebear') || !featured.profiles?.avatar_url
-                        ? `https://ui-avatars.com/api/?name=${encodeURIComponent(featured.profiles?.full_name || 'Apex')}&background=4f46e5&color=fff`
-                        : featured.profiles.avatar_url}
+                    <Image
+                      src={
+                        featured.profiles?.avatar_url &&
+                        !featured.profiles.avatar_url.includes('dicebear') &&
+                        !featured.profiles.avatar_url.includes('bottts')
+                          ? featured.profiles.avatar_url
+                          : `https://ui-avatars.com/api/?name=${encodeURIComponent(featured.profiles?.full_name || 'Apex')}&background=4f46e5&color=fff&size=80`
+                      }
                       alt={featured.profiles?.full_name || 'Author'}
-                      className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+                      width={40}
+                      height={40}
+                      className="rounded-full object-cover border border-slate-200 dark:border-slate-700"
                     />
                     <div>
                       <div className="text-sm font-bold">{featured.profiles?.full_name || 'Apex Editorial'}</div>
@@ -120,14 +137,14 @@ export default async function Homepage() {
               </Link>
             </div>
 
-            <CommunityFeed initialArticles={rest} />
+            <CommunityFeed initialArticles={rest} hasMore={hasMore} initialOffset={PAGE_SIZE} />
           </>
         ) : (
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-10 text-center">
             <h2 className="text-2xl font-black mb-3">No published stories yet</h2>
             <p className="text-slate-600 dark:text-slate-400 mb-6">Be the first to publish on Apex.</p>
             <Link href="/studio" className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-xl font-black">Create first story</Link>
-            <div className="mt-10"><CommunityFeed initialArticles={[]} /></div>
+            <div className="mt-10"><CommunityFeed initialArticles={[]} hasMore={false} initialOffset={0} /></div>
           </div>
         )}
       </div>

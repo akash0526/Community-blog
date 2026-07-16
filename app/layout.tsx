@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Geist_Mono, Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
-import CookieConsent from "@/components/CookieConsent";
+import LazyCookieConsent from "@/components/LazyCookieConsent";
 import { SITE_URL } from "@/lib/articles";
 import "./globals.css";
 
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
 		card: "summary_large_image",
 		title: `${siteName} — ${siteTagline}`,
 		description,
-		images: ["/opengraph-image"],
+		images: ["opengraph-image"],
 	},
 	robots: {
 		index: true,
@@ -152,6 +152,12 @@ export default function RootLayout({
 			className={`${inter.variable} ${geistMono.variable} antialiased selection:bg-indigo-500 selection:text-white`}
 		>
 			<head>
+				{/* Preconnect to external origins — saves DNS + TLS round-trip */}
+				<link rel="preconnect" href="https://images.unsplash.com" />
+				<link rel="preconnect" href="https://avatars.githubusercontent.com" />
+				<link rel="preconnect" href="https://xytyivccxndygcgpqeiu.supabase.co" />
+				<link rel="dns-prefetch" href="https://ui-avatars.com" />
+
 				<script
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
@@ -166,7 +172,7 @@ export default function RootLayout({
 
 				<div className="flex-1 flex flex-col">{children}</div>
 
-				<CookieConsent />
+				<LazyCookieConsent />
 
 				{/* Trust Footer */}
 				<footer className="bg-slate-950 text-slate-300 py-16 border-t border-slate-800 mt-auto transition">

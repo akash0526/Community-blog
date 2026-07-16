@@ -174,60 +174,63 @@ export default function RootLayout({
 
 				<LazyCookieConsent />
 
-				{/* Trust Footer */}
-				<footer className="bg-slate-950 text-slate-300 py-16 border-t border-slate-800 mt-auto transition">
-					<div className="max-w-7xl mx-auto px-6">
-						<div className="grid gap-10 md:grid-cols-4 text-left text-sm mb-12">
-							<div className="md:col-span-2">
-								<div className="flex items-center gap-3 text-white font-black text-xl mb-4">
-									<img
-										src="/apex-community-logo.svg"
-										alt="Apex logo"
-										className="w-36 sm:w-44 h-auto max-h-10 object-contain brightness-0 invert"
-									/>
-									<span className="text-lg">Apex</span>
-								</div>
-								<p className="text-slate-400 max-w-md leading-relaxed">
-									Apex is an open global publishing platform where independent writers share tested, cited stories.
-								</p>
-								<p className="text-xs text-slate-500 mt-3">Editorial base: Doha, Qatar • Founded Nov 2025</p>
+			{/* Trust Footer */}
+			<footer className="bg-slate-950 text-slate-300 py-16 mt-auto transition">
+				<div className="gradient-line mb-0" />
+				<div className="max-w-7xl mx-auto px-6 pt-16">
+					<div className="grid gap-10 md:grid-cols-4 text-left text-sm mb-12">
+						<div className="md:col-span-2">
+							<div className="flex items-center gap-3 text-white font-black text-xl mb-4">
+								<img
+									src="/apex-community-logo.svg"
+									alt="Apex logo"
+									className="w-36 sm:w-44 h-auto max-h-10 object-contain brightness-0 invert"
+								/>
+								<span className="text-lg">Apex</span>
 							</div>
-
-							<div>
-								<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Platform</div>
-								<ul className="space-y-2 font-bold">
-									<li><Link href="/about" className="hover:text-white transition">About</Link></li>
-									<li><Link href="/contact" className="hover:text-white transition">Contact</Link></li>
-									<li><Link href="/editorial" className="hover:text-white transition">Editorial Policy</Link></li>
-									<li><Link href="/corrections" className="hover:text-white transition">Corrections</Link></li>
-									<li><Link href="/studio" className="hover:text-white transition">Write a story</Link></li>
-								</ul>
-							</div>
-
-							<div>
-								<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Legal</div>
-								<ul className="space-y-2 font-bold">
-									<li><Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
-									<li><Link href="/terms" className="hover:text-white transition">Terms of Service</Link></li>
-									<li><Link href="/disclaimer" className="hover:text-white transition">Disclaimer</Link></li>
-									<li><a href="mailto:editor@apex-nepal.com" className="hover:text-white transition">editor@apex-nepal.com</a></li>
-								</ul>
-							</div>
+							<p className="text-slate-400 max-w-md leading-relaxed">
+								Apex is an open global publishing platform where independent writers share tested, cited stories.
+							</p>
+							<p className="text-xs text-slate-500 mt-3">Editorial base: Doha, Qatar • Founded Nov 2025</p>
 						</div>
 
-						<div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-							<div className="font-bold">
-								© 2026 Apex. All rights reserved. • <span className="text-slate-400">Open stories from around the world.</span>
-							</div>
-							<div className="flex items-center gap-5 font-bold">
-								<Link href="/" className="hover:text-slate-300">Home</Link>
-								<Link href="/about" className="hover:text-slate-300">About</Link>
-								<Link href="/contact" className="hover:text-slate-300">Contact</Link>
-								<a href="https://github.com/akash0526/Community-blog" target="_blank" rel="noopener" className="hover:text-slate-300">GitHub</a>
-							</div>
+						<div>
+							<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Platform</div>
+							<ul className="space-y-2 font-bold">
+								<li><Link href="/about" className="link-underline hover:text-white transition">About</Link></li>
+								<li><Link href="/contact" className="link-underline hover:text-white transition">Contact</Link></li>
+								<li><Link href="/editorial" className="link-underline hover:text-white transition">Editorial Policy</Link></li>
+								<li><Link href="/corrections" className="link-underline hover:text-white transition">Corrections</Link></li>
+								<li><Link href="/studio" className="link-underline hover:text-white transition">Write a story</Link></li>
+							</ul>
+						</div>
+
+						<div>
+							<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Legal</div>
+							<ul className="space-y-2 font-bold">
+								<li><Link href="/privacy" className="link-underline hover:text-white transition">Privacy Policy</Link></li>
+								<li><Link href="/terms" className="link-underline hover:text-white transition">Terms of Service</Link></li>
+								<li><Link href="/disclaimer" className="link-underline hover:text-white transition">Disclaimer</Link></li>
+								<li><a href="mailto:editor@apex-nepal.com" className="link-underline hover:text-white transition">editor@apex-nepal.com</a></li>
+							</ul>
 						</div>
 					</div>
-				</footer>
+
+					<div className="gradient-line mb-8" />
+
+					<div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+						<div className="font-bold">
+							© 2026 Apex. All rights reserved. • <span className="text-slate-400">Open stories from around the world.</span>
+						</div>
+						<div className="flex items-center gap-5 font-bold">
+							<Link href="/" className="link-underline hover:text-slate-300 transition">Home</Link>
+							<Link href="/about" className="link-underline hover:text-slate-300 transition">About</Link>
+							<Link href="/contact" className="link-underline hover:text-slate-300 transition">Contact</Link>
+							<a href="https://github.com/akash0526/Community-blog" target="_blank" rel="noopener" className="link-underline hover:text-slate-300 transition">GitHub</a>
+						</div>
+					</div>
+				</div>
+			</footer>
 			</body>
 		</html>
 	);

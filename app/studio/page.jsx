@@ -229,7 +229,7 @@ function StudioForm() {
 		if (targetStatus === "published" && audit.totalScore < 80) {
 			if (
 				!confirm(
-					`⚠️ Your story currently has an Readability score of ${audit.totalScore}/100.\n\nAre you sure you want to drop it live right now?\n\n(Note: We always celebrate authentic human storytelling and premium substance over rigid AI reach guidelines! Click OK to drop live.)`,
+					`Your story currently has an SEO score of ${audit.totalScore}/100.\n\nAre you sure you want to publish it right now?\n\n(Note: authentic human storytelling and substance matter more than rigid SEO checklists! Click OK to publish.)`,
 				)
 			) {
 				return;
@@ -448,7 +448,7 @@ function StudioForm() {
 						</h1>
 						<div className="lg:hidden mt-2.5 inline-flex items-center gap-2 bg-slate-900 dark:bg-slate-800 text-white px-3.5 py-1.5 rounded-2xl text-xs font-black shadow-md border border-slate-800">
 							<span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-							<span>⚡ AI Score:</span>
+							<span>SEO Score:</span>
 							<span
 								className={
 									audit.totalScore >= 80 ? "text-emerald-400" : "text-amber-400"
@@ -866,9 +866,8 @@ function StudioForm() {
 
 							{/* Failsafe Footer Note */}
 							<div className="mt-7 pt-4 border-t border-slate-800 text-[11px] text-slate-500 font-bold leading-relaxed">
-								⚡ Our interactive assistant verifies engaging story openings,
-								clean chapter structures, and healthy topical resonance to
-								maximize your web reach instantly.
+							Our checklist verifies engaging openings, clean heading
+							structure, and healthy keyword usage to maximize your reach.
 							</div>
 						</div>
 

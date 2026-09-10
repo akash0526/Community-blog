@@ -44,8 +44,7 @@ export default function ContactPage() {
               <div className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Social</div>
               <p className="space-x-4 font-bold">
                 <a href="https://github.com/akash0526" target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline">GitHub</a>
-                <a href="https://x.com/" target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline">X / Twitter</a>
-                <a href="https://www.linkedin.com/" target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline">LinkedIn</a>
+                <a href="https://x.com/apex_nepal" target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline">X / Twitter</a>
               </p>
             </div>
           </div>

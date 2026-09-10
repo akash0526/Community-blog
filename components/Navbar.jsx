@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import AuthModal from "./AuthModal";
 import {
 	Sun,
@@ -18,6 +18,7 @@ import { supabase } from "@/lib/supabase";
 
 export default function Navbar() {
 	const pathname = usePathname();
+	const router = useRouter();
 	const [theme, setTheme] = useState("light");
 	const [user, setUser] = useState(null);
 	const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -25,9 +26,21 @@ export default function Navbar() {
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 
 	useEffect(() => {
-		// Sync theme
+		// Sync toggle state with the class applied pre-paint by layout.
+		// Falls back to the OS preference on first visit (same rule as the
+		// inline script, so there is no flash and no mismatch).
 		const syncTheme = async () => {
-			const saved = localStorage.getItem("apex_theme") || "light";
+			let saved = null;
+			try {
+				saved = localStorage.getItem("apex_theme");
+			} catch {}
+			if (!saved) {
+				saved =
+					window.matchMedia &&
+					window.matchMedia("(prefers-color-scheme: dark)").matches
+						? "dark"
+						: "light";
+			}
 			if (saved === "dark") {
 				document.documentElement.classList.add("dark");
 			} else {
@@ -115,6 +128,24 @@ export default function Navbar() {
 						>
 							Stories
 						</Link>
+						<Link
+							href="/blog"
+							className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/blog" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}
+						>
+							All stories
+						</Link>
+						<Link
+							href="/authors"
+							className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname?.startsWith("/authors") ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}
+						>
+							Authors
+						</Link>
+						<Link
+							href="/about"
+							className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/about" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}
+						>
+							About
+						</Link>
 					</nav>
 
 					{/* Actions */}
@@ -122,7 +153,7 @@ export default function Navbar() {
 						{/* Write CTA */}
 						<button
 							onClick={() => {
-								if (user) window.location.href = "/studio";
+								if (user) router.push("/studio");
 								else setAuthModalOpen(true);
 							}}
 							className="btn btn-primary px-4 py-2.5 rounded-xl font-black text-xs shadow-md shadow-indigo-600/25 flex items-center gap-1.5 transform hover:-translate-y-0.5 transition"
@@ -151,7 +182,7 @@ export default function Navbar() {
 									className="w-7 h-7 rounded-full object-cover border border-white dark:border-slate-700 flex-shrink-0"
 								/>
 									<span className="text-xs font-black text-slate-900 dark:text-white truncate max-w-[100px] sm:max-w-[140px]">
-										{user?.user_metadata?.full_name || "Architect"}
+										{user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Writer"}
 									</span>
 								</button>
 
@@ -199,7 +230,8 @@ export default function Navbar() {
 						<button
 							onClick={toggleTheme}
 							className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm transition"
-							title="Toggle Theme"
+							title="Toggle theme"
+							aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
 						>
 							{theme === "dark" ? (
 								<Sun className="w-4 h-4 text-amber-400" />
@@ -212,6 +244,8 @@ export default function Navbar() {
 						<button
 							onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
 							className="md:hidden p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+							aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+							aria-expanded={mobileMenuOpen}
 						>
 							{mobileMenuOpen ? (
 								<X className="w-4 h-4" />
@@ -233,18 +267,39 @@ export default function Navbar() {
 							Stories
 						</Link>
 						<Link
+							href="/blog"
+							onClick={() => setMobileMenuOpen(false)}
+							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
+						>
+							All stories
+						</Link>
+						<Link
+							href="/authors"
+							onClick={() => setMobileMenuOpen(false)}
+							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
+						>
+							Authors
+						</Link>
+						<Link
+							href="/about"
+							onClick={() => setMobileMenuOpen(false)}
+							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
+						>
+							About
+						</Link>
+						<Link
+							href="/contact"
+							onClick={() => setMobileMenuOpen(false)}
+							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
+						>
+							Contact
+						</Link>
+						<Link
 							href="/studio"
 							onClick={() => setMobileMenuOpen(false)}
 							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
 						>
-							✍️ Writing Studio
-						</Link>
-						<Link
-							href="/kanban"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							📅 Workflow Kanban
+							Write a story
 						</Link>
 						{user && (
 							<Link
@@ -252,7 +307,7 @@ export default function Navbar() {
 								onClick={() => setMobileMenuOpen(false)}
 								className="block py-2 text-indigo-600 dark:text-indigo-400"
 							>
-								📊 My Author Dashboard
+								My dashboard
 							</Link>
 						)}
 					</div>

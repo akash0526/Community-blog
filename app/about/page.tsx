@@ -42,7 +42,7 @@ export default function AboutPage() {
           <h2>Where we are based</h2>
           <ul>
             <li><strong>Editorial base:</strong> Doha, Qatar</li>
-            <li><strong>Community contributors:</strong> Nepal, India, Philippines, UK, US, and globally</li>
+            <li><strong>Founding community:</strong> Nepal & Qatar • Open to verified writers worldwide</li>
             <li><strong>Launched:</strong> November 2025</li>
             <li><strong>Domain:</strong> apex-nepal.com – “Nepal” reflects our founding community roots, the platform is global</li>
           </ul>

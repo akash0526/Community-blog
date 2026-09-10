@@ -82,6 +82,13 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
     ? await getArticlesByAuthor(profile.id)
     : [];
 
+  // Hide placeholder social URLs that point at a network's homepage.
+  const isRealUrl = (u?: string) =>
+    !!u && !/^(https?:\/\/)?(www\.)?(linkedin\.com|x\.com|twitter\.com|github\.com)\/?$/i.test(u.trim());
+  const website = isRealUrl(profile.website) ? profile.website : null;
+  const twitter = isRealUrl(profile.twitter) ? profile.twitter : null;
+  const linkedin = isRealUrl(profile.linkedin) ? profile.linkedin : null;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -110,8 +117,9 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
             <div className="flex flex-wrap gap-3 text-xs mt-4 font-bold">
               <span className="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">{profile.location || "Doha, Qatar"}</span>
               <a href="mailto:editor@apex-nepal.com" className="px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">Contact</a>
-              <a href="https://github.com/akash0526" target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">GitHub →</a>
-              <a href="https://www.linkedin.com/" target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">LinkedIn →</a>
+              {website && <a href={website} target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">Website →</a>}
+              {twitter && <a href={twitter} target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">X →</a>}
+              {linkedin && <a href={linkedin} target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">LinkedIn →</a>}
             </div>
             {profile.expertise && (
               <div className="flex flex-wrap gap-2 mt-4 text-[11px]">

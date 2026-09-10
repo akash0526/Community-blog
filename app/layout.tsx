@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Geist_Mono, Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import LazyCookieConsent from "@/components/LazyCookieConsent";
+import CookieSettingsButton from "@/components/CookieSettingsButton";
 import { SITE_URL } from "@/lib/articles";
 import "./globals.css";
 
@@ -73,7 +74,7 @@ export const metadata: Metadata = {
 		card: "summary_large_image",
 		title: `${siteName} — ${siteTagline}`,
 		description,
-		images: ["opengraph-image"],
+		images: [`${SITE_URL}/opengraph-image`],
 	},
 	robots: {
 		index: true,
@@ -156,7 +157,15 @@ export default function RootLayout({
 				<link rel="preconnect" href="https://images.unsplash.com" />
 				<link rel="preconnect" href="https://avatars.githubusercontent.com" />
 				<link rel="preconnect" href="https://xytyivccxndygcgpqeiu.supabase.co" />
+				<link rel="preconnect" href="https://i.ibb.co" />
 				<link rel="dns-prefetch" href="https://ui-avatars.com" />
+				{/* Apply saved theme before first paint — prevents dark/light flash.
+				    Runs synchronously; the Navbar toggle keeps localStorage in sync. */}
+				<script
+					dangerouslySetInnerHTML={{
+						__html: `(function(){try{var t=localStorage.getItem("apex_theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}if(t==="dark"){document.documentElement.classList.add("dark");}}catch(e){}})();`,
+					}}
+				/>
 
 				<script
 					type="application/ld+json"
@@ -168,9 +177,15 @@ export default function RootLayout({
 				/>
 			</head>
 			<body className="font-sans flex flex-col min-h-screen">
+				<a
+					href="#main-content"
+					className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:bg-indigo-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:font-bold focus:text-sm"
+				>
+					Skip to content
+				</a>
 				<Navbar />
 
-				<div className="flex-1 flex flex-col">{children}</div>
+				<div id="main-content" className="flex-1 flex flex-col">{children}</div>
 
 				<LazyCookieConsent />
 
@@ -220,12 +235,16 @@ export default function RootLayout({
 
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
 						<div className="font-bold">
-							© 2026 Apex. All rights reserved. • <span className="text-slate-400">Open stories from around the world.</span>
+							© {new Date().getFullYear()} Apex. All rights reserved. • <span className="text-slate-400">Open stories from around the world.</span>
 						</div>
-						<div className="flex items-center gap-5 font-bold">
+						<div className="flex items-center gap-5 font-bold flex-wrap justify-center">
 							<Link href="/" className="link-underline hover:text-slate-300 transition">Home</Link>
+							<Link href="/blog" className="link-underline hover:text-slate-300 transition">All stories</Link>
+							<Link href="/authors" className="link-underline hover:text-slate-300 transition">Authors</Link>
 							<Link href="/about" className="link-underline hover:text-slate-300 transition">About</Link>
 							<Link href="/contact" className="link-underline hover:text-slate-300 transition">Contact</Link>
+							<Link href="/feed.xml" className="link-underline hover:text-slate-300 transition">RSS</Link>
+							<CookieSettingsButton />
 							<a href="https://github.com/akash0526/Community-blog" target="_blank" rel="noopener" className="link-underline hover:text-slate-300 transition">GitHub</a>
 						</div>
 					</div>

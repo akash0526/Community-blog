@@ -22,27 +22,98 @@ function avatarUrl(art) {
   return raw;
 }
 
+// Read once during state initialization (never inside an effect) so URL
+// filters apply before first paint with no render cascade.
+function readUrlFilters() {
+  if (typeof window === "undefined") return { q: "", category: "All" };
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      q: (params.get("q") || "").slice(0, 100),
+      category: params.get("category") || "All",
+    };
+  } catch {
+    return { q: "", category: "All" };
+  }
+}
+
+function readLocalPublished(initialArticles) {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = JSON.parse(localStorage.getItem("apex_articles_v1") || "[]");
+    const existing = new Set((initialArticles || []).map((a) => a.slug));
+    return (stored || []).filter(
+      (l) => l.status === "published" && !existing.has(l.slug)
+    );
+  } catch {
+    return [];
+  }
+}
+
 export default function CommunityFeed({ initialArticles = [], hasMore: initialHasMore = false, initialOffset = 0 }) {
-  const [localArticles, setLocalArticles] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState(() => readUrlFilters().q);
+  const [selectedCategory, setSelectedCategory] = useState(() => readUrlFilters().category);
+  const [localArticles] = useState(() => readLocalPublished(initialArticles));
 
   // Pagination state
   const [serverArticles, setServerArticles] = useState(initialArticles);
   const [offset, setOffset] = useState(initialOffset);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [filtering, setFiltering] = useState(() => {
+    const { q, category } = readUrlFilters();
+    return Boolean(q.trim() || (category && category !== "All"));
+  });
 
+  const isDefaultView = selectedCategory === "All" && !searchQuery.trim();
+
+  // Server-side search/filter: whenever q/category changes, query the API so
+  // results cover the whole archive (not just rows already in the browser).
+  // Also mirrors the state into the URL so filtered views are shareable.
+  // All state updates happen inside the debounced async callback — never
+  // synchronously in the effect body.
   useEffect(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem("apex_articles_v1") || "[]");
-      const existing = new Set(initialArticles.map((a) => a.slug));
-      const uniqueLocal = (stored || []).filter(
-        (l) => l.status === "published" && !existing.has(l.slug)
-      );
-      setLocalArticles(uniqueLocal);
+      const params = new URLSearchParams(window.location.search);
+      if (searchQuery.trim()) params.set("q", searchQuery.trim());
+      else params.delete("q");
+      if (selectedCategory !== "All") params.set("category", selectedCategory);
+      else params.delete("category");
+      const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}${window.location.hash}`;
+      window.history.replaceState(null, "", next);
     } catch {}
-  }, [initialArticles]);
+
+    const isDefault = selectedCategory === "All" && !searchQuery.trim();
+    const t = setTimeout(async () => {
+      if (isDefault) {
+        // Back to the default view: restore the server-rendered first page.
+        setServerArticles(initialArticles);
+        setOffset(initialOffset);
+        setHasMore(initialHasMore);
+        setFiltering(false);
+        return;
+      }
+      try {
+        const apiParams = new URLSearchParams();
+        apiParams.set("limit", String(LOAD_MORE_SIZE));
+        apiParams.set("offset", "0");
+        if (searchQuery.trim()) apiParams.set("q", searchQuery.trim());
+        if (selectedCategory !== "All") apiParams.set("category", selectedCategory);
+        const res = await fetch(`/api/articles?${apiParams.toString()}`);
+        if (res.ok) {
+          const data = await res.json();
+          setServerArticles(data.articles || []);
+          setOffset((data.articles || []).length);
+          setHasMore(Boolean(data.hasMore));
+        }
+      } catch {
+        // Keep previous results on network failure.
+      } finally {
+        setFiltering(false);
+      }
+    }, isDefault ? 0 : 350);
+    return () => clearTimeout(t);
+  }, [searchQuery, selectedCategory, initialArticles, initialOffset, initialHasMore]);
 
   const articles = useMemo(
     () => [...localArticles, ...serverArticles],
@@ -65,6 +136,7 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
         !q ||
         art.title?.toLowerCase().includes(q) ||
         art.meta_description?.toLowerCase().includes(q) ||
+        art.target_keyword?.toLowerCase().includes(q) ||
         art.profiles?.full_name?.toLowerCase().includes(q);
       return catMatch && searchMatch;
     });
@@ -74,7 +146,12 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     try {
-      const res = await fetch(`/api/articles?limit=${LOAD_MORE_SIZE}&offset=${offset}`);
+      const apiParams = new URLSearchParams();
+      apiParams.set("limit", String(LOAD_MORE_SIZE));
+      apiParams.set("offset", String(offset));
+      if (searchQuery.trim()) apiParams.set("q", searchQuery.trim());
+      if (selectedCategory !== "All") apiParams.set("category", selectedCategory);
+      const res = await fetch(`/api/articles?${apiParams.toString()}`);
       if (res.ok) {
         const data = await res.json();
         if (data.articles && data.articles.length > 0) {
@@ -90,19 +167,36 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, hasMore, offset]);
+  }, [loadingMore, hasMore, offset, searchQuery, selectedCategory]);
+
+  const handleSearchChange = (value) => {
+    setSearchQuery(value);
+    setFiltering(true);
+  };
+
+  const handleCategoryChange = (cat) => {
+    setSelectedCategory(cat);
+    setFiltering(true);
+  };
+
+  const handleReset = () => {
+    setSearchQuery("");
+    setSelectedCategory("All");
+    setFiltering(false);
+  };
 
   return (
     <div id="feed" className="scroll-mt-24">
       {/* Filter bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div className="flex flex-wrap gap-2">
-          {categories.slice(0, 12).map((cat) => {
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter stories by category">
+          {categories.map((cat) => {
             const active = selectedCategory === cat;
             return (
               <button
                 key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => handleCategoryChange(cat)}
+                aria-pressed={active}
                 className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all duration-200 ${
                   active
                     ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md shadow-indigo-500/20"
@@ -119,27 +213,42 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
           <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
           <input
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search stories…"
+            aria-label="Search stories"
             className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery("")} className="absolute right-3 top-2.5 text-slate-400 text-sm hover:text-slate-600 dark:hover:text-slate-200 transition">
+            <button
+              onClick={() => handleSearchChange("")}
+              aria-label="Clear search"
+              className="absolute right-3 top-2.5 text-slate-400 text-sm hover:text-slate-600 dark:hover:text-slate-200 transition"
+            >
               ✕
             </button>
           )}
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {filtering ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-live="polite">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+              <div className="h-48 skeleton !rounded-none" />
+              <div className="p-5 space-y-3">
+                <div className="h-4 skeleton w-2/3" />
+                <div className="h-4 skeleton w-full" />
+                <div className="h-4 skeleton w-4/5" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-16 glass rounded-2xl">
           <p className="font-black text-lg mb-2">No stories found</p>
           <p className="text-sm text-slate-500 mb-4">Try a different category or search term.</p>
           <button
-            onClick={() => {
-              setSearchQuery("");
-              setSelectedCategory("All");
-            }}
+            onClick={handleReset}
             className="text-indigo-600 dark:text-indigo-400 font-bold text-sm underline"
           >
             Reset filters
@@ -158,7 +267,7 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
                 {/* Card image with zoom on hover */}
                 <div className="h-48 relative bg-slate-100 dark:bg-slate-800 img-zoom">
                   <Image
-                    src={art.image_url || "/icon.svg"}
+                    src={art.image_url || "/opengraph-image"}
                     alt={cleanTitle(art.title) || "Story thumbnail"}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -214,7 +323,7 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
           </div>
 
           {/* Load More with gradient border */}
-          {hasMore && !searchQuery && selectedCategory === "All" && (
+          {hasMore && (
             <div className="flex justify-center mt-10">
               <button
                 onClick={loadMore}

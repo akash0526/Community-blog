@@ -19,8 +19,8 @@ export default function PrivacyPage() {
         <ul>
           <li><strong>Account data:</strong> name, email, avatar, bio, professional role – when you create an author account.</li>
           <li><strong>Content data:</strong> articles, comments, claps, bookmarks you submit.</li>
-          <li><strong>Analytics:</strong> anonymized pageviews, referrer, device type, country – via Google Analytics 4 / Plausible (IP anonymized).</li>
-          <li><strong>Cookies:</strong> essential session cookies (Supabase auth), analytics cookies (with consent), preference cookies.</li>
+          <li><strong>Reading counts:</strong> aggregate per-article pageview counters stored in our own database (no third-party analytics trackers are installed today).</li>
+          <li><strong>Cookies:</strong> essential session cookies (Supabase auth) and preference cookies (theme, cookie choice). If we add analytics in the future, it will be opt-in and this policy will be updated first.</li>
           <li><strong>Contact form:</strong> name, email, message – only to reply.</li>
         </ul>
 
@@ -37,13 +37,12 @@ export default function PrivacyPage() {
         <p>Consent (analytics), Contract (publishing your account), Legitimate interest (security, anti-spam).</p>
 
         <h2>4. Cookies & consent</h2>
-        <p>We show a cookie banner to EEA/UK/CH visitors. Essential cookies always run. Analytics / ads only after opt-in. You can withdraw consent in your browser or via the footer “Cookie settings”.</p>
+        <p>We show a cookie banner to all visitors. Essential cookies always run. You can revisit or withdraw your choice at any time via the footer “Cookie settings” link or in your browser settings.</p>
 
         <h2>5. Third parties</h2>
         <ul>
           <li>Supabase (US/EU) – authentication & database</li>
           <li>Vercel – hosting / CDN</li>
-          <li>Google Analytics 4 – aggregated analytics (IP anonymized)</li>
         </ul>
 
         <h2>6. Data retention</h2>

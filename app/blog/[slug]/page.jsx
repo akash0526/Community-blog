@@ -90,11 +90,13 @@ export default async function ArticlePage({ params }) {
     notFound();
   }
 
-  // Pageview bump – best effort
+  // Pageview bump – best effort, never blocks the response.
+  // (Awaiting it here added a full Supabase round-trip to every article TTFB.)
   if (!String(article.id||"").startsWith("seed-") && !String(article.id||"").startsWith("post-")) {
-    try {
-      await supabase.rpc("increment_pageview", { article_id: article.id });
-    } catch {}
+    supabase.rpc("increment_pageview", { article_id: article.id }).then(
+      () => {},
+      () => {},
+    );
   }
 
   const cleanTitle = cleanTitleField(article.title);
@@ -107,6 +109,12 @@ export default async function ArticlePage({ params }) {
   const authorAvatar = article.profiles?.avatar_url && !article.profiles.avatar_url.includes('dicebear')
     ? article.profiles.avatar_url
     : `${SITE_URL}/icon.svg`;
+  // Per-author social links — never attribute the founder's GitHub to guests.
+  const authorSameAs = [
+    article.profiles?.website,
+    article.profiles?.twitter,
+    article.profiles?.linkedin,
+  ].filter(Boolean);
 
   const isNews = ["News & Current Affairs","Personal Stories","Opinion & Essays"].includes(article.category);
 
@@ -128,9 +136,7 @@ export default async function ArticlePage({ params }) {
       "image": authorAvatar,
       "jobTitle": article.profiles?.professional_role || "Contributing Writer",
       "description": article.profiles?.bio || undefined,
-      "sameAs": [
-        "https://github.com/akash0526"
-      ].filter(Boolean)
+      "sameAs": authorSameAs.length ? authorSameAs : undefined
     },
     "editor": {
       "@type": "Person",
@@ -156,7 +162,7 @@ export default async function ArticlePage({ params }) {
     "articleSection": article.category,
     "keywords": [article.target_keyword, article.category].filter(Boolean).join(", "),
     "about": article.target_keyword || article.category,
-    "copyrightYear": new Date(article.published_at || article.created_at || Date.now()).getFullYear(),
+    "copyrightYear": (article.published_at || article.created_at) ? new Date(article.published_at || article.created_at).getFullYear() : undefined,
     "copyrightHolder": {
       "@type": "Organization",
       "name": "Apex"
@@ -181,7 +187,8 @@ export default async function ArticlePage({ params }) {
     "image": authorAvatar,
     "jobTitle": article.profiles?.professional_role || undefined,
     "worksFor": { "@type": "Organization", "name": "Apex", "url": SITE_URL },
-    "description": article.profiles?.bio || undefined
+    "description": article.profiles?.bio || undefined,
+    "sameAs": authorSameAs.length ? authorSameAs : undefined
   };
 
   return (

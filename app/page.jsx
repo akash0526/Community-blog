@@ -44,8 +44,8 @@ export default async function Homepage() {
 						</h1>
 
 						<p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg mb-8 max-w-2xl leading-relaxed">
-							Apex is an open Open bloging platform where independent writers
-							share tested, cited stories.
+						Apex is an open global blogging platform where independent writers
+						share tested, cited stories.
 						</p>
 
 						<div className="flex flex-col sm:flex-row gap-3">
@@ -100,10 +100,10 @@ export default async function Homepage() {
 							style={{ animationDelay: "0.1s" }}
 						>
 							<div className="flex items-center justify-between mb-5">
-								<h2 className="text-xl sm:text-2xl font-black">Featured</h2>
-								<span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 badge-glow px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50">
-									Editor&apos;s pick
-								</span>
+							<h2 className="text-xl sm:text-2xl font-black">Latest</h2>
+							<span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 badge-glow px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50">
+								Fresh off the press
+							</span>
 							</div>
 
 							{/* Featured card with gradient animated border */}
@@ -113,8 +113,8 @@ export default async function Homepage() {
 							>
 								{/* Featured image with zoom on hover */}
 								<div className="lg:w-[48%] h-64 lg:h-auto min-h-[320px] relative bg-slate-100 dark:bg-slate-800 img-zoom">
-									<Image
-										src={featured.image_url || "/icon.svg"}
+								<Image
+									src={featured.image_url || "/opengraph-image"}
 										alt={
 											featured.title?.replace(/Slug:.*$/i, "").trim() ||
 											"Featured story"

@@ -5,7 +5,7 @@ import { ImageResponse } from "next/og";
 // the article's own cover image via generateMetadata().
 // https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image
 
-export const alt = "Apex Community Platform — Share Your Stories";
+export const alt = "Apex Nepal — Helping Nepali freelancers, students, and small businesses earn more with AI and digital tools.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -37,15 +37,17 @@ export default function OpengraphImage() {
             style={{
               width: "84px",
               height: "84px",
-              borderRadius: "24px",
+              borderRadius: "16px",
               background: "#4f46e5",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "48px",
+              fontSize: "36px",
+              fontWeight: 900,
+              color: "white",
             }}
           >
-            ⚡
+            AN
           </div>
           <div
             style={{
@@ -56,12 +58,12 @@ export default function OpengraphImage() {
               display: "flex",
             }}
           >
-            APEX COMMUNITY
+            APEX NEPAL
           </div>
         </div>
         <div
           style={{
-            fontSize: "84px",
+            fontSize: "66px",
             fontWeight: 800,
             lineHeight: 1.05,
             letterSpacing: "-3px",
@@ -69,17 +71,18 @@ export default function OpengraphImage() {
             display: "flex",
           }}
         >
-          Share Your Stories. Reach the World.
+          Earn more with AI & digital tools.
         </div>
         <div
           style={{
-            marginTop: "36px",
-            fontSize: "30px",
+            marginTop: "28px",
+            fontSize: "26px",
             color: "#cbd5e1",
             display: "flex",
+            maxWidth: "1000px",
           }}
         >
-          Open multi-topic community publishing platform.
+          For Nepali freelancers, students & small businesses — tested guides for Nepal.
         </div>
       </div>
     ),

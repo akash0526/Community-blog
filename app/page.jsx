@@ -11,6 +11,14 @@ export const metadata = {
 
 const PAGE_SIZE = 12;
 
+const pillars = [
+	{ href: "/ai-tools", label: "🤖 AI Tools", desc: "ChatGPT, Grammarly, Canva for Nepal" },
+	{ href: "/freelancing-in-nepal", label: "💼 Freelancing", desc: "Upwork, Fiverr, getting clients" },
+	{ href: "/blogging-hosting", label: "🌐 Blogging & Hosting", desc: "Hostinger, WordPress, SEO" },
+	{ href: "/digital-payments", label: "💳 Payments", desc: "Payoneer, Wise, eSewa, Khalti" },
+	{ href: "/small-business-tools", label: "🏪 Business Tools", desc: "POS, Canva, WhatsApp" },
+];
+
 export default async function Homepage() {
 	const articles = await getPaginatedArticles(PAGE_SIZE, 0);
 	const totalCount = await getPublishedArticleCount();
@@ -21,8 +29,8 @@ export default async function Homepage() {
 	return (
 		<main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-8">
 			<div className="max-w-7xl mx-auto px-6">
-				{/* ─── Glassmorphic Hero ─── */}
-				<div className="glass rounded-3xl p-8 sm:p-14 shadow-lg mb-12 fade-up relative overflow-hidden">
+				{/* ─── Glassmorphic Hero — Rebranded for Apex Nepal ─── */}
+				<div className="glass rounded-3xl p-8 sm:p-14 shadow-lg mb-8 fade-up relative overflow-hidden">
 					{/* Subtle gradient orb behind hero */}
 					<div className="absolute -top-32 -right-32 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 					<div className="absolute -bottom-20 -left-20 w-48 h-48 bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -30,22 +38,21 @@ export default async function Homepage() {
 					<div className="max-w-3xl relative z-10">
 						<div className="flex items-center gap-3 mb-5 flex-wrap text-[11px] font-black uppercase tracking-wider">
 							<span className="text-emerald-600 dark:text-emerald-400">
-								Apex • Global Blog
+								Apex Nepal • AI & Digital Tools for Nepal
 							</span>
 							<span className="text-slate-400">•</span>
-							<span className="text-slate-500">Est. 2025 • Doha, Qatar</span>
+							<span className="text-slate-500">Est. 2025 • Kathmandu → Global</span>
 						</div>
 
 						{/* Gradient animated heading */}
 						<h1 className="text-[32px] sm:text-[52px] font-black tracking-tight leading-[1.05] mb-5 gradient-text">
-							Open stories from
+							Earn more with
 							<br />
-							around the world.
+							AI & digital tools.
 						</h1>
 
 						<p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg mb-8 max-w-2xl leading-relaxed">
-							Apex is an open Open bloging platform where independent writers
-							share tested, cited stories.
+							Helping Nepali freelancers, students, and small businesses earn more with AI and digital tools. Practical, tested guides — from ChatGPT & Grammarly to Hostinger hosting and Payoneer payouts.
 						</p>
 
 						<div className="flex flex-col sm:flex-row gap-3">
@@ -53,13 +60,13 @@ export default async function Homepage() {
 								href="#feed"
 								className="btn btn-primary px-7 py-3.5 rounded-xl font-black text-sm text-center"
 							>
-								Explore stories <span className="arrow-bounce">→</span>
+								Explore AI tools <span className="arrow-bounce">→</span>
 							</Link>
 							<Link
-								href="/studio"
+								href="/freelancing-in-nepal"
 								className="btn btn-secondary px-7 py-3.5 rounded-xl font-bold text-sm text-center hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors"
 							>
-								Write a story
+								Start freelancing guide
 							</Link>
 						</div>
 
@@ -68,19 +75,19 @@ export default async function Homepage() {
 								href="/about"
 								className="link-underline hover:text-slate-700 dark:hover:text-slate-300 transition"
 							>
-								About Apex
+								About Apex Nepal
+							</Link>
+							<Link
+								href="/resources"
+								className="link-underline hover:text-slate-700 dark:hover:text-slate-300 transition"
+							>
+								Resources
 							</Link>
 							<Link
 								href="/editorial"
 								className="link-underline hover:text-slate-700 dark:hover:text-slate-300 transition"
 							>
 								Editorial Policy
-							</Link>
-							<Link
-								href="/corrections"
-								className="link-underline hover:text-slate-700 dark:hover:text-slate-300 transition"
-							>
-								Corrections
 							</Link>
 							<Link
 								href="/contact"
@@ -90,6 +97,28 @@ export default async function Homepage() {
 							</Link>
 						</div>
 					</div>
+				</div>
+
+				{/* ─── Pillar Nav — 5 categories ─── */}
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-12 fade-up" style={{ animationDelay: "0.05s" }}>
+					{pillars.map((p) => (
+						<Link
+							key={p.href}
+							href={p.href}
+							className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition card-hover text-left"
+						>
+							<div className="font-black text-sm mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">{p.label}</div>
+							<div className="text-xs text-slate-500 leading-snug">{p.desc}</div>
+						</Link>
+					))}
+				</div>
+
+				{/* Affiliate disclosure strip — reusable component will be added in Phase 3 */}
+				<div className="mb-12 rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30 px-5 py-4 flex items-start gap-3 fade-up" style={{ animationDelay: "0.07s" }}>
+					<span className="text-amber-600 dark:text-amber-400 text-sm">ⓘ</span>
+					<p className="text-xs sm:text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
+						<strong>Affiliate disclosure:</strong> Some links on Apex Nepal are affiliate links (e.g., Hostinger, Grammarly, Canva). If you purchase, we may earn a commission at no extra cost to you. We only recommend tools we&apos;ve tested. <Link href="/disclaimer" className="underline font-bold">Learn more</Link>.
+					</p>
 				</div>
 
 				{featured ? (
@@ -206,7 +235,7 @@ export default async function Homepage() {
 							No published stories yet
 						</h2>
 						<p className="text-slate-600 dark:text-slate-400 mb-6">
-							Be the first to publish on Apex.
+							Be the first to publish on Apex Nepal. Share your AI or freelancing guide.
 						</p>
 						<Link
 							href="/studio"

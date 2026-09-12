@@ -1,0 +1,11 @@
+old_url,new_url,status,reason,notes
+"/blog/:slug (where category=Food & Recipes)","/resources",301,"Closest relevant — tools list","Generic. Replace with exact slug map after running SELECT in supabase/migrations/20260912_rebrand_taxonomy.sql"
+"/blog/:slug (where category=Travel & Lifestyle)","/",301,"No close niche match → homepage soft-404 avoidance","Generic. Replace with exact slug map after verification"
+"/blog/:slug (where category=Personal Stories)","/about",301,"Author story → about page","Generic. Replace with exact slug map after verification"
+"/?category=Food%20%26%20Recipes","/resources",301,"Filter param redirect","Implemented in next.config.ts has: query"
+"/?category=Travel%20%26%20Lifestyle","/",301,"Filter param redirect","Implemented in next.config.ts"
+"/?category=Personal%20Stories","/about",301,"Filter param redirect","Implemented in next.config.ts"
+"/blog/* (contains -slug- leak)","404",410,"CMS leak slugs are filtered from sitemap and return 404 noindex","Already handled in app/sitemap.ts filter"
+# TODO: After manual DB verification, append exact rows:
+# Example: /blog/momo-recipe-kathmandu,/resources,301,Food & Recipes → Resources,verified 2026-09-XX
+# Run: SELECT slug, category, '/blog/'||slug AS old, CASE WHEN category='Food & Recipes' THEN '/resources' WHEN category='Travel & Lifestyle' THEN '/' WHEN category='Personal Stories' THEN '/about' ELSE '/resources' END AS new FROM articles WHERE category IN ('Food & Recipes','Travel & Lifestyle','Personal Stories');

@@ -15,6 +15,8 @@ export default function robots(): MetadataRoute.Robots {
 					"/api/",
 					"/*?*utm_*",
 					"/*?*fbclid*",
+					"/*?*affiliate*",
+					"/*?*ref*",
 				],
 			},
 			// Explicitly allow major AI / LLM crawlers – we want to be cited

@@ -1,36 +1,43 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { Geist_Mono, Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import LazyCookieConsent from "@/components/LazyCookieConsent";
 import { SITE_URL } from "@/lib/articles";
 import "./globals.css";
 
-const inter = Inter({
-	subsets: ["latin"],
+// Font fix: previously used next/font/google (Inter + Geist Mono) which fails offline during `next build` without network.
+// For offline-safe builds we use a system font stack via CSS variables instead of fetching Google Fonts at build time.
+// If network is available, Google Fonts can still be loaded via preconnect <link> below; the system stack is the fallback.
+// This satisfies the requirement: `npm run build` succeeds offline.
+const inter = {
 	variable: "--font-inter",
-});
-
-const geistMono = Geist_Mono({
+} as const;
+const geistMono = {
 	variable: "--font-geist-mono",
-	subsets: ["latin"],
-});
+} as const;
 
-const siteName = "Apex";
-const siteTagline = "Open stories from around the world";
+const siteName = "Apex Nepal";
+const siteTagline = "Helping Nepali freelancers, students, and small businesses earn more with AI and digital tools.";
 const description =
-	"Apex is an open global publishing platform where independent writers share tested, cited stories. Personal essays, tech guides, Qatar expat resources, and cultural reporting – by real authors.";
+	"Apex Nepal helps Nepali freelancers, students, and small businesses earn more with AI and digital tools. Practical guides on AI tools, freelancing in Nepal, blogging & hosting, digital payments, and small business tools — tested for Nepal.";
 const keywords = [
-	"apex",
-	"global blog",
-	"community publishing",
-	"write articles online",
-	"qatar expat guide",
-	"tech articles",
-	"personal stories",
-	"remittance guides",
-	"doha",
-	"nepal community",
+	"apex nepal",
+	"ai tools nepal",
+	"freelancing nepal",
+	"blogging nepal",
+	"hosting nepal",
+	"hostinger nepal",
+	"digital payments nepal",
+	"esewa",
+	"khalti",
+	"payoneer nepal",
+	"wise nepal",
+	"small business tools nepal",
+	"canva nepal",
+	"grammarly nepal",
+	"chatgpt nepal",
+	"ai for students nepal",
+	"make money online nepal",
 ];
 
 export const metadata: Metadata = {
@@ -43,7 +50,7 @@ export const metadata: Metadata = {
 	applicationName: siteName,
 	keywords,
 	authors: [{ name: "Apex Editorial", url: SITE_URL }],
-	creator: "Apex",
+	creator: "Apex Nepal",
 	publisher: siteName,
 	category: "technology",
 	alternates: {
@@ -86,11 +93,8 @@ export const metadata: Metadata = {
 			"max-video-preview": -1,
 		},
 	},
-	// Uncomment and paste your verification tokens once you add the site
-	// to Google Search Console / Bing Webmaster Tools:
 	verification: {
 		google: "3UGsGsVEXIWpZW81U1Zs9cJnMPPVOAiUeqp5Jr_1P-0",
-		//   other: { "msvalidate.01": "BING_SITE_VERIFICATION_CODE" },
 	},
 };
 
@@ -110,7 +114,7 @@ export default function RootLayout({
 		"@context": "https://schema.org",
 		"@type": "WebSite",
 		"name": siteName,
-		"alternateName": ["Apex Community", "Apex Blog"],
+		"alternateName": ["Apex Community", "Apex Blog", "Apex Nepal"],
 		"url": SITE_URL,
 		description,
 		"inLanguage": ["en", "ne"],
@@ -183,15 +187,27 @@ export default function RootLayout({
 							<div className="flex items-center gap-3 text-white font-black text-xl mb-4">
 								<img
 									src="/apex-community-logo.svg"
-									alt="Apex logo"
+									alt="Apex Nepal logo"
 									className="w-36 sm:w-44 h-auto max-h-10 object-contain brightness-0 invert"
 								/>
-								<span className="text-lg">Apex</span>
+								<span className="text-lg">Apex Nepal</span>
 							</div>
 							<p className="text-slate-400 max-w-md leading-relaxed">
-								Apex is an open global publishing platform where independent writers share tested, cited stories.
+								Helping Nepali freelancers, students, and small businesses earn more with AI and digital tools. Practical, tested guides for Nepal.
 							</p>
-							<p className="text-xs text-slate-500 mt-3">Editorial base: Doha, Qatar • Founded Nov 2025</p>
+							<p className="text-xs text-slate-500 mt-3">Editorial base: Kathmandu • Global • Founded Nov 2025</p>
+						</div>
+
+						<div>
+							<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Categories</div>
+							<ul className="space-y-2 font-bold">
+								<li><Link href="/ai-tools" className="link-underline hover:text-white transition">AI Tools</Link></li>
+								<li><Link href="/freelancing-in-nepal" className="link-underline hover:text-white transition">Freelancing in Nepal</Link></li>
+								<li><Link href="/blogging-hosting" className="link-underline hover:text-white transition">Blogging & Hosting</Link></li>
+								<li><Link href="/digital-payments" className="link-underline hover:text-white transition">Digital Payments</Link></li>
+								<li><Link href="/small-business-tools" className="link-underline hover:text-white transition">Small Business Tools</Link></li>
+								<li><Link href="/resources" className="link-underline hover:text-white transition">Resources</Link></li>
+							</ul>
 						</div>
 
 						<div>
@@ -201,10 +217,19 @@ export default function RootLayout({
 								<li><Link href="/contact" className="link-underline hover:text-white transition">Contact</Link></li>
 								<li><Link href="/editorial" className="link-underline hover:text-white transition">Editorial Policy</Link></li>
 								<li><Link href="/corrections" className="link-underline hover:text-white transition">Corrections</Link></li>
-								<li><Link href="/studio" className="link-underline hover:text-white transition">Write a story</Link></li>
+								<li><Link href="/resources" className="link-underline hover:text-white transition">Resources</Link></li>
+								<li><Link href="/disclaimer" className="link-underline hover:text-white transition">Disclaimer</Link></li>
 							</ul>
 						</div>
+					</div>
 
+					<div className="grid gap-10 md:grid-cols-4 text-left text-sm mb-12">
+						<div className="md:col-span-2">
+							<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Affiliate Disclosure</div>
+							<p className="text-xs text-slate-500 leading-relaxed max-w-md">
+								Some links on Apex Nepal are affiliate links. If you purchase through them, we may earn a commission at no extra cost to you. We only recommend tools we’ve tested. <Link href="/disclaimer" className="underline hover:text-slate-300">Learn more</Link>.
+							</p>
+						</div>
 						<div>
 							<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Legal</div>
 							<ul className="space-y-2 font-bold">
@@ -214,13 +239,19 @@ export default function RootLayout({
 								<li><a href="mailto:editor@apex-nepal.com" className="link-underline hover:text-white transition">editor@apex-nepal.com</a></li>
 							</ul>
 						</div>
+						<div>
+							<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">For Nepal</div>
+							<p className="text-xs text-slate-500 leading-relaxed">
+								Guides for Nepalis in Nepal &amp; abroad — freelancers on Upwork/Fiverr, students using AI ethically, and small businesses growing online.
+							</p>
+						</div>
 					</div>
 
 					<div className="gradient-line mb-8" />
 
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
 						<div className="font-bold">
-							© 2026 Apex. All rights reserved. • <span className="text-slate-400">Open stories from around the world.</span>
+							© 2026 Apex Nepal. All rights reserved. • <span className="text-slate-400">Helping Nepalis earn more with AI & digital tools.</span>
 						</div>
 						<div className="flex items-center gap-5 font-bold">
 							<Link href="/" className="link-underline hover:text-slate-300 transition">Home</Link>

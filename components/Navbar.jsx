@@ -16,6 +16,14 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
+const navLinks = [
+	{ href: "/ai-tools", label: "AI Tools" },
+	{ href: "/freelancing-in-nepal", label: "Freelancing" },
+	{ href: "/blogging-hosting", label: "Blogging" },
+	{ href: "/digital-payments", label: "Payments" },
+	{ href: "/small-business-tools", label: "Business" },
+];
+
 export default function Navbar() {
 	const pathname = usePathname();
 	const [theme, setTheme] = useState("light");
@@ -90,6 +98,8 @@ export default function Navbar() {
 		}
 	};
 
+	const isActive = (href) => pathname === href || pathname?.startsWith(href + "/");
+
 	return (
 		<>
 			<header className="sticky top-0 z-40 h-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition">
@@ -98,34 +108,54 @@ export default function Navbar() {
 					<Link
 						href="/"
 						className="flex items-center gap-2 sm:gap-3 font-black text-slate-900 dark:text-white group min-w-0"
-						aria-label="Apex home"
+						aria-label="Apex Nepal home"
 					>
 						<img
 							src="/apex-community-logo.svg"
-							alt="Apex logo"
+							alt="Apex Nepal logo"
 							className="w-36 sm:w-52 md:w-56 h-auto max-h-12 object-contain dark:brightness-0 dark:invert group-hover:scale-[1.02] transition transform flex-shrink-0"
 						/>
+						<span className="hidden lg:inline text-xs font-black tracking-widest text-slate-500 uppercase ml-1">
+							Apex Nepal
+						</span>
 					</Link>
 
-					{/* Desktop Nav */}
-					<nav className="hidden md:flex items-center gap-8 font-extrabold text-sm text-slate-600 dark:text-slate-300">
+					{/* Desktop Nav — 5 pillars + Resources */}
+					<nav className="hidden lg:flex items-center gap-1 font-extrabold text-[13px] text-slate-600 dark:text-slate-300">
+						{navLinks.map((link) => (
+							<Link
+								key={link.href}
+								href={link.href}
+								className={`px-3 py-2 rounded-full transition ${
+									isActive(link.href)
+										? "bg-slate-900 dark:bg-white text-white dark:text-slate-900"
+										: "hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+								}`}
+							>
+								{link.label}
+							</Link>
+						))}
 						<Link
-							href="/"
-							className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}
+							href="/resources"
+							className={`px-3 py-2 rounded-full border transition ${
+								isActive("/resources")
+									? "bg-indigo-600 text-white border-indigo-600"
+									: "border-slate-200 dark:border-slate-700 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+							}`}
 						>
-							Stories
+							Resources
 						</Link>
 					</nav>
 
 					{/* Actions */}
-					<div className="flex items-center gap-3">
+					<div className="flex items-center gap-2 sm:gap-3">
 						{/* Write CTA */}
 						<button
 							onClick={() => {
 								if (user) window.location.href = "/studio";
 								else setAuthModalOpen(true);
 							}}
-							className="btn btn-primary px-4 py-2.5 rounded-xl font-black text-xs shadow-md shadow-indigo-600/25 flex items-center gap-1.5 transform hover:-translate-y-0.5 transition"
+							className="btn btn-primary px-3 sm:px-4 py-2.5 rounded-xl font-black text-xs shadow-md shadow-indigo-600/25 flex items-center gap-1.5 transform hover:-translate-y-0.5 transition"
 						>
 							<Edit3 className="w-4 h-4" />
 							<span className="hidden sm:inline">Write</span>
@@ -138,18 +168,18 @@ export default function Navbar() {
 									onClick={() => setDropdownOpen(!dropdownOpen)}
 									className="flex items-center gap-2 pl-2 pr-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition cursor-pointer"
 								>
-								<img
-									src={
-										user?.user_metadata?.avatar_url &&
-										!user.user_metadata.avatar_url.includes('dicebear')
-											? user.user_metadata.avatar_url
-											: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-													user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Apex'
-											  )}&background=4f46e5&color=fff&size=64`
-									}
-									alt="Avatar"
-									className="w-7 h-7 rounded-full object-cover border border-white dark:border-slate-700 flex-shrink-0"
-								/>
+									<img
+										src={
+											user?.user_metadata?.avatar_url &&
+											!user.user_metadata.avatar_url.includes('dicebear')
+												? user.user_metadata.avatar_url
+												: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+														user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Apex'
+												  )}&background=4f46e5&color=fff&size=64`
+										}
+										alt="Avatar"
+										className="w-7 h-7 rounded-full object-cover border border-white dark:border-slate-700 flex-shrink-0"
+									/>
 									<span className="text-xs font-black text-slate-900 dark:text-white truncate max-w-[100px] sm:max-w-[140px]">
 										{user?.user_metadata?.full_name || "Architect"}
 									</span>
@@ -211,7 +241,7 @@ export default function Navbar() {
 						{/* Hamburger */}
 						<button
 							onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-							className="md:hidden p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+							className="lg:hidden p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300"
 						>
 							{mobileMenuOpen ? (
 								<X className="w-4 h-4" />
@@ -224,37 +254,59 @@ export default function Navbar() {
 
 				{/* Mobile menu */}
 				{mobileMenuOpen && (
-					<div className="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-6 shadow-2xl space-y-4 font-extrabold text-sm text-left animate-fadeIn">
-						<Link
-							href="/"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							Stories
-						</Link>
-						<Link
-							href="/studio"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							✍️ Writing Studio
-						</Link>
-						<Link
-							href="/kanban"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							📅 Workflow Kanban
-						</Link>
-						{user && (
+					<div className="lg:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-6 shadow-2xl space-y-4 font-extrabold text-sm text-left animate-fadeIn">
+						<div className="space-y-2">
+							<div className="text-[11px] font-black uppercase tracking-widest text-slate-500">Categories</div>
+							{navLinks.map((link) => (
+								<Link
+									key={link.href}
+									href={link.href}
+									onClick={() => setMobileMenuOpen(false)}
+									className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
+								>
+									{link.label}
+								</Link>
+							))}
 							<Link
-								href="/dashboard"
+								href="/resources"
 								onClick={() => setMobileMenuOpen(false)}
-								className="block py-2 text-indigo-600 dark:text-indigo-400"
+								className="block py-2 text-indigo-600 dark:text-indigo-400 border-b border-slate-100 dark:border-slate-800"
 							>
-								📊 My Author Dashboard
+								📚 Resources (affiliate disclosure)
 							</Link>
-						)}
+						</div>
+						<div className="space-y-2 pt-2">
+							<Link
+								href="/about"
+								onClick={() => setMobileMenuOpen(false)}
+								className="block py-2 text-slate-700 dark:text-slate-300 hover:text-indigo-600"
+							>
+								About Apex Nepal
+							</Link>
+							<Link
+								href="/studio"
+								onClick={() => setMobileMenuOpen(false)}
+								className="block py-2 text-slate-700 dark:text-slate-300 hover:text-indigo-600"
+							>
+								✍️ Writing Studio
+							</Link>
+							<Link
+								href="/kanban"
+								onClick={() => setMobileMenuOpen(false)}
+								className="block py-2 text-slate-700 dark:text-slate-300 hover:text-indigo-600"
+							>
+								📅 Workflow Kanban
+							</Link>
+							{user && (
+								<Link
+									href="/dashboard"
+									onClick={() => setMobileMenuOpen(false)}
+									className="block py-2 text-indigo-600 dark:text-indigo-400"
+								>
+									📊 My Author Dashboard
+								</Link>
+							)}
+						</div>
 					</div>
 				)}
 			</header>

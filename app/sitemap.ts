@@ -19,8 +19,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	// Only include public, indexable pages here.
 	// Do NOT include /studio, /dashboard, /kanban, drafts, or private pages.
 	// Static trust & core pages – critical for E-E-A-T
+	// Updated for Apex Nepal rebrand: 5 pillar pages + /resources
 	const staticPages = [
 		{ path: "", changeFrequency: "daily" as const, priority: 1 },
+		// Pillar pages — 5 categories (AI for Students merged into AI Tools, not separate)
+		{ path: "/ai-tools", changeFrequency: "weekly" as const, priority: 0.9 },
+		{ path: "/freelancing-in-nepal", changeFrequency: "weekly" as const, priority: 0.9 },
+		{ path: "/blogging-hosting", changeFrequency: "weekly" as const, priority: 0.9 },
+		{ path: "/digital-payments", changeFrequency: "weekly" as const, priority: 0.9 },
+		{ path: "/small-business-tools", changeFrequency: "weekly" as const, priority: 0.9 },
+		{ path: "/resources", changeFrequency: "weekly" as const, priority: 0.8 },
 		{ path: "/about", changeFrequency: "monthly" as const, priority: 0.8 },
 		{ path: "/contact", changeFrequency: "monthly" as const, priority: 0.7 },
 		{ path: "/editorial", changeFrequency: "monthly" as const, priority: 0.7 },

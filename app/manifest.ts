@@ -3,10 +3,10 @@ import type { MetadataRoute } from "next";
 // https://nextjs.org/docs/app/api-reference/file-conventions/metadata/manifest
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Apex Community Platform",
-    short_name: "Apex",
+    name: "Apex Nepal",
+    short_name: "Apex Nepal",
     description:
-      "An open multi-topic community publishing platform where creators share stories, technical guides, and ideas with a global audience.",
+      "Helping Nepali freelancers, students, and small businesses earn more with AI and digital tools. Guides on AI tools, freelancing in Nepal, blogging & hosting, digital payments, and small business tools.",
     start_url: "/",
     display: "standalone",
     background_color: "#0f172a",
@@ -19,6 +19,6 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: "any",
       },
     ],
-    categories: ["education", "news", "social"],
+    categories: ["education", "business", "productivity"],
   };
 }

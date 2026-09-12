@@ -39,7 +39,7 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
       const stored = JSON.parse(localStorage.getItem("apex_articles_v1") || "[]");
       const existing = new Set(initialArticles.map((a) => a.slug));
       const locals = (stored || []).filter(
-        (l) => l.status === "published" && !existing.has(l.slug)
+        (l) => l.status === "published" && !existing.has(l.slug) && storyCategoryValues.includes(l.category)
       );
       setLocalArticles(locals);
     } catch {

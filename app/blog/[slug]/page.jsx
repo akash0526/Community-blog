@@ -42,6 +42,7 @@ export async function generateMetadata({ params }) {
   const cleanDescription = sanitizeCmsField(article.meta_description)?.slice(0,155) || cleanTitle;
   const canonicalUrl = `${SITE_URL}/blog/${encodeURIComponent(decodeURIComponent(slug).normalize("NFC"))}`;
   const authorName = article.profiles?.full_name || "Apex Editorial";
+  const isDraft = article.status === "draft";
 
   return {
     title: cleanTitle,
@@ -73,7 +74,7 @@ export async function generateMetadata({ params }) {
       images: article.image_url ? [article.image_url] : [],
       creator: "@apex_nepal",
     },
-    robots: {
+    robots: isDraft ? { index: false, follow: false } : {
       index: true,
       follow: true,
       "max-image-preview": "large",

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getPaginatedArticles, getPublishedArticleCount } from "@/lib/articles";
+import { getPaginatedArticles, getPublishedArticleCount, ALLOWED_CATEGORIES } from "@/lib/articles";
 import CommunityFeed from "@/components/CommunityFeed";
 import ClientDate from "@/components/ClientDate";
 
@@ -21,7 +21,10 @@ const pillars = [
 ];
 
 export default async function Homepage() {
-	const articles = await getPaginatedArticles(PAGE_SIZE, 0);
+	// Homepage feed — only 5 new pillars, regardless of status.
+	// lib/articles already filters by ALLOWED_CATEGORIES; extra filter here is defensive.
+	const _raw = await getPaginatedArticles(PAGE_SIZE, 0);
+	const articles = _raw.filter((a) => ALLOWED_CATEGORIES.includes(a.category));
 	const totalCount = await getPublishedArticleCount();
 	const featured = articles[0] || null;
 	const rest = articles.slice(1);

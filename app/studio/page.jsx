@@ -18,11 +18,11 @@ import {
 	Save,
 } from "lucide-react";
 
-// Blank author draft defaults
+// Blank author draft defaults — 5 pillars only
 const emptyDraft = {
 	title: "",
 	targetKeyword: "",
-	category: "Personal Stories",
+	category: "AI Tools",
 	metaDescription: "",
 	imageUrl: "",
 	content: "",
@@ -102,7 +102,7 @@ function StudioForm() {
 				setEditingId(found.id);
 				setTitle(found.title || "");
 				setTargetKeyword(found.target_keyword || "");
-				setCategory(found.category || "Personal Stories");
+				setCategory(found.category || "AI Tools");
 				setMetaDescription(found.meta_description || "");
 				setImageUrl(found.image_url || "");
 				setContent(found.content || "");

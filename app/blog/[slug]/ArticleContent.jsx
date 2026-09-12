@@ -100,9 +100,9 @@ export default function ArticleContent({ serverArticle, slug }) {
   const authorBio = author.bio || "";
   const authorAvatar = getAvatar(author, article?.id);
   const category = article.category || "Stories";
-  const isFinance = ["Business & Finance","Finance","Money"].includes(category);
-  const isHealth = (category||"").toLowerCase().includes("health");
-  const isLegal = (category||"").toLowerCase().includes("legal");
+  const isFinance = ["Digital Payments","Finance","Money"].includes(category);
+  const isHealth = false;
+  const isLegal = false;
 
   const markdownComponents = {
     h1: ({children}) => <h1 className="text-[28px] sm:text-[36px] font-black mt-12 mb-5 leading-tight text-slate-900 dark:text-white">{children}</h1>,

@@ -20,7 +20,7 @@ export default function DisclaimerPage(){
         <p>Remittance fees, exchange rates, investment mentions, and money-transfer comparisons are not financial advice. Rates change hourly. Always confirm live rates in the provider app before transferring. Apex and its authors are not licensed financial advisors. You are solely responsible for your financial decisions.</p>
 
         <h2>Medical / health disclaimer</h2>
-        <p>Health & Wellness content is educational only, not medical advice, diagnosis, or treatment. Consult a qualified healthcare professional.</p>
+        <p>Health content is educational only, not medical advice, diagnosis, or treatment. Consult a qualified healthcare professional.</p>
 
         <h2>Legal / immigration disclaimer</h2>
         <p>Visa, immigration, QID, labor-law content is general information, not legal advice. Qatar laws change. Confirm with MOI / official government portals or a licensed attorney.</p>

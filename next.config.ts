@@ -17,90 +17,9 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
   },
   async redirects() {
-    return [
-      // Query-param redirects for archived off-topic categories (13 old categories → 5 new pillars).
-      // Must use `has` with type: 'query' — source never includes ?query.
-      // Verified via curl -I "http://localhost:3000/?category=Food%20%26%20Recipes" → 308
-      // See redirects.csv for slug-level map + supabase_migrations/20260912_archive_old_content.sql for exact SELECT.
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "Food & Recipes" }],
-        destination: "/resources",
-        permanent: true,
-      },
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "Travel & Lifestyle" }],
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "Personal Stories" }],
-        destination: "/about",
-        permanent: true,
-      },
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "Business & Finance" }],
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "Education & Learning" }],
-        destination: "/digital-payments",
-        permanent: true,
-      },
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "Health & Wellness" }],
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "Sports" }],
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "Entertainment" }],
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "Opinion & Essays" }],
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "Philosophy & Culture" }],
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "Arts & Fiction" }],
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "News & Current Affairs" }],
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/",
-        has: [{ type: "query", key: "category", value: "Community Updates" }],
-        destination: "/",
-        permanent: true,
-      },
-    ];
+    // Old Qatar/off-topic categories deleted manually 2026-09-12 — no redirects needed.
+    // All public content is now the 5 new pillars only.
+    return [];
   },
   // Ensure offline builds don't fail on Google Fonts — layout.tsx uses system-font fallback
   // No additional font config needed here; see app/layout.tsx for local fallback.

@@ -109,7 +109,7 @@ export default async function ArticlePage({ params }) {
     ? article.profiles.avatar_url
     : `${SITE_URL}/icon.svg`;
 
-  const isNews = ["News & Current Affairs","Personal Stories","Opinion & Essays"].includes(article.category);
+  const isNews = false; // old news categories deleted — 5 pillars are BlogPosting
 
   const copyrightYear = new Date(article.published_at || article.created_at || "2026-01-01").getFullYear();
 

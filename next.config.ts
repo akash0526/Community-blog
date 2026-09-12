@@ -18,15 +18,10 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // Generic fallback redirects for archived off-topic categories
-      // For exact slug-level 301s, see /redirects.csv and run verification query in supabase/migrations/20260912_rebrand_taxonomy.sql
-      // These are conservative category-filter redirects that preserve SEO juice without auto-drafting live content
-      {
-        source: "/blog/:slug*",
-        has: [{ type: "query", key: "category", value: "Food & Recipes" }],
-        destination: "/resources",
-        permanent: true,
-      },
+      // Query-param redirects for archived off-topic categories.
+      // Must use `has` with type: 'query' — source never includes ?query.
+      // Verified via curl -I "http://localhost:3000/?category=Food%20%26%20Recipes" → 308
+      // See redirects.csv for exact slug-level map (generated after DB verification).
       {
         source: "/",
         has: [{ type: "query", key: "category", value: "Food & Recipes" }],
@@ -36,7 +31,7 @@ const nextConfig: NextConfig = {
       {
         source: "/",
         has: [{ type: "query", key: "category", value: "Travel & Lifestyle" }],
-        destination: "/",
+        destination: "/resources",
         permanent: true,
       },
       {
@@ -45,8 +40,6 @@ const nextConfig: NextConfig = {
         destination: "/about",
         permanent: true,
       },
-      // Legacy Web Development / Tech & AI slugs that may have moved to new pillars
-      // Keep existing /blog/:slug working — no redirect, handled by DB slug lookup
     ];
   },
   // Ensure offline builds don't fail on Google Fonts — layout.tsx uses system-font fallback

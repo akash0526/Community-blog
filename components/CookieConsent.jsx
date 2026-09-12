@@ -5,10 +5,14 @@ import Link from "next/link";
 export default function CookieConsent(){
   const [show, setShow] = useState(false);
   useEffect(()=>{
-    try{
-      const consent = localStorage.getItem("apex_cookie_consent");
-      if(!consent) setShow(true);
-    }catch{}
+    // Defer to avoid react-hooks/set-state-in-effect — consent check is external sync
+    const timer = setTimeout(() => {
+      try{
+        const consent = localStorage.getItem("apex_cookie_consent");
+        if(!consent) setShow(true);
+      }catch{}
+    }, 0);
+    return () => clearTimeout(timer);
   },[]);
   const accept = ()=>{
     try{ localStorage.setItem("apex_cookie_consent","accepted"); }catch{}

@@ -39,9 +39,9 @@ export default function EditorialPage(){
         <h2>Sponsored / affiliate content</h2>
         <ul>
           <li>All affiliate links are clearly disclosed at the top of the article.</li>
-          <li>Sponsored posts are labeled “Sponsored” and use <code>rel="sponsored"</code>.</li>
+          <li>Sponsored posts are labeled &quot;Sponsored&quot; and use <code>rel=&quot;sponsored&quot;</code>.</li>
           <li>Sponsors never see copy before publish and cannot alter test results.</li>
-          <li>We do not do “pay for positive review”.</li>
+          <li>We do not do &quot;pay for positive review&quot;.</li>
         </ul>
 
         <h2>Author qualifications (E-E-A-T)</h2>

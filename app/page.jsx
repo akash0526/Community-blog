@@ -52,7 +52,7 @@ export default async function Homepage() {
 						</h1>
 
 						<p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg mb-8 max-w-2xl leading-relaxed">
-							Helping Nepali freelancers, students, and small businesses earn more with AI and digital tools. Practical, tested guides — from ChatGPT & Grammarly to Hostinger hosting and Payoneer payouts.
+							Build, freelance, and get paid — with tools that actually work in Nepal. Practical, tested guides for freelancers, students, and small businesses.
 						</p>
 
 						<div className="flex flex-col sm:flex-row gap-3">

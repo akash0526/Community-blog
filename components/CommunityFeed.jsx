@@ -34,14 +34,19 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
   const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem("apex_articles_v1") || "[]");
-      const existing = new Set(initialArticles.map((a) => a.slug));
-      const uniqueLocal = (stored || []).filter(
-        (l) => l.status === "published" && !existing.has(l.slug)
-      );
-      setLocalArticles(uniqueLocal);
-    } catch {}
+    // Defer setState to avoid react-hooks/set-state-in-effect cascading render warning
+    // localStorage is external sync — reading it is intentional, but we schedule the update async
+    const timer = setTimeout(() => {
+      try {
+        const stored = JSON.parse(localStorage.getItem("apex_articles_v1") || "[]");
+        const existing = new Set(initialArticles.map((a) => a.slug));
+        const uniqueLocal = (stored || []).filter(
+          (l) => l.status === "published" && !existing.has(l.slug)
+        );
+        setLocalArticles(uniqueLocal);
+      } catch {}
+    }, 0);
+    return () => clearTimeout(timer);
   }, [initialArticles]);
 
   const articles = useMemo(

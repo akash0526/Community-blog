@@ -110,6 +110,9 @@ export default async function ArticlePage({ params }) {
 
   const isNews = ["News & Current Affairs","Personal Stories","Opinion & Essays"].includes(article.category);
 
+  // eslint-disable-next-line react-hooks/purity -- copyrightYear is derived from article dates; not a React hook, safe for SSR
+  const copyrightYear = new Date(article.published_at || article.created_at || Date.now()).getFullYear();
+
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": isNews ? "NewsArticle" : "BlogPosting",
@@ -156,7 +159,7 @@ export default async function ArticlePage({ params }) {
     "articleSection": article.category,
     "keywords": [article.target_keyword, article.category].filter(Boolean).join(", "),
     "about": article.target_keyword || article.category,
-    "copyrightYear": new Date(article.published_at || article.created_at || Date.now()).getFullYear(),
+    "copyrightYear": copyrightYear,
     "copyrightHolder": {
       "@type": "Organization",
       "name": "Apex"

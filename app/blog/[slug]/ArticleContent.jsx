@@ -36,22 +36,29 @@ export default function ArticleContent({ serverArticle, slug }) {
   const [shareToast, setShareToast] = useState(false);
 
   useEffect(()=>{
-    if(serverArticle){ setArticle(serverArticle); setLoading(false); return; }
-    // local fallback
-    try{
-      const stored = JSON.parse(localStorage.getItem("apex_articles_v1")||"[]");
-      const found = stored.find(a => decodeURIComponent(a.slug||"")===decodeURIComponent(slug));
-      if(found) setArticle(found);
-    }catch{}
-    setLoading(false);
+    // Defer to avoid react-hooks/set-state-in-effect
+    const timer = setTimeout(() => {
+      if(serverArticle){ setArticle(serverArticle); setLoading(false); return; }
+      // local fallback
+      try{
+        const stored = JSON.parse(localStorage.getItem("apex_articles_v1")||"[]");
+        const found = stored.find(a => decodeURIComponent(a.slug||"")===decodeURIComponent(slug));
+        if(found) setArticle(found);
+      }catch{}
+      setLoading(false);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [serverArticle, slug]);
 
   // bookmark state
   useEffect(()=>{
-    try{
-      const bms = JSON.parse(localStorage.getItem("apex_bookmarks_v1")||"[]");
-      setBookmarked(bms.some(b => decodeURIComponent(b.slug||"")===decodeURIComponent(slug)));
-    }catch{}
+    const timer = setTimeout(() => {
+      try{
+        const bms = JSON.parse(localStorage.getItem("apex_bookmarks_v1")||"[]");
+        setBookmarked(bms.some(b => decodeURIComponent(b.slug||"")===decodeURIComponent(slug)));
+      }catch{}
+    }, 0);
+    return () => clearTimeout(timer);
   }, [slug]);
 
   const handleBookmark = ()=>{

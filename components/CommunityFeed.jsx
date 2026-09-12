@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, Loader2 } from "lucide-react";
 import { storyCategoryValues } from "@/lib/categories";
+import ClientDate from "@/components/ClientDate";
 
 const LOAD_MORE_SIZE = 12;
 
@@ -22,21 +24,28 @@ function avatarUrl(art) {
   return raw;
 }
 
-function getLocalArticles(initialArticles) {
-  if (typeof window === "undefined") return [];
-  try {
-    const stored = JSON.parse(localStorage.getItem("apex_articles_v1") || "[]");
-    const existing = new Set(initialArticles.map((a) => a.slug));
-    return (stored || []).filter(
-      (l) => l.status === "published" && !existing.has(l.slug)
-    );
-  } catch {
-    return [];
-  }
-}
-
 export default function CommunityFeed({ initialArticles = [], hasMore: initialHasMore = false, initialOffset = 0 }) {
-  const [localArticles] = useState(() => getLocalArticles(initialArticles));
+  const [mounted, setMounted] = useState(false);
+  const [localArticles, setLocalArticles] = useState([]);
+
+  // Mounted pattern: stable placeholder on server, hydrate with client value after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    try {
+      const stored = JSON.parse(localStorage.getItem("apex_articles_v1") || "[]");
+      const existing = new Set(initialArticles.map((a) => a.slug));
+      const locals = (stored || []).filter(
+        (l) => l.status === "published" && !existing.has(l.slug)
+      );
+      setLocalArticles(locals);
+    } catch {
+      setLocalArticles([]);
+    }
+  }, [mounted, initialArticles]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
@@ -172,23 +181,35 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
                   </div>
                 </div>
                 <div className="p-5 flex flex-col flex-1">
-                  <div className="text-[11px] text-slate-500 mb-2 font-semibold">
-                    {art.published_at
-                      ? new Date(art.published_at).toLocaleDateString("en-GB", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })
-                      : "Recently"}
-                    {art.updated_at && art.updated_at !== art.created_at && (
+                  <div className="text-[11px] text-slate-500 mb-2 font-semibold" suppressHydrationWarning>
+                    {mounted ? (
                       <>
-                        {" "}
-                        • Updated{" "}
-                        {new Date(art.updated_at).toLocaleDateString("en-GB", {
-                          month: "short",
-                          day: "numeric",
-                        })}
+                        {art.published_at ? (
+                          <ClientDate
+                            date={art.published_at}
+                            options={{ month: "short", day: "numeric", year: "numeric" }}
+                            placeholder="—"
+                            fallback="Recently"
+                          />
+                        ) : (
+                          "Recently"
+                        )}
+                        {art.updated_at && art.updated_at !== art.created_at && (
+                          <>
+                            {" "}
+                            • Updated{" "}
+                            <ClientDate
+                              date={art.updated_at}
+                              options={{ month: "short", day: "numeric" }}
+                              placeholder=""
+                              fallback=""
+                            />
+                          </>
+                        )}
                       </>
+                    ) : (
+                      // Stable placeholder on server / initial hydration
+                      <span>—</span>
                     )}
                   </div>
                   <h3 className="font-black text-[18px] leading-snug mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2 transition-colors duration-300">

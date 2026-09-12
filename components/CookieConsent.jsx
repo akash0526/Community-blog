@@ -1,15 +1,26 @@
 "use client";
-import { useState } from "react";
+
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function CookieConsent(){
-  const [show, setShow] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try{
+  const [show, setShow] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    try {
       const consent = localStorage.getItem("apex_cookie_consent");
-      return !consent;
-    }catch{ return false; }
-  });
+      setShow(!consent);
+    } catch {
+      setShow(false);
+    }
+  }, [mounted]);
   const accept = ()=>{
     try{ localStorage.setItem("apex_cookie_consent","accepted"); }catch{}
     setShow(false);

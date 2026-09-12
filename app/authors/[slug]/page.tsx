@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { SITE_URL } from "@/lib/articles";
+import ClientDate from "@/components/ClientDate";
 
 export const revalidate = 120;
 
@@ -102,7 +103,7 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
       <div className="max-w-4xl mx-auto px-6 py-14 sm:py-20">
         <div className="flex flex-col sm:flex-row gap-8 items-start mb-12">
           <img src={profile.avatar_url?.includes('dicebear') ? `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name)}&background=4f46e5&color=fff&size=256` : profile.avatar_url} 
-            alt={profile.full_name} className="w-28 h-28 rounded-2xl object-cover border border-slate-200 dark:border-slate-800" />
+            alt={profile.full_name} className="w-28 h-28 rounded-2xl object-cover border border-slate-200 dark:border-slate-800" loading="lazy" decoding="async" />
           <div className="flex-1">
             <h1 className="text-3xl sm:text-4xl font-black mb-2">{profile.full_name}</h1>
             <div className="text-indigo-600 dark:text-indigo-400 font-bold text-sm mb-3">{profile.professional_role || "Contributing Writer"}</div>
@@ -147,7 +148,7 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
                   <div className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1">{a.category}</div>
                   <div className="font-black text-lg mb-1">{a.title}</div>
                   <div className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">{a.meta_description}</div>
-                  <div className="text-xs text-slate-500 mt-2">{a.published_at ? new Date(a.published_at).toLocaleDateString() : ""}</div>
+                  <div className="text-xs text-slate-500 mt-2" suppressHydrationWarning><ClientDate date={a.published_at} options={{ year: "numeric", month: "short", day: "numeric" }} placeholder="—" fallback="" /></div>
                 </Link>
               ))}
             </div>

@@ -60,7 +60,7 @@ export default function AboutPage() {
           <h2>Editorial team</h2>
           <div className="not-prose grid sm:grid-cols-2 gap-6 my-8">
             <div className="border border-slate-200 dark:border-slate-800 rounded-2xl p-6 bg-slate-50 dark:bg-slate-900">
-              <img src="https://avatars.githubusercontent.com/u/148329502?v=4" alt="Akash Adhikari" className="w-16 h-16 rounded-full mb-3 object-cover" />
+              <img src="https://avatars.githubusercontent.com/u/148329502?v=4" alt="Akash Adhikari" className="w-16 h-16 rounded-full mb-3 object-cover" loading="lazy" decoding="async" />
               <div className="font-black text-lg">Akash Adhikari</div>
               <div className="text-sm text-indigo-600 dark:text-indigo-400 font-bold mb-2">Founder & Lead Editor</div>
               <p className="text-sm text-slate-600 dark:text-slate-400">Full-stack engineer (Next.js / Supabase). Covers AI workflows, freelancing, hosting, and digital payments for Nepal.</p>

@@ -325,8 +325,8 @@ export default function AuthorDashboard() {
 								100% Genuine
 							</span>
 						</div>
-						<div className="text-4xl font-black text-slate-900 dark:text-white my-3 font-mono">
-							{totalHits.toLocaleString()}{" "}
+						<div className="text-4xl font-black text-slate-900 dark:text-white my-3 font-mono" suppressHydrationWarning>
+							{String(totalHits)}{" "}
 							<span className="text-sm font-extrabold text-indigo-600 dark:text-indigo-400 font-sans">
 								Hits
 							</span>
@@ -341,8 +341,8 @@ export default function AuthorDashboard() {
 							<span>Total Audience Claps</span>
 							<span className="text-amber-500 font-bold">👏 Applause Hits</span>
 						</div>
-						<div className="text-4xl font-black text-slate-900 dark:text-white my-3 font-mono">
-							{totalClaps.toLocaleString()}{" "}
+						<div className="text-4xl font-black text-slate-900 dark:text-white my-3 font-mono" suppressHydrationWarning>
+							{String(totalClaps)}{" "}
 							<span className="text-sm font-extrabold text-amber-500 font-sans">
 								Claps
 							</span>
@@ -522,9 +522,9 @@ export default function AuthorDashboard() {
 											{/* Actions */}
 											<div className="flex items-center gap-2.5 self-end sm:self-center flex-shrink-0 flex-wrap">
 												<div className="text-right mr-2 hidden sm:block">
-													<div className="text-base font-black text-indigo-600 dark:text-indigo-400 font-mono">
-														{(art.pageviews || 1).toLocaleString()}
-													</div>
+								<div className="text-base font-black text-indigo-600 dark:text-indigo-400 font-mono" suppressHydrationWarning>
+									{String(art.pageviews || 1)}
+								</div>
 													<div className="text-[10px] font-extrabold text-slate-400 uppercase">
 														Hits
 													</div>

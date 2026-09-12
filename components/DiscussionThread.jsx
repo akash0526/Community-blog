@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { MessageSquare, Heart, Send, User, Sparkles } from "lucide-react";
+import ClientDate from "@/components/ClientDate";
 
 export default function DiscussionThread({ articleSlug }) {
 	const [comments, setComments] = useState([]);
@@ -283,18 +284,18 @@ export default function DiscussionThread({ articleSlug }) {
 													{comm.author_role}
 												</span>
 											</div>
-											<div className="text-[11px] font-semibold text-slate-400 mt-0.5">
-												{comm.created_at
-													? new Date(comm.created_at).toLocaleDateString(
-															"en-US",
-															{
-																month: "short",
-																day: "numeric",
-																year: "numeric",
-															},
-														)
-													: "Just now"}
-											</div>
+									<div className="text-[11px] font-semibold text-slate-400 mt-0.5" suppressHydrationWarning>
+										{comm.created_at ? (
+											<ClientDate
+												date={comm.created_at}
+												options={{ month: "short", day: "numeric", year: "numeric" }}
+												placeholder="—"
+												fallback="Just now"
+											/>
+										) : (
+											<span>Just now</span>
+										)}
+									</div>
 										</div>
 									</div>
 								</div>

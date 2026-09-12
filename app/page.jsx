@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getPaginatedArticles, getPublishedArticleCount } from "@/lib/articles";
 import CommunityFeed from "@/components/CommunityFeed";
+import ClientDate from "@/components/ClientDate";
 
 export const revalidate = 60;
 
@@ -159,30 +160,31 @@ export default async function Homepage() {
 								</div>
 
 								<div className="lg:w-[52%] p-7 sm:p-10 flex flex-col justify-center">
-									<div className="flex items-center gap-3 text-xs text-slate-500 mb-3 font-semibold">
-										<span>
-											{new Date(
-												featured.published_at || featured.created_at,
-											).toLocaleDateString("en-GB", {
-												year: "numeric",
-												month: "short",
-												day: "numeric",
-											})}
-										</span>
-										{featured.updated_at &&
-											featured.updated_at !== featured.created_at && (
-												<>
-													<span>•</span>
-													<span>
-														Updated{" "}
-														{new Date(featured.updated_at).toLocaleDateString(
-															"en-GB",
-															{ month: "short", day: "numeric" },
-														)}
-													</span>
-												</>
-											)}
-									</div>
+							<div className="flex items-center gap-3 text-xs text-slate-500 mb-3 font-semibold" suppressHydrationWarning>
+								<span suppressHydrationWarning>
+									<ClientDate
+										date={featured.published_at || featured.created_at}
+										options={{ year: "numeric", month: "short", day: "numeric" }}
+										placeholder="—"
+										fallback="Recently"
+									/>
+								</span>
+								{featured.updated_at &&
+									featured.updated_at !== featured.created_at && (
+										<>
+											<span>•</span>
+											<span suppressHydrationWarning>
+												Updated{" "}
+												<ClientDate
+													date={featured.updated_at}
+													options={{ month: "short", day: "numeric" }}
+													placeholder="—"
+													fallback=""
+												/>
+											</span>
+										</>
+									)}
+							</div>
 
 									<h3 className="text-2xl sm:text-3xl font-black leading-tight mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
 										{featured.title.replace(/Slug:.*$/i, "").trim()}

@@ -110,8 +110,7 @@ export default async function ArticlePage({ params }) {
 
   const isNews = ["News & Current Affairs","Personal Stories","Opinion & Essays"].includes(article.category);
 
-  // eslint-disable-next-line react-hooks/purity -- copyrightYear is derived from article dates; not a React hook, safe for SSR
-  const copyrightYear = new Date(article.published_at || article.created_at || Date.now()).getFullYear();
+  const copyrightYear = new Date(article.published_at || article.created_at || "2026-01-01").getFullYear();
 
   const articleJsonLd = {
     "@context": "https://schema.org",

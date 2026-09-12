@@ -29,7 +29,7 @@ export default async function AuthorsIndex(){
           const avatar = a.avatar_url?.includes('dicebear') ? `https://ui-avatars.com/api/?name=${encodeURIComponent(a.full_name || 'Apex')}&background=4f46e5&color=fff` : a.avatar_url;
           return (
             <Link key={slug} href={`/authors/${slug}`} className="border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:shadow-md transition bg-white dark:bg-slate-900">
-              <img src={avatar} className="w-14 h-14 rounded-full mb-3 object-cover" alt={a.full_name}/>
+              <img src={avatar} className="w-14 h-14 rounded-full mb-3 object-cover" alt={a.full_name} loading="lazy" decoding="async"/>
               <div className="font-black">{a.full_name}</div>
               <div className="text-xs text-indigo-600 dark:text-indigo-400 font-bold mb-2">{a.professional_role}</div>
               <div className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3">{a.bio}</div>

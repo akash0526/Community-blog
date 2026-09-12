@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
@@ -8,6 +9,7 @@ import Image from "next/image";
 import { ArrowLeft, Share2, Bookmark, Check } from "lucide-react";
 import DiscussionThread from "@/components/DiscussionThread";
 import { sanitizeCmsField } from "@/lib/seoUtils";
+import ClientDate from "@/components/ClientDate";
 
 function cleanTitle(title=""){
   return sanitizeCmsField(String(title).replace(/\s*Slug:.*$/i,'').trim());
@@ -22,37 +24,37 @@ function getAvatar(profile, fallbackSeed="apex"){
   return raw;
 }
 
-function formatDate(d){
-  if(!d) return "";
-  try {
-    return new Date(d).toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric'});
-  } catch { return d }
-}
-
-function getInitialArticle(serverArticle, slug) {
-  if (serverArticle) return serverArticle;
-  if (typeof window === "undefined") return null;
-  try {
-    const stored = JSON.parse(localStorage.getItem("apex_articles_v1")||"[]");
-    const found = stored.find(a => decodeURIComponent(a.slug||"")===decodeURIComponent(slug));
-    if (found) return found;
-  } catch {}
-  return null;
-}
-
-function getInitialBookmarked(slug) {
-  if (typeof window === "undefined") return false;
-  try {
-    const bms = JSON.parse(localStorage.getItem("apex_bookmarks_v1")||"[]");
-    return bms.some(b => decodeURIComponent(b.slug||"")===decodeURIComponent(slug));
-  } catch { return false; }
-}
-
 export default function ArticleContent({ serverArticle, slug }) {
-  const [article] = useState(() => getInitialArticle(serverArticle, slug));
-  const [bookmarked, setBookmarked] = useState(() => getInitialBookmarked(slug));
+  const [mounted, setMounted] = useState(false);
+  const [article, setArticle] = useState(serverArticle);
+  const [bookmarked, setBookmarked] = useState(false);
   const [shareToast, setShareToast] = useState(false);
   const loading = false;
+
+  // Mounted pattern: stable placeholder on server, hydrate with client value after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (!serverArticle) {
+      try {
+        const stored = JSON.parse(localStorage.getItem("apex_articles_v1") || "[]");
+        const found = stored.find(
+          (a) => decodeURIComponent(a.slug || "") === decodeURIComponent(slug)
+        );
+        if (found) setArticle(found);
+      } catch {}
+    }
+    try {
+      const bms = JSON.parse(localStorage.getItem("apex_bookmarks_v1") || "[]");
+      const isBookmarked = bms.some(
+        (b) => decodeURIComponent(b.slug || "") === decodeURIComponent(slug)
+      );
+      setBookmarked(isBookmarked);
+    } catch {}
+  }, [mounted, serverArticle, slug]);
 
   const handleBookmark = ()=>{
     try{
@@ -90,15 +92,13 @@ export default function ArticleContent({ serverArticle, slug }) {
     )
   }
 
-  const title = cleanTitle(article.title);
-  const description = sanitizeCmsField(article.meta_description);
-  const author = article.profiles || {};
+  const title = article ? cleanTitle(article.title) : "";
+  const description = article ? sanitizeCmsField(article.meta_description) : "";
+  const author = article?.profiles || {};
   const authorName = author.full_name || "Apex Editorial";
   const authorRole = author.professional_role || "Contributing Writer";
   const authorBio = author.bio || "";
-  const authorAvatar = getAvatar(author, article.id);
-  const published = formatDate(article.published_at || article.created_at);
-  const updated = article.updated_at && article.updated_at !== article.created_at ? formatDate(article.updated_at) : null;
+  const authorAvatar = getAvatar(author, article?.id);
   const category = article.category || "Stories";
   const isFinance = ["Business & Finance","Finance","Money"].includes(category);
   const isHealth = (category||"").toLowerCase().includes("health");
@@ -146,9 +146,34 @@ export default function ArticleContent({ serverArticle, slug }) {
           {description && (
             <p className="text-[18px] text-slate-600 dark:text-slate-300 leading-relaxed">{description}</p>
           )}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500 mt-5">
-            <time dateTime={article.published_at || article.created_at}>Published {published}</time>
-            {updated && <><span>•</span><span>Updated {updated}</span></>}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500 mt-5" suppressHydrationWarning>
+            <time dateTime={article.published_at || article.created_at} suppressHydrationWarning>
+              Published{" "}
+              {mounted ? (
+                <ClientDate
+                  date={article.published_at || article.created_at}
+                  options={{ year: "numeric", month: "long", day: "numeric" }}
+                  placeholder="—"
+                  fallback=""
+                />
+              ) : (
+                <span>—</span>
+              )}
+            </time>
+            {mounted && article.updated_at && article.updated_at !== article.created_at && (
+              <>
+                <span>•</span>
+                <span>
+                  Updated{" "}
+                  <ClientDate
+                    date={article.updated_at}
+                    options={{ year: "numeric", month: "long", day: "numeric" }}
+                    placeholder="—"
+                    fallback=""
+                  />
+                </span>
+              </>
+            )}
             <span>•</span>
             <span>5–8 min read</span>
           </div>
@@ -211,11 +236,35 @@ export default function ArticleContent({ serverArticle, slug }) {
         </div>
 
         {/* Methodology / sources box – E-E-A-T */}
-        <div className="mt-12 p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm">
+        <div className="mt-12 p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm" suppressHydrationWarning>
           <div className="font-black mb-2">How we verified this</div>
           <ul className="text-slate-600 dark:text-slate-400 space-y-1 list-disc pl-5 text-[13px]">
             <li>Author: {authorName} – {authorRole}</li>
-            <li>Published {published}{updated ? ` • Last updated ${updated}` : ""}</li>
+            <li suppressHydrationWarning>
+              Published{" "}
+              {mounted ? (
+                <ClientDate
+                  date={article.published_at || article.created_at}
+                  options={{ year: "numeric", month: "long", day: "numeric" }}
+                  placeholder="—"
+                  fallback=""
+                />
+              ) : (
+                <span>—</span>
+              )}
+              {mounted && article.updated_at && article.updated_at !== article.created_at && (
+                <>
+                  {" "}
+                  • Last updated{" "}
+                  <ClientDate
+                    date={article.updated_at}
+                    options={{ year: "numeric", month: "long", day: "numeric" }}
+                    placeholder="—"
+                    fallback=""
+                  />
+                </>
+              )}
+            </li>
             <li>Sources cited inline with live links</li>
             <li>Corrections policy: <Link href="/editorial" className="underline text-indigo-600 dark:text-indigo-400">see Editorial Policy</Link></li>
             <li>Found an error? <a href="mailto:editor@apex-nepal.com" className="underline text-indigo-600 dark:text-indigo-400">editor@apex-nepal.com</a></li>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
@@ -29,37 +29,30 @@ function formatDate(d){
   } catch { return d }
 }
 
+function getInitialArticle(serverArticle, slug) {
+  if (serverArticle) return serverArticle;
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = JSON.parse(localStorage.getItem("apex_articles_v1")||"[]");
+    const found = stored.find(a => decodeURIComponent(a.slug||"")===decodeURIComponent(slug));
+    if (found) return found;
+  } catch {}
+  return null;
+}
+
+function getInitialBookmarked(slug) {
+  if (typeof window === "undefined") return false;
+  try {
+    const bms = JSON.parse(localStorage.getItem("apex_bookmarks_v1")||"[]");
+    return bms.some(b => decodeURIComponent(b.slug||"")===decodeURIComponent(slug));
+  } catch { return false; }
+}
+
 export default function ArticleContent({ serverArticle, slug }) {
-  const [article, setArticle] = useState(serverArticle);
-  const [loading, setLoading] = useState(!serverArticle);
-  const [bookmarked, setBookmarked] = useState(false);
+  const [article] = useState(() => getInitialArticle(serverArticle, slug));
+  const [bookmarked, setBookmarked] = useState(() => getInitialBookmarked(slug));
   const [shareToast, setShareToast] = useState(false);
-
-  useEffect(()=>{
-    // Defer to avoid react-hooks/set-state-in-effect
-    const timer = setTimeout(() => {
-      if(serverArticle){ setArticle(serverArticle); setLoading(false); return; }
-      // local fallback
-      try{
-        const stored = JSON.parse(localStorage.getItem("apex_articles_v1")||"[]");
-        const found = stored.find(a => decodeURIComponent(a.slug||"")===decodeURIComponent(slug));
-        if(found) setArticle(found);
-      }catch{}
-      setLoading(false);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [serverArticle, slug]);
-
-  // bookmark state
-  useEffect(()=>{
-    const timer = setTimeout(() => {
-      try{
-        const bms = JSON.parse(localStorage.getItem("apex_bookmarks_v1")||"[]");
-        setBookmarked(bms.some(b => decodeURIComponent(b.slug||"")===decodeURIComponent(slug)));
-      }catch{}
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [slug]);
+  const loading = false;
 
   const handleBookmark = ()=>{
     try{

@@ -1,19 +1,15 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 
 export default function CookieConsent(){
-  const [show, setShow] = useState(false);
-  useEffect(()=>{
-    // Defer to avoid react-hooks/set-state-in-effect — consent check is external sync
-    const timer = setTimeout(() => {
-      try{
-        const consent = localStorage.getItem("apex_cookie_consent");
-        if(!consent) setShow(true);
-      }catch{}
-    }, 0);
-    return () => clearTimeout(timer);
-  },[]);
+  const [show, setShow] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try{
+      const consent = localStorage.getItem("apex_cookie_consent");
+      return !consent;
+    }catch{ return false; }
+  });
   const accept = ()=>{
     try{ localStorage.setItem("apex_cookie_consent","accepted"); }catch{}
     setShow(false);

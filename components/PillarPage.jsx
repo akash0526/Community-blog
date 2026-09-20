@@ -33,7 +33,7 @@ export default function PillarPage({ categoryId, eyebrow, title, description, st
 				{category && (
 					<section className="mb-12">
 						<div className="flex items-end justify-between gap-4 mb-5">
-							<h2 className="text-2xl font-black">{category.emoji} Recommended tools</h2>
+							<h2 className="text-2xl font-black">Recommended tools</h2>
 							<Link href={`/resources#${category.id}`} className="text-sm font-black text-indigo-600 dark:text-indigo-400 hover:underline">See full directory →</Link>
 						</div>
 						<div className="grid md:grid-cols-2 gap-4">

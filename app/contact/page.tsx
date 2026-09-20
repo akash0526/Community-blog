@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
       <div className="max-w-4xl mx-auto px-6 py-16 sm:py-24">
         <span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Contact</span>
         <h1 className="text-4xl sm:text-5xl font-black tracking-tight mt-3 mb-4">Talk to a real human.</h1>
@@ -85,6 +85,6 @@ export default function ContactPage() {
           <p><strong>Corrections policy:</strong> see <a href="/editorial" className="underline text-indigo-600 dark:text-indigo-400 font-bold">Editorial Policy</a>. Verified errors are fixed within 24h with a public correction note.</p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

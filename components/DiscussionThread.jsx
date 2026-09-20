@@ -93,7 +93,7 @@ export default function DiscussionThread({ articleSlug }) {
 			user?.user_metadata?.avatar_url &&
 			!user.user_metadata.avatar_url.includes("dicebear")
 				? user.user_metadata.avatar_url
-				: `https://ui-avatars.com/api/?name=${encodeURIComponent(activeName)}&background=4f46e5&color=fff`;
+				: `https://ui-avatars.com/api/?name=${encodeURIComponent(activeName)}&background=A8471F&color=fff`;
 		const activeRole =
 			user?.user_metadata?.professional_role || "Community Reader";
 
@@ -288,7 +288,7 @@ export default function DiscussionThread({ articleSlug }) {
 											comm.author_avatar &&
 											!comm.author_avatar.includes("dicebear")
 												? comm.author_avatar
-												: `https://ui-avatars.com/api/?name=${encodeURIComponent(comm.author_name || "Apex")}&background=4f46e5&color=fff&size=64`
+												: `https://ui-avatars.com/api/?name=${encodeURIComponent(comm.author_name || "Apex")}&background=A8471F&color=fff&size=64`
 										}
 										alt={comm.author_name || "Commenter"}
 										width={40}

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function WriteForUsPage() {
 	return (
-		<main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+		<div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
 			<div className="max-w-4xl mx-auto px-6 py-16 sm:py-24">
 				<span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Community contributions</span>
 				<h1 className="text-4xl sm:text-5xl font-black tracking-tight mt-3 mb-5">Write for Apex Nepal</h1>
@@ -49,6 +49,6 @@ export default function WriteForUsPage() {
 					</section>
 				</div>
 			</div>
-		</main>
+		</div>
 	);
 }

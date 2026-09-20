@@ -23,7 +23,7 @@ export default async function BlogArchivePage() {
 	const articles = await getPaginatedArticles(ARCHIVE_SIZE, 0);
 
 	return (
-		<main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-12">
+		<div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-12">
 			<div className="max-w-4xl mx-auto px-6">
 				<span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
 					Archive
@@ -86,6 +86,6 @@ export default async function BlogArchivePage() {
 					</ol>
 				)}
 			</div>
-		</main>
+		</div>
 	);
 }

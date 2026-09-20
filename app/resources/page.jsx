@@ -27,7 +27,7 @@ function Badge({ children, tone = "slate" }) {
 
 export default function ResourcesPage() {
 	return (
-		<main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-12">
+		<div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-12">
 			<div className="max-w-7xl mx-auto px-6">
 				<section className="glass rounded-3xl p-8 sm:p-12 mb-10 relative overflow-hidden">
 					<div className="absolute -top-24 -right-24 w-56 h-56 bg-indigo-500/10 rounded-full blur-3xl" />
@@ -40,7 +40,7 @@ export default function ResourcesPage() {
 						<div className="flex flex-wrap gap-3 mt-8">
 							{resourceCategories.map((category) => (
 								<Link key={category.id} href={`#${category.id}`} className="btn btn-secondary px-4 py-2 rounded-xl text-xs">
-									{category.emoji} {category.title}
+									{category.title}
 								</Link>
 							))}
 						</div>
@@ -52,7 +52,7 @@ export default function ResourcesPage() {
 						<section key={category.id} id={category.id} className="scroll-mt-28">
 							<div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5">
 								<div>
-									<h2 className="text-2xl sm:text-3xl font-black">{category.emoji} {category.title}</h2>
+									<h2 className="text-2xl sm:text-3xl font-black">{category.title}</h2>
 									<p className="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl">{category.audience}</p>
 								</div>
 								<Link href={category.pillar} className="text-sm font-black text-indigo-600 dark:text-indigo-400 hover:underline">Read the pillar guide →</Link>
@@ -71,7 +71,7 @@ export default function ResourcesPage() {
 											<div className="flex items-start justify-between gap-3 mb-3">
 												<h3 className="font-black text-lg leading-tight">{resource.name}</h3>
 												<div className="flex gap-1.5 flex-wrap justify-end">
-													<Badge tone={resource.badge === "🆓" ? "green" : "slate"}>{resource.badge}</Badge>
+													<Badge tone={resource.badge === "Free" ? "green" : "slate"}>{resource.badge}</Badge>
 													{resource.status && <Badge>{resource.status}</Badge>}
 													{resource.affiliate && <Badge tone="amber">Affiliate</Badge>}
 												</div>
@@ -90,9 +90,9 @@ export default function ResourcesPage() {
 				</div>
 
 				<div className="mt-12 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8 text-sm text-slate-600 dark:text-slate-300">
-					<strong className="text-slate-900 dark:text-white">Status legend:</strong> ✅ link verified alive · 🛡️ alive but bot-protected · 🌐 confirm in browser. Prices and payment rails change fast, so money pages are re-verified quarterly.
+					<strong className="text-slate-900 dark:text-white">Status legend:</strong> “works” = link verified alive · “check first” = alive but bot-protected · confirm in browser before relying on it. Prices and payment rails change fast, so money pages are re-verified quarterly.
 				</div>
 			</div>
-		</main>
+		</div>
 	);
 }

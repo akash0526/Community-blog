@@ -3,7 +3,7 @@ import { FileQuestion, ArrowLeft, Sparkles } from 'lucide-react';
 
 export default function BlogArticleNotFound() {
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-32 pt-8 transition">
+    <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-32 pt-8 transition">
       <div className="max-w-2xl mx-auto px-6 text-center py-24">
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-900 mb-6">
           <FileQuestion className="w-10 h-10 text-amber-500" />
@@ -39,6 +39,6 @@ export default function BlogArticleNotFound() {
           </Link>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

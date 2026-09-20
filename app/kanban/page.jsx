@@ -175,7 +175,7 @@ export default function WorkflowKanban() {
 	};
 
 	return (
-		<main className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-8 transition">
+		<div className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-8 transition">
 			<div className="max-w-7xl mx-auto px-6">
 				{/* Kanban Head */}
 				<div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-10 bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm text-left">
@@ -384,6 +384,6 @@ export default function WorkflowKanban() {
 					})}
 				</div>
 			</div>
-		</main>
+		</div>
 	);
 }

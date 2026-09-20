@@ -77,7 +77,7 @@ export default function AuthorDashboard() {
 						activeUser.user_metadata?.avatar_url &&
 						!activeUser.user_metadata.avatar_url.includes("dicebear")
 							? activeUser.user_metadata.avatar_url
-							: `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUser.user_metadata?.full_name || activeUser.email?.split("@")[0] || "Apex")}&background=4f46e5&color=fff`,
+							: `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUser.user_metadata?.full_name || activeUser.email?.split("@")[0] || "Apex")}&background=A8471F&color=fff`,
 					website: activeUser.user_metadata?.website || "",
 					twitter: activeUser.user_metadata?.twitter || "",
 					linkedin: activeUser.user_metadata?.linkedin || "",
@@ -234,7 +234,7 @@ export default function AuthorDashboard() {
 				"Writing and sharing stories with the open community.",
 			avatarUrl:
 				profileForm.avatarUrl.trim() ||
-				`https://ui-avatars.com/api/?name=${encodeURIComponent(profileForm.fullName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Apex")}&background=4f46e5&color=fff`,
+				`https://ui-avatars.com/api/?name=${encodeURIComponent(profileForm.fullName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Apex")}&background=A8471F&color=fff`,
 			website: profileForm.website.trim(),
 			twitter: profileForm.twitter.trim(),
 			linkedin: profileForm.linkedin.trim(),
@@ -302,7 +302,7 @@ export default function AuthorDashboard() {
 	}
 
 	return (
-		<main className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-8 transition text-left">
+		<div className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-8 transition text-left">
 			<div className="max-w-7xl mx-auto px-6">
 				{/* Dashboard Head */}
 				<div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-10 bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -713,7 +713,7 @@ export default function AuthorDashboard() {
 										>
 											<div className="flex items-center gap-3.5 min-w-0">
 												<img
-													src={`https://ui-avatars.com/api/?name=${encodeURIComponent(creator)}&background=4f46e5&color=fff`}
+													src={`https://ui-avatars.com/api/?name=${encodeURIComponent(creator)}&background=A8471F&color=fff`}
 													alt="Creator"
 													className="w-12 h-12 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700 flex-shrink-0"
 												/>
@@ -776,7 +776,7 @@ export default function AuthorDashboard() {
 										<img
 											src={
 												profileForm.avatarUrl ||
-												`https://ui-avatars.com/api/?name=${encodeURIComponent(profileForm.fullName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Apex")}&background=4f46e5&color=fff&size=256`
+												`https://ui-avatars.com/api/?name=${encodeURIComponent(profileForm.fullName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Apex")}&background=A8471F&color=fff&size=256`
 											}
 											alt="Profile avatar preview"
 											className="w-28 h-28 rounded-3xl object-cover border-4 border-white dark:border-slate-900 shadow-xl mx-auto mb-4"
@@ -951,6 +951,6 @@ export default function AuthorDashboard() {
 					)}
 				</div>
 			</div>
-		</main>
+		</div>
 	);
 }

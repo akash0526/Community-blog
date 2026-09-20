@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { IconCheck } from "./Icon";
 
 // Read once during state init (this component is client-only via
 // next/dynamic ssr:false, so localStorage is always available here).
@@ -22,16 +23,25 @@ export default function CookieConsent(){
 
   if (choice) return null;
   return (
-    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-[100] glass rounded-2xl shadow-2xl p-5 text-sm fade-up">
-      <div className="font-black mb-2">🍪 We use cookies</div>
-      <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed mb-4">
-        Apex uses essential cookies for login, theme, and your cookie choice.
-        See our <Link href="/privacy" className="underline text-indigo-600 dark:text-indigo-400">Privacy Policy</Link>.
+    <div className="card reveal in fixed bottom-4 left-4 right-4 z-[100] !gap-3 !p-5 text-sm sm:left-auto sm:right-6 sm:max-w-md">
+      <div className="flex items-center gap-2 font-semibold">
+        <span className="tile__icon !mb-0 !h-7 !w-7">
+          <IconCheck className="icon icon--15" />
+        </span>
+        Your cookie choice
+      </div>
+      <p className="text-[0.875rem] leading-relaxed text-[var(--ink-muted)]">
+        Apex uses essential cookies for login, theme, and your cookie choice. See
+        our <Link href="/privacy" className="link">Privacy Policy</Link>.
       </p>
       <div className="flex gap-2">
-        <button onClick={() => decide("accepted")} className="btn btn-primary flex-1 py-2.5 rounded-xl font-black text-xs">Got it</button>
-        <button onClick={() => decide("declined")} className="btn btn-secondary px-4 py-2.5 rounded-xl text-xs font-bold">Essential only</button>
+        <button onClick={() => decide("accepted")} className="btn btn--primary flex-1 justify-center !py-2.5 !text-[0.8125rem]">
+          Got it
+        </button>
+        <button onClick={() => decide("declined")} className="btn btn--ghost !py-2.5 !text-[0.8125rem]">
+          Essential only
+        </button>
       </div>
     </div>
-  )
+  );
 }

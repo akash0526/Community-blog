@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function GlobalNotFound() {
 	return (
-		<main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex items-center">
+		<div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex items-center">
 			<div className="max-w-2xl mx-auto px-6 py-24 text-center">
 				<div className="text-7xl font-black gradient-text mb-4">404</div>
 				<h1 className="text-2xl sm:text-3xl font-black mb-3">This page wandered off.</h1>
@@ -30,6 +30,6 @@ export default function GlobalNotFound() {
 					</Link>
 				</div>
 			</div>
-		</main>
+		</div>
 	);
 }

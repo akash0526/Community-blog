@@ -14,7 +14,7 @@ const corrections: Array<{date:string, article:string, slug:string, what:string}
 
 export default function CorrectionsPage(){
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
       <div className="max-w-3xl mx-auto px-6 py-16 sm:py-20">
         <h1 className="text-4xl font-black mb-4">Corrections</h1>
         <p className="text-slate-600 dark:text-slate-300 mb-10">We publish every substantive fix. Verified errors are corrected within 24 hours. &nbsp; <Link href="/editorial" className="underline text-indigo-600 dark:text-indigo-400 font-bold">Editorial Policy</Link></p>
@@ -41,6 +41,6 @@ export default function CorrectionsPage(){
           <p>Correction policy: substantive factual errors get an inline correction note in the article + an entry here. Typos / grammar fixes are not logged.</p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

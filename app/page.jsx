@@ -2,7 +2,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { getPaginatedArticles, getPublishedArticleCount } from "@/lib/articles";
 import CommunityFeed from "@/components/CommunityFeed";
+import NewsletterForm from "@/components/NewsletterForm";
 import { monthlyPicks } from "@/lib/resources";
+import {
+	IconArrowRight,
+	IconBriefcase,
+	IconCard,
+	IconScales,
+	IconSparkle,
+	IconUsers,
+} from "@/components/Icon";
 
 export const revalidate = 60;
 
@@ -12,281 +21,455 @@ export const metadata = {
 
 const PAGE_SIZE = 12;
 
+// NOTE: the resource counts below (hero stats, tile counts, "See all 140
+// resources") are the literal values given in apex-nepal-redesign.md §5/§7/§9.
+// lib/resources.js currently holds 88 entries across 6 categories, so these
+// numbers are wired to the brief rather than the data — swap them for a count
+// off `resourceCategories` before shipping if the copy needs to be verifiable.
+
+
+// §6 — ticker topics. Duplicated once inside the component so the 42s loop is seamless.
+const TICKER_ITEMS = [
+	"Payments",
+	"AI Tools",
+	"Freelancing",
+	"Legal & Tax",
+	"Hosting",
+	"Design",
+	"Communities",
+	"Learning",
+];
+
+// §7 — bento tiles, in the order given by the brief. Each one points at a route
+// that already exists on the site.
+const CATEGORY_TILES = [
+	{
+		variant: "tile--wide",
+		icon: IconCard,
+		title: "Getting paid",
+		copy: "Payment gateways, remittance routes and payout options that actually clear for Nepali freelancers and businesses.",
+		count: 18,
+		href: "/digital-payments",
+	},
+	{
+		icon: IconSparkle,
+		title: "AI tools",
+		copy: "What's worth the subscription.",
+		count: 31,
+		href: "/ai-tools",
+	},
+	{
+		icon: IconBriefcase,
+		title: "Freelancing",
+		copy: "Platforms, contracts, rates.",
+		count: 24,
+		href: "/freelancing-in-nepal",
+	},
+	{
+		icon: IconScales,
+		title: "Legal & tax",
+		copy: "Registration, PAN, filing.",
+		count: 12,
+		href: "/small-business-tools",
+	},
+	{
+		icon: IconUsers,
+		title: "Communities",
+		copy: "Where people actually reply.",
+		count: 15,
+		href: "/blog",
+	},
+];
+
+
+function cleanTitle(title) {
+	if (!title) return "";
+	return String(title).replace(/\s*Slug:.*$/i, "").trim();
+}
+
+function formatDate(value) {
+	if (!value) return "";
+	return new Date(value).toLocaleDateString("en-GB", {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+	});
+}
+
 export default async function Homepage() {
 	const articles = await getPaginatedArticles(PAGE_SIZE, 0);
 	const totalCount = await getPublishedArticleCount();
-	const featured = articles[0] || null;
-	const rest = articles.slice(1);
+	const featured = articles.slice(0, 3);
+	const rest = articles.slice(3);
 	const hasMore = totalCount > PAGE_SIZE;
 
 	return (
-		<main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-8">
-			<div className="max-w-7xl mx-auto px-6">
-				{/* ─── Glassmorphic Hero ─── */}
-				<div className="glass rounded-3xl p-8 sm:p-14 shadow-lg mb-12 fade-up relative overflow-hidden">
-					{/* Subtle gradient orb behind hero */}
-					<div className="absolute -top-32 -right-32 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-					<div className="absolute -bottom-20 -left-20 w-48 h-48 bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
+		<div className="flex-1">
+			{/* ═══ §5 HERO — asymmetric, left-aligned ═══ */}
+			<section className="hero">
+				<div className="wrap hero__grid">
+					<div>
+						<p className="eyebrow">
+							<span className="num">01</span> Curated for Nepal
+						</p>
 
-					<div className="max-w-3xl relative z-10">
-						<div className="flex items-center gap-3 mb-5 flex-wrap text-[11px] font-black uppercase tracking-wider">
-							<span className="text-emerald-600 dark:text-emerald-400">
-								Apex Nepal • Tested resources
-							</span>
-							<span className="text-slate-400">•</span>
-							<span className="text-slate-500">Updated Sept 2026 • Nepal-first</span>
-						</div>
-
-						{/* Gradient animated heading */}
-						<h1 className="text-[32px] sm:text-[52px] font-black tracking-tight leading-[1.05] mb-5 gradient-text">
-							Tested tools for
-							<br />
-							Nepali builders.
+						<h1>
+							Everything you need to build <em>from here</em>.
 						</h1>
 
-						<p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg mb-8 max-w-2xl leading-relaxed">
-						Free and affordable AI, freelancing, hosting, payment, and business tools — checked for Nepali internet, Nepali payments, and realistic NPR budgets.
+						<p className="lede">
+							A hand-checked directory of the tools, payment rails, guides and
+							communities that actually work for freelancers, founders and
+							creators based in Nepal.
 						</p>
 
-						<div className="flex flex-col sm:flex-row gap-3">
-							<Link
-								href="/resources"
-								className="btn btn-primary px-7 py-3.5 rounded-xl font-black text-sm text-center"
-							>
-								Start with resources <span className="arrow-bounce">→</span>
+						<div className="hero__cta">
+							<Link href="/resources" className="btn btn--primary">
+								Browse resources
+								<IconArrowRight />
 							</Link>
-							<Link
-								href="/write-for-us"
-								className="btn btn-secondary px-7 py-3.5 rounded-xl font-bold text-sm text-center hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors"
-							>
-								Suggest a tool
+							<Link href="/blog" className="btn btn--ghost">
+								Read the guides
 							</Link>
 						</div>
 
-						<div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-500 mt-8 font-semibold">
-							<Link
-								href="/how-we-test"
-								className="link-underline hover:text-slate-700 dark:hover:text-slate-300 transition"
-							>
-								How we test
-							</Link>
-							<Link
-								href="/editorial"
-								className="link-underline hover:text-slate-700 dark:hover:text-slate-300 transition"
-							>
-								Editorial Policy
-							</Link>
-							<Link
-								href="/corrections"
-								className="link-underline hover:text-slate-700 dark:hover:text-slate-300 transition"
-							>
-								Corrections
-							</Link>
-							<Link
-								href="/contact"
-								className="link-underline hover:text-slate-700 dark:hover:text-slate-300 transition"
-							>
-								Contact
-							</Link>
-						</div>
-					</div>
-				</div>
-
-
-				{/* Start-here kits */}
-				<section className="mb-12 fade-up" style={{ animationDelay: "0.05s" }}>
-					<div className="flex items-end justify-between gap-4 mb-5">
-						<div>
-							<span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Start here</span>
-							<h2 className="text-2xl sm:text-3xl font-black mt-2">Pick your Nepal-ready kit</h2>
-						</div>
-						<Link href="/resources" className="hidden sm:inline text-sm font-black text-indigo-600 dark:text-indigo-400 hover:underline">View all resources →</Link>
-					</div>
-					<div className="grid md:grid-cols-3 gap-4">
-						{[
-							{ title: "🎓 Student Starter Kit", copy: "Free courses, free AI study help, free books. NPR 0 to start learning.", href: "/resources#students", post: "MIT + Khan Academy guide" },
-							{ title: "💼 First-Client Freelancer Kit", copy: "Profile, proposals, portfolio and payments — everything to earn your first $100.", href: "/resources#freelancing", post: "First client on Upwork" },
-							{ title: "🏪 Shop Owner Kit", copy: "Free design, free billing tools and online visibility for your pasal.", href: "/resources#business", post: "Free tools for a shop" },
-						].map((kit) => (
-							<Link key={kit.title} href={kit.href} className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-700 transition card-hover">
-								<h3 className="text-xl font-black mb-3">{kit.title}</h3>
-								<p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">{kit.copy}</p>
-								<p className="text-xs font-black text-indigo-600 dark:text-indigo-400">Includes: {kit.post} →</p>
-							</Link>
-						))}
-					</div>
-				</section>
-
-				{/* Monthly picks */}
-				<section className="mb-8 fade-up" style={{ animationDelay: "0.08s" }}>
-					<div className="flex items-end justify-between gap-4 mb-5">
-						<div>
-							<span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">This month&apos;s picks</span>
-							<h2 className="text-2xl sm:text-3xl font-black mt-2">Useful now in Nepal</h2>
-						</div>
-						<span className="text-xs font-bold text-slate-500">Rotated monthly</span>
-					</div>
-					<div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-						{monthlyPicks.map((pick) => (
-							<Link key={pick.name} href={`/resources#${pick.categoryId}`} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 transition">
-								<div className="flex justify-between gap-3 mb-2">
-									<h3 className="font-black">{pick.name}</h3>
-									<span className="rounded-full bg-white dark:bg-slate-800 px-2.5 py-1 text-[11px] font-black text-slate-700 dark:text-slate-200">{pick.badge}</span>
-								</div>
-								<p className="text-sm text-slate-700 dark:text-slate-300 mb-2">{pick.what}</p>
-								<p className="text-xs text-slate-500 dark:text-slate-400"><strong>Why Nepal:</strong> {pick.why}</p>
-							</Link>
-						))}
-					</div>
-				</section>
-
-				<div className="mb-12 rounded-2xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/30 px-5 py-4 text-sm text-emerald-900 dark:text-emerald-200 font-bold">
-					Every tool tested from Nepal · Prices verified Sept 2026 · <Link href="/how-we-test" className="underline">How we test</Link> · <Link href="/editorial" className="underline">Editorial policy</Link>
-				</div>
-
-				<section className="mb-12 rounded-3xl bg-slate-950 text-white p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center gap-6 justify-between">
-					<div>
-						<h2 className="text-2xl font-black mb-2">One email a month: new free tools + price drops. No spam.</h2>
-						<p className="text-slate-300 text-sm">Newsletter embed is ready for Buttondown, Substack, or your provider of choice.</p>
-					</div>
-					<form action="https://buttondown.email/" method="get" className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-						<input type="email" name="email" required placeholder="you@example.com" className="min-w-0 lg:min-w-[280px] rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-400" />
-						<button className="btn btn-primary px-6 py-3 rounded-xl text-sm" type="submit">Join free</button>
-					</form>
-				</section>
-
-				{featured ? (
-					<>
-						<div
-							id="feed"
-							className="mb-10 fade-up"
-							style={{ animationDelay: "0.1s" }}
-						>
-							<div className="flex items-center justify-between mb-5">
-							<h2 className="text-xl sm:text-2xl font-black">Latest</h2>
-							<span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 badge-glow px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50">
-								Fresh off the press
-							</span>
+						<div className="hero__stats">
+							<div>
+								<div className="stat__n">140+</div>
+								<div className="stat__l">Resources</div>
 							</div>
-
-							{/* Featured card with gradient animated border */}
-							<Link
-								href={`/blog/${featured.slug}`}
-								className="gradient-border bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col lg:flex-row card-hover"
-							>
-								{/* Featured image with zoom on hover */}
-								<div className="lg:w-[48%] h-64 lg:h-auto min-h-[320px] relative bg-slate-100 dark:bg-slate-800 img-zoom">
-								<Image
-									src={featured.image_url || "/opengraph-image"}
-										alt={
-											featured.title?.replace(/Slug:.*$/i, "").trim() ||
-											"Featured story"
-										}
-										fill
-										sizes="(max-width: 1024px) 100vw, 48vw"
-										className="object-cover img-zoom-target"
-										priority
-									/>
-									<div className="m-4 inline-block glass px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 relative z-10">
-										{featured.category}
-									</div>
-								</div>
-
-								<div className="lg:w-[52%] p-7 sm:p-10 flex flex-col justify-center">
-									<div className="flex items-center gap-3 text-xs text-slate-500 mb-3 font-semibold">
-										<span>
-											{new Date(
-												featured.published_at || featured.created_at,
-											).toLocaleDateString("en-GB", {
-												year: "numeric",
-												month: "short",
-												day: "numeric",
-											})}
-										</span>
-										{featured.updated_at &&
-											featured.updated_at !== featured.created_at && (
-												<>
-													<span>•</span>
-													<span>
-														Updated{" "}
-														{new Date(featured.updated_at).toLocaleDateString(
-															"en-GB",
-															{ month: "short", day: "numeric" },
-														)}
-													</span>
-												</>
-											)}
-									</div>
-
-									<h3 className="text-2xl sm:text-3xl font-black leading-tight mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
-										{featured.title.replace(/Slug:.*$/i, "").trim()}
-									</h3>
-
-									<p className="text-slate-600 dark:text-slate-300 text-[15px] leading-relaxed line-clamp-3 mb-6">
-										{featured.meta_description}
-									</p>
-
-									<div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-										<Image
-											src={
-												featured.profiles?.avatar_url &&
-												!featured.profiles.avatar_url.includes("dicebear") &&
-												!featured.profiles.avatar_url.includes("bottts")
-													? featured.profiles.avatar_url
-													: `https://ui-avatars.com/api/?name=${encodeURIComponent(featured.profiles?.full_name || "Apex")}&background=4f46e5&color=fff&size=80`
-											}
-											alt={featured.profiles?.full_name || "Author"}
-											width={40}
-											height={40}
-											className="rounded-full object-cover border-2 border-indigo-100 dark:border-indigo-900"
-										/>
-										<div>
-											<div className="text-sm font-bold">
-												{featured.profiles?.full_name || "Apex Editorial"}
-											</div>
-											<div className="text-xs text-slate-500">
-												{featured.profiles?.professional_role ||
-													"Contributing Writer"}
-											</div>
-										</div>
-										<div className="ml-auto text-sm font-bold text-indigo-600 dark:text-indigo-400 group-hover:translate-x-1 transition-transform duration-300">
-											Read →
-										</div>
-									</div>
-								</div>
-							</Link>
+							<div>
+								<div className="stat__n">9</div>
+								<div className="stat__l">Categories</div>
+							</div>
+							<div>
+								<div className="stat__n">Weekly</div>
+								<div className="stat__l">Updated</div>
+							</div>
 						</div>
+					</div>
 
-						<CommunityFeed
-							initialArticles={rest}
-							hasMore={hasMore}
-							initialOffset={PAGE_SIZE}
-						/>
-					</>
-				) : (
-					<div className="glass rounded-3xl p-10 text-center fade-up">
-						<h2 className="text-2xl font-black mb-3">
-							No published stories yet
-						</h2>
-						<p className="text-slate-600 dark:text-slate-400 mb-6">
-							Be the first to publish on Apex.
-						</p>
-						<Link
-							href="/studio"
-							className="btn btn-primary px-6 py-3 rounded-xl font-black"
-						>
-							Create first story
-						</Link>
-						<div className="mt-10">
-							<CommunityFeed
-								initialArticles={[]}
-								hasMore={false}
-								initialOffset={0}
+					<div className="hero__visual">
+						<div className="hero__block" aria-hidden="true" />
+						<div className="hero__img">
+							<Image
+								src="/redesign/desk.jpg"
+								alt="A closed laptop, a notebook and a cup of coffee on a wooden desk"
+								width={800}
+								height={1000}
+								priority
+								sizes="(max-width: 900px) 100vw, 400px"
 							/>
 						</div>
+						<div className="hero__chip">
+							<span className="pulse" aria-hidden="true" />4 added this week
+						</div>
 					</div>
-				)}
+				</div>
+			</section>
+
+			{/* ═══ §6 TICKER ═══ */}
+			<div className="ticker" aria-hidden="true">
+				<div className="ticker__track">
+					{[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+						<span className="ticker__item" key={`${item}-${i}`}>
+							{item}
+						</span>
+					))}
+				</div>
 			</div>
-		</main>
+
+			{/* ═══ §7 CATEGORIES — bento grid ═══ */}
+			<section className="section">
+				<div className="wrap">
+					<p className="eyebrow reveal">
+						<span className="num">02</span> Explore
+					</p>
+					<h2 className="reveal" style={{ maxWidth: "16ch" }}>
+						Start where you are.
+					</h2>
+					<p className="lede reveal" style={{ marginTop: "1.125rem" }}>
+						Six working categories, each one checked on Nepali internet with
+						Nepali payment methods — not copied from a global list.
+					</p>
+
+					<div className="bento">
+						{CATEGORY_TILES.map((tile) => {
+							const Icon = tile.icon;
+							return (
+								<Link
+									key={tile.title}
+									href={tile.href}
+									className={`tile reveal${tile.variant ? ` ${tile.variant}` : ""}`}
+								>
+									<div>
+										<span className="tile__icon">
+											<Icon className="icon icon--17" />
+										</span>
+										<h3>{tile.title}</h3>
+										<p>{tile.copy}</p>
+									</div>
+									<div className="tile__count" aria-hidden="true">
+										{tile.count}
+									</div>
+								</Link>
+							);
+						})}
+					</div>
+				</div>
+			</section>
+
+			{/* ═══ §8 MOTIF DIVIDER — used once per page ═══ */}
+			<div className="wrap">
+				<div className="motif" aria-hidden="true" />
+			</div>
+
+			{/* ═══ §9 FEATURED CARDS ═══ */}
+			<section className="section">
+				<div className="wrap">
+					<div className="section-head--split">
+						<div>
+							<p className="eyebrow reveal">
+								<span className="num">03</span> Featured
+							</p>
+							<h2 className="reveal">Picked this week.</h2>
+						</div>
+						<Link href="/resources" className="link link--arrow reveal">
+							See all 140 resources
+							<IconArrowRight className="icon icon--15" />
+						</Link>
+					</div>
+
+					{featured.length > 0 ? (
+						<div className="cards">
+							{featured.map((art) => (
+								<article className="card reveal" key={art.id || art.slug}>
+									<Link
+										href={`/blog/${art.slug}`}
+										className="flex flex-1 flex-col"
+										aria-label={cleanTitle(art.title)}
+									>
+										<div className="card__media">
+											<Image
+												src={art.image_url || "/opengraph-image"}
+												alt={cleanTitle(art.title)}
+												width={640}
+												height={400}
+												sizes="(max-width: 860px) 100vw, 33vw"
+												loading="lazy"
+											/>
+										</div>
+										<div className="card__body">
+											<span className="card__tag">{art.category || "Guide"}</span>
+											<h3>{cleanTitle(art.title)}</h3>
+											<p>{art.meta_description}</p>
+											<div className="card__foot">
+												<span>
+													{formatDate(
+														art.published_at || art.created_at,
+													) || "Recently"}
+												</span>
+												<span>{art.profiles?.full_name || "Apex Editorial"}</span>
+											</div>
+										</div>
+									</Link>
+								</article>
+							))}
+						</div>
+					) : (
+						<p className="lede" style={{ marginTop: "1.125rem" }}>
+							No stories are published yet —{" "}
+							<Link href="/write-for-us" className="link">
+								be the first to submit one
+							</Link>
+							.
+						</p>
+					)}
+				</div>
+			</section>
+
+			{/* ═══ §10 EDITORIAL QUOTE ═══ */}
+			<section className="quote-band">
+				<div className="wrap" style={{ paddingBlock: "var(--section)" }}>
+					<div className="quote">
+						<div className="quote__img reveal">
+							<Image
+								src="/redesign/street.jpg"
+								alt="A narrow Kathmandu lane with shopfronts and a person carrying a load"
+								width={750}
+								height={1000}
+								loading="lazy"
+								sizes="(max-width: 860px) 320px, 40vw"
+							/>
+						</div>
+						<div>
+							<p className="eyebrow reveal">
+								<span className="num">04</span> Why this exists
+							</p>
+							<blockquote className="reveal">
+								<span className="mark">&ldquo;</span>Most advice for builders
+								assumes you&rsquo;re in San Francisco. This assumes you&rsquo;re
+								in Kathmandu — and that everything should still work.
+								<span className="mark">&rdquo;</span>
+							</blockquote>
+							<p className="quote__support reveal">
+								Every entry is checked against one question: does this actually
+								function from Nepal, today?
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* ═══ §11 NEWSLETTER — the one centred block on the page ═══ */}
+			<section className="news">
+				<div className="wrap news__in">
+					<p className="eyebrow">
+						<span className="num">05</span> Newsletter
+					</p>
+					<h2>One email. Every Thursday.</h2>
+					<p className="news__copy">
+						New resources, a short note on what changed, and nothing else.
+					</p>
+					<NewsletterForm />
+					<p className="news__note">No spam. Unsubscribe any time.</p>
+				</div>
+			</section>
+
+			{/* ═══ Sections the site already had, kept and re-tokenised ═══ */}
+			<section className="section">
+				<div className="wrap">
+					<div className="section-head--split">
+						<div>
+							<p className="eyebrow reveal">
+								<span className="num">06</span> Start here
+							</p>
+							<h2 className="reveal">Pick your Nepal-ready kit</h2>
+						</div>
+						<Link href="/resources" className="link reveal">
+							View all resources
+						</Link>
+					</div>
+
+					<div className="cards">
+						{[
+							{
+								title: "Student Starter Kit",
+								copy: "Free courses, free AI study help, free books. NPR 0 to start learning.",
+								href: "/resources#students",
+								foot: "Includes: MIT + Khan Academy guide",
+							},
+							{
+								title: "First-Client Freelancer Kit",
+								copy: "Profile, proposals, portfolio and payments — everything to earn your first $100.",
+								href: "/resources#freelancing",
+								foot: "Includes: First client on Upwork",
+							},
+							{
+								title: "Shop Owner Kit",
+								copy: "Free design, free billing tools and online visibility for your pasal.",
+								href: "/resources#business",
+								foot: "Includes: Free tools for a shop",
+							},
+						].map((kit) => (
+							<Link
+								key={kit.title}
+								href={kit.href}
+								className="card reveal !p-6 !gap-3"
+							>
+								<span className="card__tag">Kit</span>
+								<h3>{kit.title}</h3>
+								<p>{kit.copy}</p>
+								<span className="card__foot">
+									<span>{kit.foot}</span>
+									<IconArrowRight className="icon icon--15" />
+								</span>
+							</Link>
+						))}
+					</div>
+
+					<div className="mt-6 border border-[var(--hairline)] bg-[var(--sunken)] px-5 py-4 text-[0.875rem] text-[var(--ink-muted)]">
+						Every tool tested from Nepal · Prices verified Sept 2026 ·{" "}
+						<Link href="/how-we-test" className="link">
+							How we test
+						</Link>{" "}
+						·{" "}
+						<Link href="/editorial" className="link">
+							Editorial policy
+						</Link>{" "}
+						·{" "}
+						<Link href="/corrections" className="link">
+							Corrections
+						</Link>
+					</div>
+				</div>
+			</section>
+
+			<section className="section" style={{ paddingTop: 0 }}>
+				<div className="wrap">
+					<div className="section-head--split">
+						<div>
+							<p className="eyebrow reveal">
+								<span className="num">07</span> This month&rsquo;s picks
+							</p>
+							<h2 className="reveal">Useful now in Nepal</h2>
+						</div>
+						<span className="text-[0.8125rem] text-[var(--ink-faint)]">
+							Rotated monthly
+						</span>
+					</div>
+
+					<div className="cards">
+						{monthlyPicks.map((pick) => (
+							<Link
+								key={pick.name}
+								href={`/resources#${pick.categoryId}`}
+								className="card reveal !gap-2 !p-5"
+							>
+								<span className="card__tag">
+									{pick.badge}
+								</span>
+								<h3>{pick.name}</h3>
+								<p>{pick.what}</p>
+								<p className="text-[0.8125rem]">
+									<strong className="font-semibold">Why Nepal:</strong>{" "}
+									{pick.why}
+								</p>
+							</Link>
+						))}
+					</div>
+				</div>
+			</section>
+
+			{/* Community feed + search keeps its behaviour, gains the new tokens. */}
+			<section className="section" id="feed" style={{ paddingTop: 0 }}>
+				<div className="wrap">
+					<p className="eyebrow reveal">
+						<span className="num">08</span> The ledger
+					</p>
+					<h2 className="reveal">Latest from the community</h2>
+					<div className="mt-8">
+						{articles.length > 0 || hasMore ? (
+							<CommunityFeed
+								initialArticles={rest}
+								hasMore={hasMore}
+								initialOffset={PAGE_SIZE}
+							/>
+						) : (
+							<div className="card !p-10">
+								<h3 className="mb-2">No published stories yet</h3>
+								<p className="mb-6 text-[0.9375rem] text-[var(--ink-muted)]">
+									Be the first to publish on Apex.
+								</p>
+								<Link href="/studio" className="btn btn--primary">
+									Create first story
+									<IconArrowRight />
+								</Link>
+							</div>
+						)}
+					</div>
+				</div>
+			</section>
+		</div>
 	);
 }

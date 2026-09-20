@@ -8,6 +8,7 @@ import Image from "next/image";
 import { ArrowLeft, Share2, Bookmark } from "lucide-react";
 import DiscussionThread from "@/components/DiscussionThread";
 import { sanitizeCmsField } from "@/lib/seoUtils";
+import { IconCheck } from "@/components/Icon";
 
 function cleanTitle(title=""){
   return sanitizeCmsField(String(title).replace(/\s*Slug:.*$/i,'').trim());
@@ -17,7 +18,7 @@ function getAvatar(profile, fallbackSeed="apex"){
   const raw = profile?.avatar_url || "";
   if(!raw || raw.includes("dicebear") || raw.includes("bottts")){
     const name = encodeURIComponent(profile?.full_name || "Apex Editorial");
-    return `https://ui-avatars.com/api/?name=${name}&background=4f46e5&color=fff&size=128`;
+    return `https://ui-avatars.com/api/?name=${name}&background=A8471F&color=fff&size=128`;
   }
   return raw;
 }
@@ -94,15 +95,15 @@ export default function ArticleContent({ serverArticle, slug }) {
   };
 
   if(loading){
-    return <main className="max-w-3xl mx-auto px-6 py-24"><div className="animate-pulse space-y-4"><div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-1/2"/><div className="h-12 bg-slate-200 dark:bg-slate-800 rounded"/><div className="h-64 bg-slate-100 dark:bg-slate-900 rounded-2xl"/></div></main>
+    return <div className="max-w-3xl mx-auto px-6 py-24"><div className="animate-pulse space-y-4"><div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-1/2"/><div className="h-12 bg-slate-200 dark:bg-slate-800 rounded"/><div className="h-64 bg-slate-100 dark:bg-slate-900 rounded-2xl"/></div></div>
   }
   if(!article){
     return (
-      <main className="max-w-2xl mx-auto px-6 py-24 text-center">
+      <div className="max-w-2xl mx-auto px-6 py-24 text-center">
         <h1 className="text-3xl font-black mb-3">Article not found</h1>
         <p className="text-slate-600 dark:text-slate-400 mb-8">This story may have been moved or removed.</p>
         <Link href="/" className="px-5 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold">← Back home</Link>
-      </main>
+      </div>
     )
   }
 
@@ -152,7 +153,7 @@ export default function ArticleContent({ serverArticle, slug }) {
   };
 
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950">
+    <div className="flex-1 bg-white dark:bg-slate-950">
       <article lang={contentLang} className="max-w-3xl mx-auto px-6 py-10 sm:py-16">
         {/* Breadcrumbs */}
         <nav className="text-xs text-slate-500 mb-6 flex items-center gap-2 flex-wrap" aria-label="Breadcrumb">
@@ -252,9 +253,10 @@ export default function ArticleContent({ serverArticle, slug }) {
 
         {/* Share / bookmark footer */}
         <div className="flex flex-wrap items-center gap-3 mt-10 pt-6 border-t border-slate-200 dark:border-slate-800">
-          <button onClick={handleShare} className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-900">Share article</button>
-          <button onClick={handleBookmark} className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-900">
-            {bookmarked ? "✓ Saved" : "Save to reading list"}
+          <button onClick={handleShare} className="btn btn--ghost !py-2 !text-[0.875rem]">Share article</button>
+          <button onClick={handleBookmark} className="btn btn--ghost !py-2 !text-[0.875rem]">
+            <IconCheck className="icon icon--15" />
+            {bookmarked ? "Saved" : "Save to reading list"}
           </button>
           <Link href="/corrections" className="text-xs text-slate-500 ml-auto underline">Report a correction</Link>
         </div>
@@ -287,6 +289,6 @@ export default function ArticleContent({ serverArticle, slug }) {
       </article>
 
       {/* Article JSON-LD breadcrumbs will be injected server-side */}
-    </main>
+    </div>
   );
 }

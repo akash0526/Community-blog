@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
       <div className="max-w-3xl mx-auto px-6 py-16 sm:py-20 prose prose-slate dark:prose-invert prose-lg">
         <h1>Privacy Policy</h1>
         <p className="lead">Last updated: July 7, 2026</p>
@@ -62,6 +62,6 @@ export default function PrivacyPage() {
 
         <p><strong>Contact:</strong> Apex, Doha, Qatar — <a href="mailto:legal@apex-nepal.com">legal@apex-nepal.com</a></p>
       </div>
-    </main>
+    </div>
   );
 }

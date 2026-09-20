@@ -34,7 +34,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 							professional_role: profession || "Community Creator",
 							bio:
 								bio || "Writing and sharing stories with the open community.",
-							avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName || email.split("@")[0])}&background=4f46e5&color=fff`,
+							avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName || email.split("@")[0])}&background=A8471F&color=fff`,
 						},
 					},
 				});
@@ -82,7 +82,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 				full_name: "Demo Writer",
 				professional_role: "Community Creator",
 				bio: "Exploring open publishing, technology, and community storytelling.",
-				avatar_url: "https://ui-avatars.com/api/?name=Demo+Writer&background=4f46e5&color=fff",
+				avatar_url: "https://ui-avatars.com/api/?name=Demo+Writer&background=A8471F&color=fff",
 			},
 		};
 

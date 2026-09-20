@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function HowWeTestPage() {
 	return (
-		<main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+		<div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
 			<div className="max-w-4xl mx-auto px-6 py-16 sm:py-24">
 				<span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Trust methodology</span>
 				<h1 className="text-4xl sm:text-5xl font-black tracking-tight mt-3 mb-5">How we test tools for Nepal</h1>
@@ -36,7 +36,7 @@ export default function HowWeTestPage() {
 
 					<section>
 						<h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3">Status labels</h2>
-						<p>✅ means the link was verified alive. 🛡️ means the service is alive but bot-protected and should open normally in browsers. 🌐 means a browser confirmation is recommended before publishing a hard claim.</p>
+						<p>“Works” means the link was verified alive. “Check first” means the service is alive but bot-protected and should open normally in browsers. Where we could not confirm from Nepal, the entry says so.</p>
 					</section>
 
 					<section className="rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6">
@@ -46,6 +46,6 @@ export default function HowWeTestPage() {
 					</section>
 				</div>
 			</div>
-		</main>
+		</div>
 	);
 }

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function EditorialPage(){
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
       <div className="max-w-3xl mx-auto px-6 py-16 sm:py-20 prose prose-slate dark:prose-invert prose-lg">
         <h1>Editorial Policy</h1>
         <p className="lead">Last updated: July 7, 2026 — v1.0</p>
@@ -64,6 +64,6 @@ export default function EditorialPage(){
         <h2>Contact</h2>
         <p>Editorial: <a href="mailto:editor@apex-nepal.com">editor@apex-nepal.com</a> — <Link href="/contact">contact page</Link></p>
       </div>
-    </main>
+    </div>
   );
 }

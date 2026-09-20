@@ -13,7 +13,7 @@ export default function ContactPage() {
         <span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Contact</span>
         <h1 className="text-4xl sm:text-5xl font-black tracking-tight mt-3 mb-4">Talk to a real human.</h1>
         <p className="text-lg text-slate-600 dark:text-slate-300 mb-12 max-w-2xl">
-          We read every message. Typical reply: 24–48 hours, Sun–Thu (Qatar time, UTC+3).
+          We read every message. Typical reply: within 7 days for corrections and 24–48 hours for urgent partnership or press requests.
         </p>
 
         <div className="grid md:grid-cols-2 gap-10">
@@ -21,7 +21,7 @@ export default function ContactPage() {
             <div>
               <div className="text-xs font-black uppercase tracking-wider text-slate-500 mb-1">Editorial</div>
               <a href="mailto:editor@apex-nepal.com" className="text-xl font-black text-indigo-600 dark:text-indigo-400">editor@apex-nepal.com</a>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">Corrections, fact-checks, story pitches.</p>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">Corrections, fact-checks, story pitches, and resource suggestions for Nepal-tested tools.</p>
             </div>
             <div>
               <div className="text-xs font-black uppercase tracking-wider text-slate-500 mb-1">Press & Partnerships</div>
@@ -35,8 +35,8 @@ export default function ContactPage() {
               <div className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Postal</div>
               <p className="text-slate-700 dark:text-slate-300">
                 Apex Editorial<br/>
-                Doha, Qatar<br/>
-                Baladiyat ad Dawhah
+                Butwal, Nepal<br/>
+                Lumbini Province
               </p>
               <p className="text-xs text-slate-500 mt-3">No walk-ins. Email first.</p>
             </div>

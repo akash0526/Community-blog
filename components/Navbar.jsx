@@ -121,31 +121,12 @@ export default function Navbar() {
 					</Link>
 
 					{/* Desktop Nav */}
-					<nav className="hidden md:flex items-center gap-8 font-extrabold text-sm text-slate-600 dark:text-slate-300">
-						<Link
-							href="/"
-							className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}
-						>
-							Stories
-						</Link>
-						<Link
-							href="/blog"
-							className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/blog" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}
-						>
-							All stories
-						</Link>
-						<Link
-							href="/authors"
-							className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname?.startsWith("/authors") ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}
-						>
-							Authors
-						</Link>
-						<Link
-							href="/about"
-							className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/about" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}
-						>
-							About
-						</Link>
+					<nav className="hidden md:flex items-center gap-7 font-extrabold text-sm text-slate-600 dark:text-slate-300">
+						<Link href="/" className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}>Home</Link>
+						<Link href="/resources" className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/resources" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}>Resources</Link>
+						<Link href="/ai-tools" className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/ai-tools" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}>AI tools</Link>
+						<Link href="/freelancing-in-nepal" className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/freelancing-in-nepal" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}>Freelancing</Link>
+						<Link href="/blog" className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/blog" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}>Blog</Link>
 					</nav>
 
 					{/* Actions */}
@@ -259,48 +240,21 @@ export default function Navbar() {
 				{/* Mobile menu */}
 				{mobileMenuOpen && (
 					<div className="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-6 shadow-2xl space-y-4 font-extrabold text-sm text-left animate-fadeIn">
-						<Link
-							href="/"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							Stories
-						</Link>
-						<Link
-							href="/blog"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							All stories
-						</Link>
-						<Link
-							href="/authors"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							Authors
-						</Link>
-						<Link
-							href="/about"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							About
-						</Link>
-						<Link
-							href="/contact"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							Contact
-						</Link>
-						<Link
-							href="/studio"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							Write a story
-						</Link>
+						{[
+							["Home", "/"],
+							["Resources", "/resources"],
+							["AI tools", "/ai-tools"],
+							["Freelancing", "/freelancing-in-nepal"],
+							["Hosting", "/blogging-hosting"],
+							["Payments", "/digital-payments"],
+							["Business tools", "/small-business-tools"],
+							["Blog", "/blog"],
+							["Write for us", "/write-for-us"],
+						].map(([label, href]) => (
+							<Link key={href} href={href} onClick={() => setMobileMenuOpen(false)} className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800">
+								{label}
+							</Link>
+						))}
 						{user && (
 							<Link
 								href="/dashboard"

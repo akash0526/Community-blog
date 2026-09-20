@@ -6,10 +6,10 @@
    Inter / Geist Mono fonts are actually used (otherwise the browser falls
    back to system fonts while still paying the download cost). */
 @theme {
-	--font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont,
-		"Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-	--font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
-		monospace;
+	--font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+		Arial, sans-serif;
+	--font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		"Liberation Mono", "Courier New", monospace;
 }
 
 :root {

@@ -1,36 +1,25 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { Geist_Mono, Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import LazyCookieConsent from "@/components/LazyCookieConsent";
 import CookieSettingsButton from "@/components/CookieSettingsButton";
 import { SITE_URL } from "@/lib/articles";
 import "./globals.css";
 
-const inter = Inter({
-	subsets: ["latin"],
-	variable: "--font-inter",
-});
-
-const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
-	subsets: ["latin"],
-});
-
 const siteName = "Apex";
-const siteTagline = "Open stories from around the world";
+const siteTagline = "Tested tools and guides for Nepal";
 const description =
-	"Apex is an open global publishing platform where independent writers share tested, cited stories. Personal essays, tech guides, Qatar expat resources, and cultural reporting – by real authors.";
+	"Apex Nepal publishes tested, cited resources for Nepali students, freelancers, bloggers, and small businesses: AI tools, hosting, payments, learning, and practical online-work guides.";
 const keywords = [
 	"apex",
-	"global blog",
-	"community publishing",
-	"write articles online",
-	"qatar expat guide",
-	"tech articles",
-	"personal stories",
-	"remittance guides",
-	"doha",
+	"Nepal tools",
+	"AI tools Nepal",
+	"freelancing in Nepal",
+	"hosting Nepal",
+	"Payoneer Nepal",
+	"eSewa hosting",
+	"small business tools Nepal",
+	"student resources Nepal",
 	"nepal community",
 ];
 
@@ -111,7 +100,7 @@ export default function RootLayout({
 		"@context": "https://schema.org",
 		"@type": "WebSite",
 		"name": siteName,
-		"alternateName": ["Apex Community", "Apex Blog"],
+		"alternateName": ["Apex Nepal", "Apex Community", "Apex Blog"],
 		"url": SITE_URL,
 		description,
 		"inLanguage": ["en", "ne"],
@@ -150,7 +139,7 @@ export default function RootLayout({
 	return (
 		<html
 			lang="en"
-			className={`${inter.variable} ${geistMono.variable} antialiased selection:bg-indigo-500 selection:text-white`}
+			className="antialiased selection:bg-indigo-500 selection:text-white"
 		>
 			<head>
 				{/* Preconnect to external origins — saves DNS + TLS round-trip */}
@@ -204,15 +193,16 @@ export default function RootLayout({
 								<span className="text-lg">Apex</span>
 							</div>
 							<p className="text-slate-400 max-w-md leading-relaxed">
-								Apex is an open global publishing platform where independent writers share tested, cited stories.
+								Apex Nepal publishes tested resources for Nepali students, freelancers, bloggers, and small businesses.
 							</p>
-							<p className="text-xs text-slate-500 mt-3">Editorial base: Doha, Qatar • Founded Nov 2025</p>
+							<p className="text-xs text-slate-500 mt-3">Editorial base: Butwal, Nepal • Founded Nov 2025</p>
 						</div>
 
 						<div>
 							<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Platform</div>
 							<ul className="space-y-2 font-bold">
-								<li><Link href="/about" className="link-underline hover:text-white transition">About</Link></li>
+								<li><Link href="/resources" className="link-underline hover:text-white transition">Resources</Link></li>
+								<li><Link href="/how-we-test" className="link-underline hover:text-white transition">How we test</Link></li>
 								<li><Link href="/contact" className="link-underline hover:text-white transition">Contact</Link></li>
 								<li><Link href="/editorial" className="link-underline hover:text-white transition">Editorial Policy</Link></li>
 								<li><Link href="/corrections" className="link-underline hover:text-white transition">Corrections</Link></li>
@@ -235,13 +225,13 @@ export default function RootLayout({
 
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
 						<div className="font-bold">
-							© {new Date().getFullYear()} Apex. All rights reserved. • <span className="text-slate-400">Open stories from around the world.</span>
+							© {new Date().getFullYear()} Apex. All rights reserved. • <span className="text-slate-400">Tested tools and guides for Nepal.</span>
 						</div>
 						<div className="flex items-center gap-5 font-bold flex-wrap justify-center">
 							<Link href="/" className="link-underline hover:text-slate-300 transition">Home</Link>
-							<Link href="/blog" className="link-underline hover:text-slate-300 transition">All stories</Link>
-							<Link href="/authors" className="link-underline hover:text-slate-300 transition">Authors</Link>
-							<Link href="/about" className="link-underline hover:text-slate-300 transition">About</Link>
+							<Link href="/resources" className="link-underline hover:text-slate-300 transition">Resources</Link>
+							<Link href="/blog" className="link-underline hover:text-slate-300 transition">Blog</Link>
+							<Link href="/how-we-test" className="link-underline hover:text-slate-300 transition">How we test</Link>
 							<Link href="/contact" className="link-underline hover:text-slate-300 transition">Contact</Link>
 							<Link href="/feed.xml" className="link-underline hover:text-slate-300 transition">RSS</Link>
 							<CookieSettingsButton />

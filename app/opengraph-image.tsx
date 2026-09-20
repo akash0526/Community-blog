@@ -5,7 +5,7 @@ import { ImageResponse } from "next/og";
 // the article's own cover image via generateMetadata().
 // https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image
 
-export const alt = "Apex Community Platform — Share Your Stories";
+export const alt = "Apex Nepal — Tested tools and guides for Nepal";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -42,10 +42,11 @@ export default function OpengraphImage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "48px",
+              fontSize: "34px",
+              fontWeight: 900,
             }}
           >
-            ⚡
+            A
           </div>
           <div
             style={{
@@ -56,7 +57,7 @@ export default function OpengraphImage() {
               display: "flex",
             }}
           >
-            APEX COMMUNITY
+            APEX NEPAL
           </div>
         </div>
         <div
@@ -69,7 +70,7 @@ export default function OpengraphImage() {
             display: "flex",
           }}
         >
-          Share Your Stories. Reach the World.
+          Tested tools for Nepali builders.
         </div>
         <div
           style={{
@@ -79,7 +80,7 @@ export default function OpengraphImage() {
             display: "flex",
           }}
         >
-          Open multi-topic community publishing platform.
+          AI, freelancing, hosting, payments, and business guides.
         </div>
       </div>
     ),

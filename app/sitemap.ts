@@ -15,7 +15,7 @@ function safeDate(value: unknown, fallback: Date) {
 // Last meaningful update of the trust/legal page set. Static pages use fixed
 // dates (bump when you actually edit them) — stamping `new Date()` on every
 // regeneration fakes freshness and wastes crawl budget.
-const TRUST_PAGES_UPDATED = new Date("2026-07-07T00:00:00Z");
+const TRUST_PAGES_UPDATED = new Date("2026-09-20T00:00:00Z");
 
 // https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -72,6 +72,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	}> = [
 		{ path: "", changeFrequency: "daily", priority: 1, lastModified: newestArticleDate },
 		{ path: "/blog", changeFrequency: "daily", priority: 0.9, lastModified: newestArticleDate },
+		{ path: "/resources", changeFrequency: "weekly", priority: 0.95, lastModified: TRUST_PAGES_UPDATED },
+		{ path: "/ai-tools", changeFrequency: "weekly", priority: 0.9, lastModified: TRUST_PAGES_UPDATED },
+		{ path: "/freelancing-in-nepal", changeFrequency: "weekly", priority: 0.9, lastModified: TRUST_PAGES_UPDATED },
+		{ path: "/blogging-hosting", changeFrequency: "weekly", priority: 0.9, lastModified: TRUST_PAGES_UPDATED },
+		{ path: "/digital-payments", changeFrequency: "weekly", priority: 0.85, lastModified: TRUST_PAGES_UPDATED },
+		{ path: "/small-business-tools", changeFrequency: "weekly", priority: 0.85, lastModified: TRUST_PAGES_UPDATED },
+		{ path: "/how-we-test", changeFrequency: "monthly", priority: 0.75, lastModified: TRUST_PAGES_UPDATED },
+		{ path: "/write-for-us", changeFrequency: "monthly", priority: 0.65, lastModified: TRUST_PAGES_UPDATED },
 		{ path: "/about", changeFrequency: "monthly", priority: 0.8, lastModified: TRUST_PAGES_UPDATED },
 		{ path: "/contact", changeFrequency: "monthly", priority: 0.7, lastModified: TRUST_PAGES_UPDATED },
 		{ path: "/editorial", changeFrequency: "monthly", priority: 0.7, lastModified: TRUST_PAGES_UPDATED },

@@ -21,6 +21,25 @@ export const metadata = {
 
 const PAGE_SIZE = 12;
 
+// §9 — the three picks that have photography in public/redesign/ become media
+// cards; the rest stay text cards in the same grid. Files are used at their
+// original 1408x768 and framed with object-position (see globals.css), so the
+// repo keeps the untrimmed photos for reuse elsewhere.
+const PICK_PHOTOS = {
+	DeepSeek: {
+		src: "/redesign/deepseek.jpg",
+		alt: "A hand on a mechanical keyboard beside a notebook of merge-sort diagrams, with a laptop of code behind",
+	},
+	Harper: {
+		src: "/redesign/harper.jpg",
+		alt: "A manuscript open on a laptop screen with tracked changes, reading glasses and a pen on the desk",
+	},
+	Photopea: {
+		src: "/redesign/photopea.jpg",
+		alt: "A vector logo edit open on a laptop beside fanned Pantone swatches and type specimens",
+	},
+};
+
 // NOTE: the resource counts below (hero stats, tile counts, "See all 140
 // resources") are the literal values given in apex-nepal-redesign.md §5/§7/§9.
 // lib/resources.js currently holds 88 entries across 6 categories, so these
@@ -153,12 +172,12 @@ export default async function Homepage() {
 						<div className="hero__block" aria-hidden="true" />
 						<div className="hero__img">
 							<Image
-								src="/redesign/desk.jpg"
-								alt="A closed laptop, a notebook and a cup of coffee on a wooden desk"
-								width={800}
-								height={1000}
+								src="/redesign/hero-builder.jpg"
+								alt="A Nepali developer writing code on a laptop at a wooden table in a brick-and-timber Kathmandu cafe"
+								width={1408}
+								height={768}
 								priority
-								sizes="(max-width: 900px) 100vw, 400px"
+								sizes="(max-width: 900px) 100vw, 420px"
 							/>
 						</div>
 						<div className="hero__chip">
@@ -294,10 +313,10 @@ export default async function Homepage() {
 					<div className="quote">
 						<div className="quote__img reveal">
 							<Image
-								src="/redesign/street.jpg"
-								alt="A narrow Kathmandu lane with shopfronts and a person carrying a load"
-								width={750}
-								height={1000}
+								src="/redesign/quote-kathmandu.jpg"
+								alt="A carved wooden lattice window set in weathered red brick, with a notebook and a clay cup of tea on the ledge below it"
+								width={1408}
+								height={768}
 								loading="lazy"
 								sizes="(max-width: 860px) 320px, 40vw"
 							/>
@@ -420,23 +439,38 @@ export default async function Homepage() {
 					</div>
 
 					<div className="cards">
-						{monthlyPicks.map((pick) => (
-							<Link
-								key={pick.name}
-								href={`/resources#${pick.categoryId}`}
-								className="card reveal !gap-2 !p-5"
-							>
-								<span className="card__tag">
-									{pick.badge}
-								</span>
-								<h3>{pick.name}</h3>
-								<p>{pick.what}</p>
-								<p className="text-[0.8125rem]">
-									<strong className="font-semibold">Why Nepal:</strong>{" "}
-									{pick.why}
-								</p>
-							</Link>
-						))}
+						{monthlyPicks.map((pick) => {
+							const photo = PICK_PHOTOS[pick.name];
+							return (
+								<Link
+									key={pick.name}
+									href={`/resources#${pick.categoryId}`}
+									className="card reveal"
+								>
+									{photo && (
+										<div className="card__media">
+											<Image
+												src={photo.src}
+												alt={photo.alt}
+												width={1408}
+												height={768}
+												loading="lazy"
+												sizes="(max-width: 860px) 100vw, 33vw"
+											/>
+										</div>
+									)},
+									<div className="card__body">
+										<span className="card__tag">{pick.badge}</span>
+										<h3>{pick.name}</h3>
+										<p>{pick.what}</p>
+										<p className="text-[0.8125rem]">
+											<strong className="font-semibold">Why Nepal:</strong>{" "}
+											{pick.why}
+										</p>
+									</div>
+								</Link>
+							);
+						})}
 					</div>
 				</div>
 			</section>

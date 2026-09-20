@@ -770,6 +770,10 @@ body::after {
 	object-fit: cover;
 	width: 100%;
 	filter: saturate(0.85) contrast(1.04);
+	/* Source photos are 1408x768 landscape; the slot is 4:5 portrait.
+	   object-position keeps the writer and the carved window in frame
+	   instead of the browser's default centre crop. */
+	object-position: 70% 50%;
 }
 
 .hero__chip {
@@ -1073,6 +1077,7 @@ body::after {
 	object-fit: cover;
 	width: 100%;
 	filter: saturate(0.8);
+	object-position: 84% 50%; /* keeps the carved lattice window, not the blank courtyard */
 }
 
 blockquote {

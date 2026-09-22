@@ -1,6 +1,9 @@
 import Link from "next/link";
-import { resourceCategories, resourceHref } from "@/lib/resources";
+import { resourceCategories, resourceHref, countResources } from "@/lib/resources";
 import { SITE_URL } from "@/lib/articles";
+import { IconArrowRight, IconArrowUpRight } from "@/components/Icon";
+
+const RESOURCE_COUNT = countResources();
 
 export const metadata = {
 	title: "Resources for Nepal: AI, Freelancing, Hosting, Payments & Business Tools",
@@ -16,83 +19,158 @@ export const metadata = {
 	},
 };
 
-function Badge({ children, tone = "slate" }) {
-	const tones = {
-		slate: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
-		green: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
-		amber: "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
-	};
-	return <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${tones[tone]}`}>{children}</span>;
+function statusTone(status) {
+	if (status === "works") return "card__tag";
+	if (status === "check first") return "card__tag card__tag--warn";
+	return "card__tag";
 }
 
 export default function ResourcesPage() {
-	return (
-		<div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-12">
-			<div className="max-w-7xl mx-auto px-6">
-				<section className="glass rounded-3xl p-8 sm:p-12 mb-10 relative overflow-hidden">
-					<div className="absolute -top-24 -right-24 w-56 h-56 bg-indigo-500/10 rounded-full blur-3xl" />
-					<div className="relative z-10 max-w-3xl">
-						<span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Resources directory</span>
-						<h1 className="text-4xl sm:text-6xl font-black tracking-tight mt-3 mb-5">Tools tested for Nepal.</h1>
-						<p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-							Not generic listicles. Every recommendation asks: does it work on Nepali internet, with Nepali payments, at a realistic NPR price?
-						</p>
-						<div className="flex flex-wrap gap-3 mt-8">
-							{resourceCategories.map((category) => (
-								<Link key={category.id} href={`#${category.id}`} className="btn btn-secondary px-4 py-2 rounded-xl text-xs">
-									{category.title}
-								</Link>
-							))}
-						</div>
-					</div>
-				</section>
+	const itemList = {
+		"@context": "https://schema.org",
+		"@type": "ItemList",
+		name: "Apex Nepal resources",
+		numberOfItems: RESOURCE_COUNT,
+		itemListElement: resourceCategories.flatMap((category) =>
+			category.resources.map((resource, index) => ({
+				"@type": "ListItem",
+				position: index + 1,
+				name: resource.name,
+				url: resourceHref(resource) || `${SITE_URL}/resources#${category.id}`,
+			})),
+		),
+	};
 
-				<div className="grid gap-10">
-					{resourceCategories.map((category) => (
-						<section key={category.id} id={category.id} className="scroll-mt-28">
-							<div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5">
+	return (
+		<div className="flex-1">
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }}
+			/>
+			<section className="hero" style={{ paddingBottom: "var(--section)" }}>
+				<div className="wrap">
+					<p className="eyebrow">
+						<span className="num">01</span> Resources directory
+					</p>
+					<h1>
+						Tools tested for <em>Nepal</em>.
+					</h1>
+					<p className="lede" style={{ marginTop: "1.25rem" }}>
+						Not generic listicles. Every recommendation asks: does it work on
+						Nepali internet, with Nepali payments, at a realistic NPR price?
+					</p>
+					<p className="mt-4 text-[0.875rem] text-[var(--ink-faint)]">
+						{RESOURCE_COUNT} tools · {resourceCategories.length} categories ·
+						prices verified Sept 2026
+					</p>
+					<div className="hero__cta">
+						{resourceCategories.map((category) => (
+							<Link
+								key={category.id}
+								href={`#${category.id}`}
+								className="btn btn--ghost !px-4 !py-2 !text-[0.875rem]"
+							>
+								{category.title}
+							</Link>
+						))}
+					</div>
+				</div>
+			</section>
+
+			{resourceCategories.map((category, index) => {
+				const pillarIsExternal = category.pillar && !category.pillar.startsWith("/resources");
+				return (
+					<section key={category.id} id={category.id} className="section" style={{ paddingTop: 0 }}>
+						<div className="wrap">
+							<div className="section-head--split">
 								<div>
-									<h2 className="text-2xl sm:text-3xl font-black">{category.title}</h2>
-									<p className="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl">{category.audience}</p>
+									<p className="eyebrow">
+										<span className="num">{String(index + 2).padStart(2, "0")}</span>{" "}
+										{category.title}
+									</p>
+									<h2>{category.title}</h2>
+									<p className="lede" style={{ marginTop: "1rem" }}>
+										{category.audience}
+									</p>
 								</div>
-								<Link href={category.pillar} className="text-sm font-black text-indigo-600 dark:text-indigo-400 hover:underline">Read the pillar guide →</Link>
+								{pillarIsExternal && (
+									<Link href={category.pillar} className="link link--arrow">
+										Read the pillar guide
+										<IconArrowRight className="icon icon--15" />
+									</Link>
+								)}
 							</div>
 
-							<div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+							<div className="cards" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}>
 								{category.resources.map((resource) => {
 									const href = resourceHref(resource);
-									const CardTag = href ? "a" : "div";
+									const Tag = href ? "a" : "div";
+									const rel = resource.affiliate
+										? "noopener noreferrer sponsored"
+										: "noopener noreferrer";
 									return (
-										<CardTag
+										<Tag
 											key={resource.name}
-											{...(href ? { href, target: "_blank", rel: "noopener sponsored" } : {})}
-											className="block rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 transition"
+											{...(href ? { href, target: "_blank", rel } : {})}
+											className="card !p-0"
 										>
-											<div className="flex items-start justify-between gap-3 mb-3">
-												<h3 className="font-black text-lg leading-tight">{resource.name}</h3>
-												<div className="flex gap-1.5 flex-wrap justify-end">
-													<Badge tone={resource.badge === "Free" ? "green" : "slate"}>{resource.badge}</Badge>
-													{resource.status && <Badge>{resource.status}</Badge>}
-													{resource.affiliate && <Badge tone="amber">Affiliate</Badge>}
+											<div className="card__body">
+												<div className="flex flex-wrap items-start justify-between gap-2">
+													<h3>{resource.name}</h3>
+													{href && <IconArrowUpRight className="icon icon--15 text-[var(--ink-faint)]" />}
 												</div>
+												<div className="flex flex-wrap gap-1.5">
+													<span className="card__tag">{resource.badge}</span>
+													{resource.status ? (
+														<span className={statusTone(resource.status)}>{resource.status}</span>
+													) : null}
+													{resource.affiliate ? (
+														<span className="card__tag">Affiliate</span>
+													) : null}
+												</div>
+												<p>{resource.why}</p>
+												{resource.secondaryUrl && (
+													<p className="text-[0.8125rem]">
+														Also:{" "}
+														<a
+															href={resource.secondaryUrl}
+															target="_blank"
+															rel="noopener noreferrer"
+															className="link"
+														>
+															Mini QR
+														</a>
+													</p>
+												)}
+												{!href && (
+													<p className="text-[0.8125rem] text-[var(--ink-faint)]">
+														Link pending verification.
+													</p>
+												)}
 											</div>
-											<p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{resource.why}</p>
-											{resource.secondaryUrl && (
-												<p className="text-xs text-indigo-600 dark:text-indigo-400 mt-3 font-bold">Includes Mini QR alternative</p>
-											)}
-											{!href && <p className="text-xs text-slate-500 mt-3 font-bold">Link pending verification / affiliate setup.</p>}
-										</CardTag>
+										</Tag>
 									);
 								})}
 							</div>
-						</section>
-					))}
-				</div>
+						</div>
+					</section>
+				);
+			})}
 
-				<div className="mt-12 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8 text-sm text-slate-600 dark:text-slate-300">
-					<strong className="text-slate-900 dark:text-white">Status legend:</strong> “works” = link verified alive · “check first” = alive but bot-protected · confirm in browser before relying on it. Prices and payment rails change fast, so money pages are re-verified quarterly.
+			<section className="section" style={{ paddingTop: 0 }}>
+				<div className="wrap">
+					<div className="border border-[var(--hairline)] bg-[var(--sunken)] px-5 py-5 text-[0.875rem] text-[var(--ink-muted)]">
+						<strong className="text-[var(--ink)]">Status legend:</strong> “works”
+						= link verified alive · “check first” = alive but bot-protected —
+						confirm in a browser before relying on it. Prices and payment rails
+						change fast, so money pages are re-verified quarterly.{" "}
+						<Link href="/how-we-test" className="link">
+							How we test
+						</Link>
+						.
+					</div>
 				</div>
-			</div>
+			</section>
 		</div>
 	);
 }

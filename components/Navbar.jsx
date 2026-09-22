@@ -258,7 +258,7 @@ export default function Navbar() {
 						<button
 							type="button"
 							onClick={() => setMobileMenuOpen((v) => !v)}
-							className="icon-btn md:hidden"
+							className="icon-btn nav-toggle"
 							aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
 							aria-expanded={mobileMenuOpen}
 						>
@@ -270,7 +270,7 @@ export default function Navbar() {
 				{/* The brief hides the desktop nav at 820px — the drawer keeps
 				    every route reachable below that. */}
 				{mobileMenuOpen && (
-					<div className="nav-mobile md:hidden">
+					<div className="nav-mobile">
 						<div className="wrap">
 							{MOBILE_LINKS.map((item) => (
 								<Link

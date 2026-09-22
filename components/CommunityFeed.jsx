@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { IconClose, IconSearch, IconSpinner } from "./Icon";
-import { storyCategoryValues } from "@/lib/categories";
+import { cleanExcerpt } from "@/lib/seoUtils";
 
 const LOAD_MORE_SIZE = 12;
 
@@ -65,8 +65,6 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
     return Boolean(q.trim() || (category && category !== "All"));
   });
 
-  const isDefaultView = selectedCategory === "All" && !searchQuery.trim();
-
   // Server-side search/filter: whenever q/category changes, query the API so
   // results cover the whole archive (not just rows already in the browser).
   // Also mirrors the state into the URL so filtered views are shareable.
@@ -121,7 +119,7 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
   );
 
   const categories = useMemo(() => {
-    const set = new Set(["All", ...storyCategoryValues]);
+    const set = new Set(["All"]);
     articles.forEach((a) => {
       if (a.category) set.add(a.category);
     });
@@ -275,7 +273,7 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
                   <div className="card__body">
                     <span className="card__tag">{art.category || "Community"}</span>
                     <h3>{cleanTitle(art.title)}</h3>
-                    <p>{art.meta_description}</p>
+                    <p>{cleanExcerpt(art.meta_description)}</p>
                     <div className="card__foot">
                       <span>
                         {art.published_at

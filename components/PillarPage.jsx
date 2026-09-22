@@ -1,67 +1,112 @@
 import Link from "next/link";
-import { getCategory } from "@/lib/resources";
+import { getCategory, resourceHref } from "@/lib/resources";
+import { IconArrowRight, IconArrowUpRight } from "@/components/Icon";
 
 export default function PillarPage({ categoryId, eyebrow, title, description, steps, faqs }) {
 	const category = getCategory(categoryId);
-	return (
-		<main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-12">
-			<div className="max-w-5xl mx-auto px-6">
-				<section className="glass rounded-3xl p-8 sm:p-12 mb-10">
-					<span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">{eyebrow}</span>
-					<h1 className="text-4xl sm:text-6xl font-black tracking-tight mt-3 mb-5">{title}</h1>
-					<p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">{description}</p>
-					<div className="flex flex-wrap gap-3 mt-8">
-						<Link href={`/resources#${categoryId}`} className="btn btn-primary rounded-xl text-sm">Open resource table</Link>
-						<Link href="/how-we-test" className="btn btn-secondary rounded-xl text-sm">How we test</Link>
-					</div>
-				</section>
 
-				<section className="prose prose-slate dark:prose-invert max-w-none mb-10">
+	return (
+		<div className="flex-1">
+			<section className="hero" style={{ paddingBottom: "var(--section)" }}>
+				<div className="wrap">
+					<p className="eyebrow">
+						<span className="num">01</span> {eyebrow}
+					</p>
+					<h1>{title}</h1>
+					<p className="lede" style={{ marginTop: "1.25rem", maxWidth: "54ch" }}>
+						{description}
+					</p>
+					<div className="hero__cta">
+						<Link href={`/resources#${categoryId}`} className="btn btn--primary">
+							Open resource table
+							<IconArrowRight />
+						</Link>
+						<Link href="/how-we-test" className="btn btn--ghost">
+							How we test
+						</Link>
+					</div>
+				</div>
+			</section>
+
+			<section className="section" style={{ paddingTop: 0 }}>
+				<div className="wrap" style={{ maxWidth: "760px" }}>
 					<h2>Starter roadmap</h2>
-					<ol>
-						{steps.map((step) => <li key={step}>{step}</li>)}
+					<ol className="mt-6 space-y-3 text-[var(--ink-muted)]">
+						{steps.map((step, i) => (
+							<li key={step} className="flex gap-3">
+								<span className="font-display text-[var(--clay)]">{String(i + 1).padStart(2, "0")}</span>
+								<span>{step}</span>
+							</li>
+						))}
 					</ol>
-					<h2>Nepal checklist</h2>
-					<ul>
+
+					<h2 className="mt-16">Nepal checklist</h2>
+					<ul className="mt-6 space-y-2 text-[var(--ink-muted)]">
 						<li>Works on NTC/Ncell or common Nepali broadband without a VPN.</li>
 						<li>Has a usable free tier, clear NPR-equivalent pricing, or a local payment workaround.</li>
 						<li>Supports students, freelancers, or small businesses with practical outcomes.</li>
 						<li>Links back to the resources directory so readers can compare alternatives.</li>
 					</ul>
+				</div>
+			</section>
+
+			{category && (
+				<section className="section" style={{ paddingTop: 0 }}>
+					<div className="wrap">
+						<div className="section-head--split">
+							<h2>Recommended tools</h2>
+							<Link href={`/resources#${category.id}`} className="link link--arrow">
+								See full directory
+								<IconArrowRight className="icon icon--15" />
+							</Link>
+						</div>
+						<div className="cards" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}>
+							{category.resources.slice(0, 8).map((resource) => {
+								const href = resourceHref(resource);
+								const Tag = href ? "a" : "div";
+								return (
+									<Tag
+										key={resource.name}
+										{...(href
+											? {
+													href,
+													target: "_blank",
+													rel: resource.affiliate
+														? "noopener noreferrer sponsored"
+														: "noopener noreferrer",
+												}
+											: {})}
+										className="card !p-0"
+									>
+										<div className="card__body">
+											<div className="flex items-start justify-between gap-3">
+												<h3>{resource.name}</h3>
+												{href && <IconArrowUpRight className="icon icon--15 text-[var(--ink-faint)]" />}
+											</div>
+											<span className="card__tag">{resource.badge}</span>
+											<p>{resource.why}</p>
+										</div>
+									</Tag>
+								);
+							})}
+						</div>
+					</div>
 				</section>
+			)}
 
-				{category && (
-					<section className="mb-12">
-						<div className="flex items-end justify-between gap-4 mb-5">
-							<h2 className="text-2xl font-black">Recommended tools</h2>
-							<Link href={`/resources#${category.id}`} className="text-sm font-black text-indigo-600 dark:text-indigo-400 hover:underline">See full directory →</Link>
-						</div>
-						<div className="grid md:grid-cols-2 gap-4">
-							{category.resources.slice(0, 8).map((resource) => (
-								<div key={resource.name} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-									<div className="flex items-center justify-between gap-3 mb-2">
-										<h3 className="font-black">{resource.name}</h3>
-										<span className="text-xs font-black rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1">{resource.badge}</span>
-									</div>
-									<p className="text-sm text-slate-600 dark:text-slate-300">{resource.why}</p>
-								</div>
-							))}
-						</div>
-					</section>
-				)}
-
-				<section className="rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
-					<h2 className="text-2xl font-black mb-5">FAQ</h2>
-					<div className="space-y-5">
+			<section className="section" style={{ paddingTop: 0 }}>
+				<div className="wrap" style={{ maxWidth: "760px" }}>
+					<h2>FAQ</h2>
+					<div className="mt-8 grid gap-8">
 						{faqs.map((faq) => (
 							<div key={faq.q}>
-								<h3 className="font-black mb-1">{faq.q}</h3>
-								<p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{faq.a}</p>
+								<h3 className="!text-[1.1875rem]">{faq.q}</h3>
+								<p className="mt-2 text-[var(--ink-muted)]">{faq.a}</p>
 							</div>
 						))}
 					</div>
-				</section>
-			</div>
-		</main>
+				</div>
+			</section>
+		</div>
 	);
 }

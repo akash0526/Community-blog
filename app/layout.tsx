@@ -5,6 +5,15 @@ import LazyCookieConsent from "@/components/LazyCookieConsent";
 import CookieSettingsButton from "@/components/CookieSettingsButton";
 import SiteEffects from "@/components/SiteEffects";
 import { SITE_URL } from "@/lib/articles";
+// Self-hosted fonts (via @fontsource) instead of a render-blocking
+// fonts.googleapis.com stylesheet: no third-party DNS/TLS round-trip in
+// the critical path (PSI "render-blocking requests" / FCP insight), and
+// one fewer origin to preconnect. `font-display: swap` keeps text visible
+// while the woff2 files stream in.
+import "@fontsource-variable/fraunces/opsz.css";
+import "@fontsource-variable/inter";
+import "@fontsource/mukta/400.css";
+import "@fontsource/mukta/600.css";
 import "./globals.css";
 
 const siteName = "Apex";
@@ -152,29 +161,18 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
-				{/* §1.1 — the three families load in ONE Google Fonts request. */}
-				<link rel="preconnect" href="https://fonts.googleapis.com" />
-				<link
-					rel="preconnect"
-					href="https://fonts.gstatic.com"
-					crossOrigin="anonymous"
-				/>
-				{/* Preconnect to external origins — saves DNS + TLS round-trip */}
+				{/* Preconnect only to origins that serve above-the-fold resources.
+				    Keep this list ≤4 — Lighthouse warns when a page opens more
+				    preconnect connections than that. */}
 				<link rel="preconnect" href="https://images.unsplash.com" />
 				<link rel="preconnect" href="https://avatars.githubusercontent.com" />
 				<link
 					rel="preconnect"
 					href="https://xytyivccxndygcgpqeiu.supabase.co"
 				/>
-				<link rel="preconnect" href="https://i.ibb.co" />
 				<link rel="dns-prefetch" href="https://ui-avatars.com" />
 
 				<script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
-
-				<link
-					rel="stylesheet"
-					href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=Mukta:wght@400;600&display=swap"
-				/>
 
 				<script
 					type="application/ld+json"

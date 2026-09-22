@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import AuthModal from "./AuthModal";
+import dynamic from "next/dynamic";
 import {
 	IconArrowRight,
 	IconClose,
@@ -16,7 +16,10 @@ import {
 	IconSun,
 	IconUser,
 } from "./Icon";
-import { supabase } from "@/lib/supabase";
+
+// AuthModal (forms + lucide icons + supabase) is only needed after a click —
+// keep it out of the initial page-load bundles (PSI "unused JavaScript").
+const AuthModal = dynamic(() => import("./AuthModal"), { ssr: false });
 
 const THEME_KEY = "theme";
 
@@ -84,31 +87,53 @@ export default function Navbar() {
 		// moon/sun icons are swapped by [data-theme] in CSS.
 		applyTheme(readTheme());
 
-		// Check active user session
-		const getSession = async () => {
-			const {
-				data: { session },
-			} = await supabase.auth.getSession();
-			if (session?.user) {
-				setUser(session.user);
-			} else {
+		// The Supabase client (~60 KB gzip) is not required to paint the
+		// header: defer it until the browser is idle after load so it leaves
+		// the FCP/LCP critical path (PSI "unused JavaScript" + LCP insights).
+		// Returning readers just see their avatar upgrade a moment later.
+		let cancelled = false;
+		let subscription = null;
+		let idleHandle = null;
+
+		const initAuth = async () => {
+			// Demo session restores first — localStorage only, no network.
+			try {
 				const demo = localStorage.getItem("apex_demo_user");
-				if (demo) {
-					try {
-						setUser(JSON.parse(demo));
-					} catch {}
-				}
-			}
+				if (demo && !cancelled) setUser(JSON.parse(demo));
+			} catch {}
+			try {
+				const { supabase } = await import("@/lib/supabase");
+				if (cancelled) return;
+				const {
+					data: { session },
+				} = await supabase.auth.getSession();
+				if (cancelled) return;
+				if (session?.user) setUser(session.user);
+				const { data } = supabase.auth.onAuthStateChange((_event, s) => {
+					if (!cancelled && s?.user) setUser(s.user);
+				});
+				if (cancelled) data.subscription.unsubscribe();
+				else subscription = data.subscription;
+			} catch {}
 		};
-		getSession();
 
-		const {
-			data: { subscription },
-		} = supabase.auth.onAuthStateChange((_event, session) => {
-			if (session?.user) setUser(session.user);
-		});
+		const startIdleAuth = () => {
+			idleHandle = window.requestIdleCallback
+				? window.requestIdleCallback(initAuth, { timeout: 3000 })
+				: window.setTimeout(initAuth, 1500);
+		};
+		if (document.readyState === "complete") startIdleAuth();
+		else window.addEventListener("load", startIdleAuth, { once: true });
 
-		return () => subscription.unsubscribe();
+		return () => {
+			cancelled = true;
+			window.removeEventListener("load", startIdleAuth);
+			if (idleHandle != null) {
+				if (window.cancelIdleCallback) window.cancelIdleCallback(idleHandle);
+				else window.clearTimeout(idleHandle);
+			}
+			subscription?.unsubscribe();
+		};
 	}, []);
 
 	const toggleTheme = () => {
@@ -120,6 +145,7 @@ export default function Navbar() {
 	};
 
 	const handleLogout = async () => {
+		const { supabase } = await import("@/lib/supabase");
 		await supabase.auth.signOut();
 		localStorage.removeItem("apex_demo_user");
 		setUser(null);

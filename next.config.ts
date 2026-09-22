@@ -1,6 +1,23 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Next hard-requires its legacy client polyfills (polyfill-module) from
+  // next/dist/client/app-globals.js. Every target in `browserslist`
+  // (safari >= 15.4, chrome/edge/firefox >= 93) implements those APIs
+  // natively, and Lighthouse's "Legacy JavaScript" audit flags the shims
+  // as dead weight — so swap them for an empty stub. The separate
+  // `polyfill-nomodule` bundle (loaded with noModule, for really old
+  // browsers) is left untouched.
+  turbopack: {
+    resolveAlias: {
+      "../build/polyfills/polyfill-module": "./lib/next-polyfill-stub.js",
+      [path.join(
+        process.cwd(),
+        "node_modules/next/dist/build/polyfills/polyfill-module.js",
+      )]: "./lib/next-polyfill-stub.js",
+    },
+  },
   async headers() {
     return [
       {
@@ -18,6 +35,13 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    // AVIF first, WebP fallback — directly targets Lighthouse's "increase
+    // the image compression factor" delivery insights (often 30–50% fewer
+    // bytes than the default WebP-only pipeline).
+    formats: ["image/avif", "image/webp"],
+    // Quality ladder used by the quality= props across the site (60 for
+    // below-fold photography, 65 for the LCP hero image, 75 default).
+    qualities: [50, 60, 65, 70, 75],
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "**.supabase.co" },

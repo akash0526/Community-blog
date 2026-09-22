@@ -12,10 +12,11 @@
 /* ═══ 1. DESIGN TOKENS ══════════════════════════════════════ */
 
 :root {
-	/* 1.1 Typography */
-	--font-display: "Fraunces", Georgia, serif;
-	--font-body: "Inter", system-ui, sans-serif;
-	--font-deva: "Mukta", "Inter", sans-serif;
+	/* 1.1 Typography — families provided by self-hosted @fontsource
+	   imports in app/layout.tsx (Fraunces Variable / Inter Variable). */
+	--font-display: "Fraunces Variable", Georgia, serif;
+	--font-body: "Inter Variable", system-ui, sans-serif;
+	--font-deva: "Mukta", "Inter Variable", sans-serif;
 
 	/* 1.2 Type scale */
 	--step-4: clamp(2.75rem, 7vw, 5.25rem); /* h1 */

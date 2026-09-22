@@ -266,7 +266,8 @@ export default function CommunityFeed({ initialArticles = [], hasMore: initialHa
                       src={art.image_url || "/opengraph-image"}
                       alt={cleanTitle(art.title) || "Story thumbnail"}
                       fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      quality={60}
+                      sizes="(max-width: 860px) 90vw, calc((min(100vw, 1180px) - 136px) / 3)"
                       loading="lazy"
                     />
                   </div>

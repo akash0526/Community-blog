@@ -173,7 +173,8 @@ export default async function Homepage() {
 								width={1408}
 								height={768}
 								priority
-								sizes="(max-width: 900px) 100vw, 420px"
+								quality={65}
+								sizes="(max-width: 900px) min(90vw, 420px), 420px"
 							/>
 						</div>
 						<div className="hero__chip">
@@ -270,7 +271,8 @@ export default async function Homepage() {
 												alt={cleanTitle(art.title)}
 												width={640}
 												height={400}
-												sizes="(max-width: 860px) 100vw, 33vw"
+												quality={60}
+												sizes="(max-width: 860px) 90vw, calc((min(100vw, 1180px) - 136px) / 3)"
 												loading="lazy"
 											/>
 										</div>
@@ -309,13 +311,14 @@ export default async function Homepage() {
 					<div className="quote">
 						<div className="quote__img reveal">
 							<Image
-								src="/redesign/quote-kathmandu.jpg"
-								alt="A carved wooden lattice window set in weathered red brick, with a notebook and a clay cup of tea on the ledge below it"
-								width={1408}
-								height={768}
-								loading="lazy"
-								sizes="(max-width: 860px) 320px, 40vw"
-							/>
+									src="/redesign/quote-kathmandu.jpg"
+									alt="A carved wooden lattice window set in weathered red brick, with a notebook and a clay cup of tea on the ledge below it"
+									width={1408}
+									height={768}
+									loading="lazy"
+									quality={60}
+									sizes="(max-width: 860px) 320px, 40vw"
+								/>
 						</div>
 						<div>
 							<p className="eyebrow reveal">
@@ -450,7 +453,8 @@ export default async function Homepage() {
 												width={1408}
 												height={768}
 												loading="lazy"
-												sizes="(max-width: 860px) 100vw, 33vw"
+												quality={60}
+												sizes="(max-width: 860px) 90vw, calc((min(100vw, 1180px) - 136px) / 3)"
 											/>
 										</div>
 									)}

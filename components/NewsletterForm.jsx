@@ -1,46 +1,63 @@
 "use client";
 
-import { useRef } from "react";
+import { useState } from "react";
 import { IconArrowRight } from "./Icon";
 
-// Brief §11 — the newsletter block. The submit handler resets the field; the
-// real endpoint is preserved via `action`/`method` so the existing Buttondown
-// embed keeps working exactly as before.
-export default function NewsletterForm({
-	action = "https://buttondown.email/",
-	method = "get",
-	fieldName = "email",
-}) {
-	const formRef = useRef(null);
+// No live list provider is wired yet. Do not POST to a generic Buttondown
+// homepage — that looked like a working signup and dropped the address.
+export default function NewsletterForm() {
+	const [status, setStatus] = useState("idle");
 
-	const handleSubmit = () => {
-		// Let the browser perform the native submit, then clear the input so the
-		// visitor sees the field reset on return.
-		window.setTimeout(() => formRef.current?.reset(), 0);
+	const handleSubmit = (event) => {
+		event.preventDefault();
+		const email = String(new FormData(event.currentTarget).get("email") || "").trim();
+		if (!email) return;
+		try {
+			const key = "apex_newsletter_waitlist";
+			const existing = JSON.parse(localStorage.getItem(key) || "[]");
+			if (!existing.includes(email)) {
+				existing.push(email);
+				localStorage.setItem(key, JSON.stringify(existing));
+			}
+		} catch {
+			// localStorage can be blocked; the thank-you state still stands.
+		}
+		event.currentTarget.reset();
+		setStatus("done");
 	};
 
+	if (status === "done") {
+		return (
+			<p className="news__note" role="status">
+				Thanks. The Thursday note isn’t live yet — email{" "}
+				<a href="mailto:editor@apex-nepal.com?subject=Thursday%20note">
+					editor@apex-nepal.com
+				</a>{" "}
+				and we’ll add you to the first issue.
+			</p>
+		);
+	}
+
 	return (
-		<form
-			ref={formRef}
-			className="news__form"
-			action={action}
-			method={method}
-			onSubmit={handleSubmit}
-		>
+		<form className="news__form" onSubmit={handleSubmit}>
 			<label className="sr-only" htmlFor="newsletter-email">
 				Email address
 			</label>
 			<input
 				id="newsletter-email"
 				type="email"
-				name={fieldName}
+				name="email"
 				required
+				autoComplete="email"
 				placeholder="you@example.com"
 			/>
 			<button type="submit" className="btn news__btn">
 				Join free
 				<IconArrowRight />
 			</button>
+			<p className="news__note" style={{ flexBasis: "100%" }}>
+				No spam. We’ll only email if the Thursday note actually ships.
+			</p>
 		</form>
 	);
 }

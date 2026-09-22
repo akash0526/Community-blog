@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Share2, Bookmark } from "lucide-react";
 import DiscussionThread from "@/components/DiscussionThread";
-import { sanitizeCmsField } from "@/lib/seoUtils";
+import { sanitizeCmsField, detectLanguage, cleanExcerpt, cleanBio } from "@/lib/seoUtils";
 import { IconCheck } from "@/components/Icon";
 
 function cleanTitle(title=""){
@@ -108,16 +108,16 @@ export default function ArticleContent({ serverArticle, slug }) {
   }
 
   const title = cleanTitle(article.title);
-  const description = sanitizeCmsField(article.meta_description);
+  const description = cleanExcerpt(article.meta_description);
   // Real reading time from the body (was hardcoded "5–8 min" for every story).
   const wordCount = String(article.content || "").split(/\s+/).filter(Boolean).length;
   const readMinutes = Math.max(1, Math.round(wordCount / 200));
   // Tag Nepali (Devanagari) stories so screen readers pronounce them correctly.
-  const contentLang = /[\\u0900-\\u097F]/.test(`${article.title || ""} ${article.content || ""}`) ? "ne" : "en";
+  const contentLang = detectLanguage(`${article.title || ""} ${article.content || ""}`);
   const author = article.profiles || {};
   const authorName = author.full_name || "Apex Editorial";
   const authorRole = author.professional_role || "Contributing Writer";
-  const authorBio = author.bio || "";
+  const authorBio = cleanBio(author.bio || "");
   const authorAvatar = getAvatar(author, article.id);
   const published = formatDate(article.published_at || article.created_at);
   const updated = article.updated_at && article.updated_at !== article.created_at ? formatDate(article.updated_at) : null;
@@ -164,7 +164,7 @@ export default function ArticleContent({ serverArticle, slug }) {
           <span className="text-slate-400 truncate max-w-[200px]">{title.slice(0,60)}</span>
         </nav>
 
-        <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-6">
+        <Link href="/blog" className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-6">
           <ArrowLeft className="w-3.5 h-3.5"/> Back to stories
         </Link>
 

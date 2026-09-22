@@ -215,7 +215,7 @@ export default function RootLayout({
 									एपेक्स नेपाल
 								</span>
 								<p className="mt-3 text-[0.8125rem] text-[var(--ink-faint)]">
-									Editorial base: Butwal, Nepal • Founded Nov 2025
+									Editorial base: Nepal • Founded Nov 2025
 								</p>
 							</div>
 
@@ -296,7 +296,7 @@ export default function RootLayout({
 								<Link href="/disclaimer">Disclaimer</Link>
 								<CookieSettingsButton />
 							</span>
-							<span>Made in Kathmandu</span>
+							<span>Made in Nepal</span>
 						</div>
 					</div>
 				</footer>

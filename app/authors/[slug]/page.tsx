@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { SITE_URL } from "@/lib/articles";
+import { cleanBio, cleanExcerpt } from "@/lib/seoUtils";
 
 export const revalidate = 120;
 
@@ -44,7 +45,7 @@ export async function generateMetadata({ params }: { params: Promise<{slug:strin
   const name = author.full_name;
   return {
     title: `${name} – Author at Apex`,
-    description: author.bio || `${name} – ${author.professional_role||'Writer'} at Apex. Read all articles.`,
+    description: cleanBio(author.bio) || `${name} – ${author.professional_role||'Writer'} at Apex. Read all articles.`,
     alternates: { canonical: `/authors/${slug}` },
     openGraph: {
       title: `${name} – Apex`,
@@ -67,12 +68,12 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
       id: "fallback-akash",
       full_name: "Akash Adhikari",
       professional_role: "Founder & Lead Editor",
-      bio: "Full-stack developer (Next.js, Supabase) based in Doha, Qatar. I test remittance apps, publish Qatar expat guides, and build open publishing tools at Apex.",
+      bio: "Full-stack developer (Next.js, Supabase) from Nepal. I test remittance rails, hosting, and AI tools from Nepali networks, and build Apex as an open publishing directory.",
       avatar_url: "https://avatars.githubusercontent.com/u/148329502?v=4",
       email: "editor@apex-nepal.com",
       website: "https://github.com/akash0526",
-      location: "Doha, Qatar",
-      expertise: ["Remittance tech", "Qatar expat life", "Next.js", "Supabase"]
+      location: "Nepal",
+      expertise: ["Remittance tech", "Nepal tools", "Next.js", "Supabase"]
     }
   }
 
@@ -96,11 +97,14 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
     "url": `${SITE_URL}/authors/${slug}`,
     "image": profile.avatar_url,
     "jobTitle": profile.professional_role,
-    "description": profile.bio,
+    "description": cleanBio(profile.bio),
     "worksFor": { "@type": "Organization", "name": "Apex", "url": SITE_URL },
     "sameAs": [
-      "https://github.com/akash0526"
-    ]
+      website,
+      twitter,
+      linkedin,
+      slug.includes("akash") ? "https://github.com/akash0526" : null,
+    ].filter(Boolean),
   };
 
   return (
@@ -113,9 +117,11 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
           <div className="flex-1">
             <h1 className="text-3xl sm:text-4xl font-black mb-2">{profile.full_name}</h1>
             <div className="text-indigo-600 dark:text-indigo-400 font-bold text-sm mb-3">{profile.professional_role || "Contributing Writer"}</div>
-            {profile.bio && <p className="text-slate-700 dark:text-slate-300 max-w-2xl leading-relaxed">{profile.bio}</p>}
+            {cleanBio(profile.bio) && <p className="text-slate-700 dark:text-slate-300 max-w-2xl leading-relaxed">{cleanBio(profile.bio)}</p>}
             <div className="flex flex-wrap gap-3 text-xs mt-4 font-bold">
-              <span className="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">{profile.location || "Doha, Qatar"}</span>
+              {profile.location ? (
+                <span className="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">{profile.location}</span>
+              ) : null}
               <a href="mailto:editor@apex-nepal.com" className="px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">Contact</a>
               {website && <a href={website} target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">Website →</a>}
               {twitter && <a href={twitter} target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">X →</a>}
@@ -135,18 +141,18 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
           <h2 className="text-xl font-black mb-6">Articles by {profile.full_name.split(' ')[0]}</h2>
           {articles.length === 0 ? (
             <div className="text-slate-600 dark:text-slate-400 text-sm">
-              <p className="mb-3">No articles indexed yet from Supabase, or using fallback profile.</p>
-              <p>Author profile system is live – connect your Supabase <code>profiles</code> table to enable automatic article lists.</p>
-              <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
-                <strong>E-E-A-T verified:</strong>
-                <ul className="list-disc pl-5 mt-2 space-y-1">
-                  <li>Real name, photo, and bio</li>
-                  <li>Credentials: {profile.professional_role}</li>
-                  <li>Location: {profile.location || "Doha, Qatar"}</li>
-                  <li>Contact: editor@apex-nepal.com</li>
-                  <li>Editorial policy: <Link href="/editorial" className="underline text-indigo-600">/editorial</Link></li>
-                </ul>
-              </div>
+              <p className="mb-3">No published stories under this byline yet.</p>
+              <p>
+                Read the{" "}
+                <Link href="/editorial" className="underline text-indigo-600">
+                  editorial policy
+                </Link>{" "}
+                or{" "}
+                <Link href="/write-for-us" className="underline text-indigo-600">
+                  write for Apex
+                </Link>
+                .
+              </p>
             </div>
           ) : (
             <div className="grid gap-5">
@@ -154,7 +160,7 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
                 <Link key={a.slug} href={`/blog/${a.slug}`} className="block p-5 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-900 transition">
                   <div className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1">{a.category}</div>
                   <div className="font-black text-lg mb-1">{a.title}</div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">{a.meta_description}</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">{cleanExcerpt(a.meta_description)}</div>
                   <div className="text-xs text-slate-500 mt-2">{a.published_at ? new Date(a.published_at).toLocaleDateString() : ""}</div>
                 </Link>
               ))}

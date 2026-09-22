@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getArticleBySlug, SITE_URL } from "@/lib/articles";
-import { sanitizeCmsField, detectLanguage } from "@/lib/seoUtils";
+import { sanitizeCmsField, detectLanguage, cleanExcerpt, cleanBio } from "@/lib/seoUtils";
 import ArticleContent from "./ArticleContent";
 
 export const revalidate = 60;
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }) {
   }
 
   const cleanTitle = cleanTitleField(article.title);
-  const cleanDescription = sanitizeCmsField(article.meta_description)?.slice(0,155) || cleanTitle;
+  const cleanDescription = cleanExcerpt(article.meta_description)?.slice(0,155) || cleanTitle;
   const canonicalUrl = `${SITE_URL}/blog/${encodeURIComponent(decodeURIComponent(slug).normalize("NFC"))}`;
   const authorName = article.profiles?.full_name || "Apex Editorial";
 
@@ -135,7 +135,7 @@ export default async function ArticlePage({ params }) {
       "url": authorUrl,
       "image": authorAvatar,
       "jobTitle": article.profiles?.professional_role || "Contributing Writer",
-      "description": article.profiles?.bio || undefined,
+      "description": cleanBio(article.profiles?.bio) || undefined,
       "sameAs": authorSameAs.length ? authorSameAs : undefined
     },
     "editor": {

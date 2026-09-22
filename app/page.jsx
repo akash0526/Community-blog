@@ -3,14 +3,16 @@ import Image from "next/image";
 import { getPaginatedArticles, getPublishedArticleCount } from "@/lib/articles";
 import CommunityFeed from "@/components/CommunityFeed";
 import NewsletterForm from "@/components/NewsletterForm";
-import { monthlyPicks } from "@/lib/resources";
+import { monthlyPicks, resourceCategories, countResources, countByCategory } from "@/lib/resources";
+import { cleanExcerpt } from "@/lib/seoUtils";
 import {
 	IconArrowRight,
+	IconBook,
 	IconBriefcase,
 	IconCard,
-	IconScales,
+	IconGlobe,
 	IconSparkle,
-	IconUsers,
+	IconStore,
 } from "@/components/Icon";
 
 export const revalidate = 60;
@@ -40,63 +42,56 @@ const PICK_PHOTOS = {
 	},
 };
 
-// NOTE: the resource counts below (hero stats, tile counts, "See all 140
-// resources") are the literal values given in apex-nepal-redesign.md §5/§7/§9.
-// lib/resources.js currently holds 88 entries across 6 categories, so these
-// numbers are wired to the brief rather than the data — swap them for a count
-// off `resourceCategories` before shipping if the copy needs to be verifiable.
-
+const RESOURCE_COUNT = countResources();
+const CATEGORY_COUNTS = countByCategory();
 
 // §6 — ticker topics. Duplicated once inside the component so the 42s loop is seamless.
-const TICKER_ITEMS = [
-	"Payments",
-	"AI Tools",
-	"Freelancing",
-	"Legal & Tax",
-	"Hosting",
-	"Design",
-	"Communities",
-	"Learning",
-];
+const TICKER_ITEMS = resourceCategories.map((category) => category.title);
 
-// §7 — bento tiles, in the order given by the brief. Each one points at a route
-// that already exists on the site.
+// Six tiles, one per directory category, with counts taken from lib/resources.js.
 const CATEGORY_TILES = [
 	{
 		variant: "tile--wide",
 		icon: IconCard,
 		title: "Getting paid",
 		copy: "Payment gateways, remittance routes and payout options that actually clear for Nepali freelancers and businesses.",
-		count: 18,
+		count: CATEGORY_COUNTS.payments,
 		href: "/digital-payments",
 	},
 	{
 		icon: IconSparkle,
 		title: "AI tools",
-		copy: "What's worth the subscription.",
-		count: 31,
+		copy: "Free and paid assistants that work on NTC/Ncell — no VPN required.",
+		count: CATEGORY_COUNTS["ai-tools"],
 		href: "/ai-tools",
 	},
 	{
 		icon: IconBriefcase,
 		title: "Freelancing",
-		copy: "Platforms, contracts, rates.",
-		count: 24,
+		copy: "CVs, portfolios, remote boards and time-zone tools for the first client.",
+		count: CATEGORY_COUNTS.freelancing,
 		href: "/freelancing-in-nepal",
 	},
 	{
-		icon: IconScales,
-		title: "Legal & tax",
-		copy: "Registration, PAN, filing.",
-		count: 12,
+		icon: IconGlobe,
+		title: "Hosting",
+		copy: "Domains, CDN and static hosts that stay fast on Nepali broadband.",
+		count: CATEGORY_COUNTS.hosting,
+		href: "/blogging-hosting",
+	},
+	{
+		icon: IconStore,
+		title: "Small business",
+		copy: "Free design, billing and backup tools for a pasal or Facebook shop.",
+		count: CATEGORY_COUNTS.business,
 		href: "/small-business-tools",
 	},
 	{
-		icon: IconUsers,
-		title: "Communities",
-		copy: "Where people actually reply.",
-		count: 15,
-		href: "/blog",
+		icon: IconBook,
+		title: "Students",
+		copy: "Free courses, textbooks and exam prep. NPR 0 to start learning.",
+		count: CATEGORY_COUNTS.students,
+		href: "/resources#students",
 	},
 ];
 
@@ -121,6 +116,7 @@ export default async function Homepage() {
 	const featured = articles.slice(0, 3);
 	const rest = articles.slice(3);
 	const hasMore = totalCount > PAGE_SIZE;
+	const showFeed = rest.length > 0 || hasMore;
 
 	return (
 		<div className="flex-1">
@@ -154,11 +150,11 @@ export default async function Homepage() {
 
 						<div className="hero__stats">
 							<div>
-								<div className="stat__n">140+</div>
+								<div className="stat__n">{RESOURCE_COUNT}</div>
 								<div className="stat__l">Resources</div>
 							</div>
 							<div>
-								<div className="stat__n">9</div>
+								<div className="stat__n">{resourceCategories.length}</div>
 								<div className="stat__l">Categories</div>
 							</div>
 							<div>
@@ -181,7 +177,7 @@ export default async function Homepage() {
 							/>
 						</div>
 						<div className="hero__chip">
-							<span className="pulse" aria-hidden="true" />4 added this week
+							<span className="pulse" aria-hidden="true" />Updated Sept 2026
 						</div>
 					</div>
 				</div>
@@ -253,8 +249,8 @@ export default async function Homepage() {
 							</p>
 							<h2 className="reveal">Picked this week.</h2>
 						</div>
-						<Link href="/resources" className="link link--arrow reveal">
-							See all 140 resources
+						<Link href={featured.length ? "/blog" : "/resources"} className="link link--arrow reveal">
+							{featured.length ? "See all stories" : "See all resources"}
 							<IconArrowRight className="icon icon--15" />
 						</Link>
 					</div>
@@ -281,7 +277,7 @@ export default async function Homepage() {
 										<div className="card__body">
 											<span className="card__tag">{art.category || "Guide"}</span>
 											<h3>{cleanTitle(art.title)}</h3>
-											<p>{art.meta_description}</p>
+											<p>{cleanExcerpt(art.meta_description)}</p>
 											<div className="card__foot">
 												<span>
 													{formatDate(
@@ -351,7 +347,6 @@ export default async function Homepage() {
 						New resources, a short note on what changed, and nothing else.
 					</p>
 					<NewsletterForm />
-					<p className="news__note">No spam. Unsubscribe any time.</p>
 				</div>
 			</section>
 
@@ -458,7 +453,7 @@ export default async function Homepage() {
 												sizes="(max-width: 860px) 100vw, 33vw"
 											/>
 										</div>
-									)},
+									)}
 									<div className="card__body">
 										<span className="card__tag">{pick.badge}</span>
 										<h3>{pick.name}</h3>
@@ -483,12 +478,20 @@ export default async function Homepage() {
 					</p>
 					<h2 className="reveal">Latest from the community</h2>
 					<div className="mt-8">
-						{articles.length > 0 || hasMore ? (
+						{showFeed ? (
 							<CommunityFeed
 								initialArticles={rest}
 								hasMore={hasMore}
 								initialOffset={PAGE_SIZE}
 							/>
+						) : articles.length > 0 ? (
+							<p className="lede" style={{ marginTop: "1.125rem" }}>
+								That’s the latest story.{" "}
+								<Link href="/write-for-us" className="link">
+									Write the next one
+								</Link>
+								.
+							</p>
 						) : (
 							<div className="card !p-10">
 								<h3 className="mb-2">No published stories yet</h3>

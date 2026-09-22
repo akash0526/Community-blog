@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function EditorialPage(){
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
       <div className="max-w-3xl mx-auto px-6 py-16 sm:py-20 prose prose-slate dark:prose-invert prose-lg">
         <h1>Editorial Policy</h1>
         <p className="lead">Last updated: July 7, 2026 — v1.0</p>
@@ -39,7 +39,7 @@ export default function EditorialPage(){
         <h2>Sponsored / affiliate content</h2>
         <ul>
           <li>All affiliate links are clearly disclosed at the top of the article.</li>
-          <li>Sponsored posts are labeled “Sponsored” and use <code>rel="sponsored"</code>.</li>
+          <li>Sponsored posts are labeled “Sponsored” and use <code>rel=&quot;sponsored&quot;</code>.</li>
           <li>Sponsors never see copy before publish and cannot alter test results.</li>
           <li>We do not do “pay for positive review”.</li>
         </ul>
@@ -56,7 +56,7 @@ export default function EditorialPage(){
         <p>Time-sensitive guides show “Published” + “Last updated” dates. We review remittance / visa / pricing content at least quarterly.</p>
 
         <h2>Comment moderation</h2>
-        <p>Comments are pre-moderated for spam / hate. Real discussion is welcome. Fake engagement is not.</p>
+        <p>Comments post instantly to keep discussion open. We remove spam, hate, and impersonation when found, and readers can report abuse to <a href="mailto:editor@apex-nepal.com">editor@apex-nepal.com</a>. Real discussion is welcome. Fake engagement is not.</p>
 
         <h2>AI / LLM disclosure</h2>
         <p>We optimize for clarity so humans and AI crawlers can trust our content: structured data, citations, real authors, clean HTML. We do not cloak or hide text from crawlers.</p>
@@ -64,6 +64,6 @@ export default function EditorialPage(){
         <h2>Contact</h2>
         <p>Editorial: <a href="mailto:editor@apex-nepal.com">editor@apex-nepal.com</a> — <Link href="/contact">contact page</Link></p>
       </div>
-    </main>
+    </div>
   );
 }

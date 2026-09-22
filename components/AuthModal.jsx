@@ -34,7 +34,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 							professional_role: profession || "Community Creator",
 							bio:
 								bio || "Writing and sharing stories with the open community.",
-							avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName || email.split("@")[0])}&background=4f46e5&color=fff`,
+							avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName || email.split("@")[0])}&background=A8471F&color=fff`,
 						},
 					},
 				});
@@ -46,7 +46,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 					onClose();
 				} else {
 					setMessage(
-						"⚡ Confirmation email sent! Check your inbox or use Demo Login below.",
+						"Confirmation email sent! Check your inbox (and spam folder) to verify your account.",
 					);
 				}
 			} else {
@@ -79,10 +79,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 			id: "demo-author-" + Date.now(),
 			email: "demo.developer@example.com",
 			user_metadata: {
-				full_name: "Akash (Demo Architect)",
-				professional_role: "Community Platform Creator",
+				full_name: "Demo Writer",
+				professional_role: "Community Creator",
 				bio: "Exploring open publishing, technology, and community storytelling.",
-				avatar_url: "https://avatars.githubusercontent.com/akash0526",
+				avatar_url: "https://ui-avatars.com/api/?name=Demo+Writer&background=A8471F&color=fff",
 			},
 		};
 
@@ -122,12 +122,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 						</span>
 					</div>
 					<h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-						{isSignUp ? "Join the Open Ledger" : "Welcome Back, Architect"}
+						{isSignUp ? "Join Apex" : "Welcome back"}
 					</h3>
 					<p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mt-1">
 						{isSignUp
-							? "Create your profile to write and rank extreme SEO dispatches."
-							: "Log in to write dispatches and manage your keyword authority pipelines."}
+							? "Create your free account to write stories and join the discussion."
+							: "Log in to write stories and manage your profile."}
 					</p>
 				</div>
 
@@ -240,10 +240,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 						className="btn btn-primary w-full py-3.5 rounded-2xl font-black text-sm tracking-wide shadow-lg shadow-indigo-600/30"
 					>
 						{loading
-							? "Authenticating Cloud..."
+							? "Please wait..."
 							: isSignUp
-								? "Sign Up to Open Ledger"
-								: "Log In Live"}
+								? "Create account"
+								: "Log in"}
 					</button>
 				</form>
 
@@ -271,7 +271,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 				<div className="mt-6 text-center text-xs font-bold text-slate-500">
 					{isSignUp ? (
 						<span>
-							Already have an author ledger?{" "}
+							Already have an account?{" "}
 							<button
 								onClick={() => setIsSignUp(false)}
 								className="text-indigo-600 dark:text-indigo-400 font-black underline ml-1"
@@ -281,7 +281,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 						</span>
 					) : (
 						<span>
-							New to open developer dispatches?{" "}
+							New to Apex?{" "}
 							<button
 								onClick={() => setIsSignUp(true)}
 								className="text-indigo-600 dark:text-indigo-400 font-black underline ml-1"

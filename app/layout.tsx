@@ -1,35 +1,26 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { Geist_Mono, Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import LazyCookieConsent from "@/components/LazyCookieConsent";
+import CookieSettingsButton from "@/components/CookieSettingsButton";
+import SiteEffects from "@/components/SiteEffects";
 import { SITE_URL } from "@/lib/articles";
 import "./globals.css";
 
-const inter = Inter({
-	subsets: ["latin"],
-	variable: "--font-inter",
-});
-
-const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
-	subsets: ["latin"],
-});
-
 const siteName = "Apex";
-const siteTagline = "Open stories from around the world";
+const siteTagline = "Tested tools and guides for Nepal";
 const description =
-	"Apex is an open global publishing platform where independent writers share tested, cited stories. Personal essays, tech guides, Qatar expat resources, and cultural reporting – by real authors.";
+	"Apex Nepal publishes tested, cited resources for Nepali students, freelancers, bloggers, and small businesses: AI tools, hosting, payments, learning, and practical online-work guides.";
 const keywords = [
 	"apex",
-	"global blog",
-	"community publishing",
-	"write articles online",
-	"qatar expat guide",
-	"tech articles",
-	"personal stories",
-	"remittance guides",
-	"doha",
+	"Nepal tools",
+	"AI tools Nepal",
+	"freelancing in Nepal",
+	"hosting Nepal",
+	"Payoneer Nepal",
+	"eSewa hosting",
+	"small business tools Nepal",
+	"student resources Nepal",
 	"nepal community",
 ];
 
@@ -73,7 +64,7 @@ export const metadata: Metadata = {
 		card: "summary_large_image",
 		title: `${siteName} — ${siteTagline}`,
 		description,
-		images: ["opengraph-image"],
+		images: [`${SITE_URL}/opengraph-image`],
 	},
 	robots: {
 		index: true,
@@ -95,9 +86,21 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-	themeColor: "#4f46e5",
+	// Follows the redesign palette instead of the old indigo (#4f46e5).
+	themeColor: [
+		{ media: "(prefers-color-scheme: light)", color: "#F7F3EC" },
+		{ media: "(prefers-color-scheme: dark)", color: "#131110" },
+	],
 	colorScheme: "light dark",
 };
+
+/**
+ * Theme bootstrap (brief §18). Runs synchronously in <head>, BEFORE the
+ * stylesheet, so the saved theme is on <html> before first paint — no flash.
+ * Reads/writes `localStorage.theme` and drives `[data-theme="…"]`, which is
+ * the single token swap behind light/dark mode (non-negotiable #9).
+ */
+const THEME_BOOTSTRAP = `(function(){try{var root=document.documentElement;var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){try{var legacy=localStorage.getItem("apex_theme");if(legacy==="dark"||legacy==="light"){t=legacy;localStorage.setItem("theme",t);}}catch(e2){}}if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}root.setAttribute("data-theme",t);root.classList.add("js");}catch(e){}})();`;
 
 export default function RootLayout({
 	children,
@@ -110,23 +113,23 @@ export default function RootLayout({
 		"@context": "https://schema.org",
 		"@type": "WebSite",
 		"name": siteName,
-		"alternateName": ["Apex Community", "Apex Blog"],
+		"alternateName": ["Apex Nepal", "Apex Community", "Apex Blog"],
 		"url": SITE_URL,
 		description,
 		"inLanguage": ["en", "ne"],
 		"potentialAction": {
 			"@type": "SearchAction",
 			"target": `${SITE_URL}/?q={search_term_string}`,
-			"query-input": "required name=search_term_string"
+			"query-input": "required name=search_term_string",
 		},
 		"publisher": {
 			"@type": "Organization",
 			"name": siteName,
 			"logo": {
 				"@type": "ImageObject",
-				"url": `${SITE_URL}/icon.svg`
-			}
-		}
+				"url": `${SITE_URL}/icon.svg`,
+			},
+		},
 	};
 	const orgSchema = {
 		"@context": "https://schema.org",
@@ -134,29 +137,44 @@ export default function RootLayout({
 		"name": siteName,
 		"url": SITE_URL,
 		"logo": `${SITE_URL}/icon.svg`,
-		"sameAs": [
-			"https://github.com/akash0526"
-		],
+		"sameAs": ["https://github.com/akash0526"],
 		"foundingDate": "2025-11-01",
-		"founders": [{
-			"@type": "Person",
-			"name": "Akash Adhikari",
-			"url": `${SITE_URL}/authors/akash-adhikari`
-		}],
+		"founders": [
+			{
+				"@type": "Person",
+				"name": "Akash Adhikari",
+				"url": `${SITE_URL}/authors/akash-adhikari`,
+			},
+		],
 		"description": description,
 	};
 
 	return (
-		<html
-			lang="en"
-			className={`${inter.variable} ${geistMono.variable} antialiased selection:bg-indigo-500 selection:text-white`}
-		>
+		<html lang="en" suppressHydrationWarning>
 			<head>
+				{/* §1.1 — the three families load in ONE Google Fonts request. */}
+				<link rel="preconnect" href="https://fonts.googleapis.com" />
+				<link
+					rel="preconnect"
+					href="https://fonts.gstatic.com"
+					crossOrigin="anonymous"
+				/>
 				{/* Preconnect to external origins — saves DNS + TLS round-trip */}
 				<link rel="preconnect" href="https://images.unsplash.com" />
 				<link rel="preconnect" href="https://avatars.githubusercontent.com" />
-				<link rel="preconnect" href="https://xytyivccxndygcgpqeiu.supabase.co" />
+				<link
+					rel="preconnect"
+					href="https://xytyivccxndygcgpqeiu.supabase.co"
+				/>
+				<link rel="preconnect" href="https://i.ibb.co" />
 				<link rel="dns-prefetch" href="https://ui-avatars.com" />
+
+				<script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+
+				<link
+					rel="stylesheet"
+					href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=Mukta:wght@400;600&display=swap"
+				/>
 
 				<script
 					type="application/ld+json"
@@ -167,70 +185,124 @@ export default function RootLayout({
 					dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
 				/>
 			</head>
-			<body className="font-sans flex flex-col min-h-screen">
+			<body className="flex min-h-screen flex-col">
+				{/* §2.4 — first focusable element on every page. */}
+				<a className="skip" href="#main">
+					Skip to content
+				</a>
+
 				<Navbar />
 
-				<div className="flex-1 flex flex-col">{children}</div>
+				<main id="main" className="flex flex-1 flex-col" tabIndex={-1}>
+					{children}
+				</main>
+
+				{/* §12 — site-wide footer, all previously published routes kept. */}
+				<footer className="footer mt-auto">
+					<div className="wrap">
+						<div className="footer__grid">
+							<div className="footer__brand">
+								<Link href="/" className="brand">
+									Apex<span className="dot" />
+									Nepal
+								</Link>
+								<p>
+									A curated resource hub for people building from Nepal —
+									plus open stories from around the world. Every entry is
+									tested, cited and corrected in public.
+								</p>
+								<span className="deva" lang="ne">
+									एपेक्स नेपाल
+								</span>
+								<p className="mt-3 text-[0.8125rem] text-[var(--ink-faint)]">
+									Editorial base: Butwal, Nepal • Founded Nov 2025
+								</p>
+							</div>
+
+							<div>
+								<h4>Browse</h4>
+								<ul>
+									<li>
+										<Link href="/resources">All resources</Link>
+									</li>
+									<li>
+										<Link href="/blog">Guides</Link>
+									</li>
+									<li>
+										<Link href="/ai-tools">Tools</Link>
+									</li>
+									<li>
+										<Link href="/freelancing-in-nepal">Freelancing</Link>
+									</li>
+									<li>
+										<Link href="/small-business-tools">Business tools</Link>
+									</li>
+								</ul>
+							</div>
+
+							<div>
+								<h4>About</h4>
+								<ul>
+									<li>
+										<Link href="/editorial">Our method</Link>
+									</li>
+									<li>
+										<Link href="/how-we-test">How we test</Link>
+									</li>
+									<li>
+										<Link href="/write-for-us">Submit a resource</Link>
+									</li>
+									<li>
+										<Link href="/corrections">Corrections</Link>
+									</li>
+									<li>
+										<Link href="/contact">Contact</Link>
+									</li>
+								</ul>
+							</div>
+
+							<div>
+								<h4>Elsewhere</h4>
+								<ul>
+									<li>
+										<a
+											href="https://github.com/akash0526/Community-blog"
+											target="_blank"
+											rel="noopener"
+										>
+											GitHub
+										</a>
+									</li>
+									<li>
+										<a href="mailto:editor@apex-nepal.com">
+											editor@apex-nepal.com
+										</a>
+									</li>
+									<li>
+										<Link href="/feed.xml">RSS</Link>
+									</li>
+									<li>
+										<Link href="/dashboard">Writer dashboard</Link>
+									</li>
+								</ul>
+							</div>
+						</div>
+
+						<div className="footer__base">
+							<span>© {new Date().getFullYear()} Apex Nepal</span>
+							<span className="footer__base-links">
+								<Link href="/privacy">Privacy Policy</Link>
+								<Link href="/terms">Terms of Service</Link>
+								<Link href="/disclaimer">Disclaimer</Link>
+								<CookieSettingsButton />
+							</span>
+							<span>Made in Kathmandu</span>
+						</div>
+					</div>
+				</footer>
 
 				<LazyCookieConsent />
-
-			{/* Trust Footer */}
-			<footer className="bg-slate-950 text-slate-300 py-16 mt-auto transition">
-				<div className="gradient-line mb-0" />
-				<div className="max-w-7xl mx-auto px-6 pt-16">
-					<div className="grid gap-10 md:grid-cols-4 text-left text-sm mb-12">
-						<div className="md:col-span-2">
-							<div className="flex items-center gap-3 text-white font-black text-xl mb-4">
-								<img
-									src="/apex-community-logo.svg"
-									alt="Apex logo"
-									className="w-36 sm:w-44 h-auto max-h-10 object-contain brightness-0 invert"
-								/>
-								<span className="text-lg">Apex</span>
-							</div>
-							<p className="text-slate-400 max-w-md leading-relaxed">
-								Apex is an open global publishing platform where independent writers share tested, cited stories.
-							</p>
-							<p className="text-xs text-slate-500 mt-3">Editorial base: Doha, Qatar • Founded Nov 2025</p>
-						</div>
-
-						<div>
-							<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Platform</div>
-							<ul className="space-y-2 font-bold">
-								<li><Link href="/about" className="link-underline hover:text-white transition">About</Link></li>
-								<li><Link href="/contact" className="link-underline hover:text-white transition">Contact</Link></li>
-								<li><Link href="/editorial" className="link-underline hover:text-white transition">Editorial Policy</Link></li>
-								<li><Link href="/corrections" className="link-underline hover:text-white transition">Corrections</Link></li>
-								<li><Link href="/studio" className="link-underline hover:text-white transition">Write a story</Link></li>
-							</ul>
-						</div>
-
-						<div>
-							<div className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Legal</div>
-							<ul className="space-y-2 font-bold">
-								<li><Link href="/privacy" className="link-underline hover:text-white transition">Privacy Policy</Link></li>
-								<li><Link href="/terms" className="link-underline hover:text-white transition">Terms of Service</Link></li>
-								<li><Link href="/disclaimer" className="link-underline hover:text-white transition">Disclaimer</Link></li>
-								<li><a href="mailto:editor@apex-nepal.com" className="link-underline hover:text-white transition">editor@apex-nepal.com</a></li>
-							</ul>
-						</div>
-					</div>
-
-					<div className="gradient-line mb-8" />
-
-					<div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-						<div className="font-bold">
-							© 2026 Apex. All rights reserved. • <span className="text-slate-400">Open stories from around the world.</span>
-						</div>
-						<div className="flex items-center gap-5 font-bold">
-							<Link href="/" className="link-underline hover:text-slate-300 transition">Home</Link>
-							<Link href="/about" className="link-underline hover:text-slate-300 transition">About</Link>
-							<Link href="/contact" className="link-underline hover:text-slate-300 transition">Contact</Link>
-							<a href="https://github.com/akash0526/Community-blog" target="_blank" rel="noopener" className="link-underline hover:text-slate-300 transition">GitHub</a>
-						</div>
-					</div>
-				</div>
-			</footer>
+				<SiteEffects />
 			</body>
 		</html>
 	);

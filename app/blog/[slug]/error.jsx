@@ -5,7 +5,7 @@ import { AlertCircle, ArrowLeft, RotateCcw } from 'lucide-react';
 
 export default function BlogArticleError({ error, reset }) {
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-32 pt-8 transition">
+    <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-32 pt-8 transition">
       <div className="max-w-2xl mx-auto px-6 text-center py-24">
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 mb-6">
           <AlertCircle className="w-10 h-10 text-rose-500" />
@@ -49,6 +49,6 @@ export default function BlogArticleError({ error, reset }) {
           </details>
         )}
       </div>
-    </main>
+    </div>
   );
 }

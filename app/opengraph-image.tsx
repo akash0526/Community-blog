@@ -5,7 +5,7 @@ import { ImageResponse } from "next/og";
 // the article's own cover image via generateMetadata().
 // https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image
 
-export const alt = "Apex Community Platform — Share Your Stories";
+export const alt = "Apex Nepal — Tested tools and guides for Nepal";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -20,7 +20,7 @@ export default function OpengraphImage() {
           flexDirection: "column",
           alignItems: "flex-start",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #0f172a 0%, #312e81 60%, #1e1b4b 100%)",
+          background: "#17130F",
           color: "white",
           padding: "80px",
         }}
@@ -37,26 +37,27 @@ export default function OpengraphImage() {
             style={{
               width: "84px",
               height: "84px",
-              borderRadius: "24px",
-              background: "#4f46e5",
+              borderRadius: "4px",
+              background: "#A8471F",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "48px",
+              fontSize: "34px",
+              fontWeight: 900,
             }}
           >
-            ⚡
+            A
           </div>
           <div
             style={{
               fontSize: "34px",
               fontWeight: 800,
               letterSpacing: "-1px",
-              color: "#a5b4fc",
+              color: "#D8CFC0",
               display: "flex",
             }}
           >
-            APEX COMMUNITY
+            APEX NEPAL
           </div>
         </div>
         <div
@@ -69,7 +70,7 @@ export default function OpengraphImage() {
             display: "flex",
           }}
         >
-          Share Your Stories. Reach the World.
+          Tested tools for Nepali builders.
         </div>
         <div
           style={{
@@ -79,7 +80,7 @@ export default function OpengraphImage() {
             display: "flex",
           }}
         >
-          Open multi-topic community publishing platform.
+          AI, freelancing, hosting, payments, and business guides.
         </div>
       </div>
     ),

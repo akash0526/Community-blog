@@ -5,9 +5,10 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Share2, Bookmark, Check } from "lucide-react";
+import { ArrowLeft, Share2, Bookmark } from "lucide-react";
 import DiscussionThread from "@/components/DiscussionThread";
 import { sanitizeCmsField } from "@/lib/seoUtils";
+import { IconCheck } from "@/components/Icon";
 
 function cleanTitle(title=""){
   return sanitizeCmsField(String(title).replace(/\s*Slug:.*$/i,'').trim());
@@ -17,7 +18,7 @@ function getAvatar(profile, fallbackSeed="apex"){
   const raw = profile?.avatar_url || "";
   if(!raw || raw.includes("dicebear") || raw.includes("bottts")){
     const name = encodeURIComponent(profile?.full_name || "Apex Editorial");
-    return `https://ui-avatars.com/api/?name=${name}&background=4f46e5&color=fff&size=128`;
+    return `https://ui-avatars.com/api/?name=${name}&background=A8471F&color=fff&size=128`;
   }
   return raw;
 }
@@ -35,31 +36,47 @@ export default function ArticleContent({ serverArticle, slug }) {
   const [bookmarked, setBookmarked] = useState(false);
   const [shareToast, setShareToast] = useState(false);
 
-  useEffect(()=>{
-    if(serverArticle){ setArticle(serverArticle); setLoading(false); return; }
-    // local fallback
-    try{
-      const stored = JSON.parse(localStorage.getItem("apex_articles_v1")||"[]");
-      const found = stored.find(a => decodeURIComponent(a.slug||"")===decodeURIComponent(slug));
-      if(found) setArticle(found);
-    }catch{}
-    setLoading(false);
+  // Browser-storage reads (local drafts, bookmark state) run deferred, after
+  // hydration: synchronous setState here would cascade renders, and reading
+  // localStorage during render would mismatch the server HTML.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (!serverArticle) {
+        try {
+          const stored = JSON.parse(localStorage.getItem("apex_articles_v1") || "[]");
+          const found = stored.find((a) => decodeURIComponent(a.slug || "") === decodeURIComponent(slug));
+          if (found) setArticle(found);
+        } catch {}
+      }
+      try {
+        const bms = JSON.parse(localStorage.getItem("apex_bookmarks_v1") || "[]");
+        setBookmarked(bms.some((b) => decodeURIComponent(b.slug || "") === decodeURIComponent(slug)));
+      } catch {}
+      setLoading(false);
+    }, 0);
+    return () => clearTimeout(t);
   }, [serverArticle, slug]);
-
-  // bookmark state
-  useEffect(()=>{
-    try{
-      const bms = JSON.parse(localStorage.getItem("apex_bookmarks_v1")||"[]");
-      setBookmarked(bms.some(b => decodeURIComponent(b.slug||"")===decodeURIComponent(slug)));
-    }catch{}
-  }, [slug]);
 
   const handleBookmark = ()=>{
     try{
       const bms = JSON.parse(localStorage.getItem("apex_bookmarks_v1")||"[]");
       const idx = bms.findIndex(b => decodeURIComponent(b.slug||"")===decodeURIComponent(slug));
       if(idx>=0){ bms.splice(idx,1); setBookmarked(false); }
-      else if(article){ bms.unshift(article); setBookmarked(true); }
+      else if(article){
+        // Store a slim card (not the whole article body) — full content
+        // blobs would exhaust the ~5MB localStorage quota after a few saves.
+        bms.unshift({
+          id: article.id,
+          slug: article.slug,
+          title: cleanTitle(article.title),
+          meta_description: article.meta_description,
+          category: article.category,
+          image_url: article.image_url,
+          published_at: article.published_at || article.created_at,
+          profiles: { full_name: article.profiles?.full_name || "Apex Editorial" },
+        });
+        setBookmarked(true);
+      }
       localStorage.setItem("apex_bookmarks_v1", JSON.stringify(bms));
     }catch{}
   };
@@ -78,20 +95,25 @@ export default function ArticleContent({ serverArticle, slug }) {
   };
 
   if(loading){
-    return <main className="max-w-3xl mx-auto px-6 py-24"><div className="animate-pulse space-y-4"><div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-1/2"/><div className="h-12 bg-slate-200 dark:bg-slate-800 rounded"/><div className="h-64 bg-slate-100 dark:bg-slate-900 rounded-2xl"/></div></main>
+    return <div className="max-w-3xl mx-auto px-6 py-24"><div className="animate-pulse space-y-4"><div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-1/2"/><div className="h-12 bg-slate-200 dark:bg-slate-800 rounded"/><div className="h-64 bg-slate-100 dark:bg-slate-900 rounded-2xl"/></div></div>
   }
   if(!article){
     return (
-      <main className="max-w-2xl mx-auto px-6 py-24 text-center">
+      <div className="max-w-2xl mx-auto px-6 py-24 text-center">
         <h1 className="text-3xl font-black mb-3">Article not found</h1>
         <p className="text-slate-600 dark:text-slate-400 mb-8">This story may have been moved or removed.</p>
         <Link href="/" className="px-5 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold">← Back home</Link>
-      </main>
+      </div>
     )
   }
 
   const title = cleanTitle(article.title);
   const description = sanitizeCmsField(article.meta_description);
+  // Real reading time from the body (was hardcoded "5–8 min" for every story).
+  const wordCount = String(article.content || "").split(/\s+/).filter(Boolean).length;
+  const readMinutes = Math.max(1, Math.round(wordCount / 200));
+  // Tag Nepali (Devanagari) stories so screen readers pronounce them correctly.
+  const contentLang = /[\\u0900-\\u097F]/.test(`${article.title || ""} ${article.content || ""}`) ? "ne" : "en";
   const author = article.profiles || {};
   const authorName = author.full_name || "Apex Editorial";
   const authorRole = author.professional_role || "Contributing Writer";
@@ -111,7 +133,14 @@ export default function ArticleContent({ serverArticle, slug }) {
     p: ({children}) => <p className="text-[17px] leading-[1.75] text-slate-700 dark:text-slate-300 mb-6">{children}</p>,
     ul: ({children}) => <ul className="list-disc pl-6 space-y-2 mb-6 text-slate-700 dark:text-slate-300">{children}</ul>,
     ol: ({children}) => <ol className="list-decimal pl-6 space-y-2 mb-6 text-slate-700 dark:text-slate-300">{children}</ol>,
-    a: ({href, children}) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 underline font-semibold hover:text-indigo-700">{children}</a>,
+    a: ({href, children}) => {
+      const isInternal = !href || href.startsWith("/") || href.startsWith("#") || href.includes("apex-nepal.com");
+      return isInternal ? (
+        <a href={href} className="text-indigo-600 dark:text-indigo-400 underline font-semibold hover:text-indigo-700">{children}</a>
+      ) : (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 underline font-semibold hover:text-indigo-700">{children}</a>
+      );
+    },
     blockquote: ({children}) => <blockquote className="border-l-4 border-slate-300 dark:border-slate-700 pl-5 italic my-8 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/50 py-4 rounded-r-xl">{children}</blockquote>,
     img: ({src,alt}) => <figure className="my-10"><img src={src} alt={alt||title} className="rounded-2xl w-full border border-slate-200 dark:border-slate-800" loading="lazy" />{alt && <figcaption className="text-xs text-slate-500 mt-2 text-center">{alt}</figcaption>}</figure>,
     code({inline,className,children,...props}){
@@ -124,8 +153,8 @@ export default function ArticleContent({ serverArticle, slug }) {
   };
 
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950">
-      <article className="max-w-3xl mx-auto px-6 py-10 sm:py-16">
+    <div className="flex-1 bg-white dark:bg-slate-950">
+      <article lang={contentLang} className="max-w-3xl mx-auto px-6 py-10 sm:py-16">
         {/* Breadcrumbs */}
         <nav className="text-xs text-slate-500 mb-6 flex items-center gap-2 flex-wrap" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-slate-700 dark:hover:text-slate-300">Home</Link>
@@ -150,7 +179,7 @@ export default function ArticleContent({ serverArticle, slug }) {
             <time dateTime={article.published_at || article.created_at}>Published {published}</time>
             {updated && <><span>•</span><span>Updated {updated}</span></>}
             <span>•</span>
-            <span>5–8 min read</span>
+            <span>{readMinutes} min read</span>
           </div>
         </header>
 
@@ -224,9 +253,10 @@ export default function ArticleContent({ serverArticle, slug }) {
 
         {/* Share / bookmark footer */}
         <div className="flex flex-wrap items-center gap-3 mt-10 pt-6 border-t border-slate-200 dark:border-slate-800">
-          <button onClick={handleShare} className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-900">Share article</button>
-          <button onClick={handleBookmark} className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-900">
-            {bookmarked ? "✓ Saved" : "Save to reading list"}
+          <button onClick={handleShare} className="btn btn--ghost !py-2 !text-[0.875rem]">Share article</button>
+          <button onClick={handleBookmark} className="btn btn--ghost !py-2 !text-[0.875rem]">
+            <IconCheck className="icon icon--15" />
+            {bookmarked ? "Saved" : "Save to reading list"}
           </button>
           <Link href="/corrections" className="text-xs text-slate-500 ml-auto underline">Report a correction</Link>
         </div>
@@ -259,6 +289,6 @@ export default function ArticleContent({ serverArticle, slug }) {
       </article>
 
       {/* Article JSON-LD breadcrumbs will be injected server-side */}
-    </main>
+    </div>
   );
 }

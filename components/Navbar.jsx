@@ -1,42 +1,88 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import AuthModal from "./AuthModal";
 import {
-	Sun,
-	Moon,
-	Edit3,
-	User,
-	LogOut,
-	Menu,
-	X,
-	LayoutDashboard,
-} from "lucide-react";
+	IconArrowRight,
+	IconClose,
+	IconDashboard,
+	IconLogout,
+	IconMenu,
+	IconMoon,
+	IconPen,
+	IconSun,
+	IconUser,
+} from "./Icon";
 import { supabase } from "@/lib/supabase";
+
+const THEME_KEY = "theme";
+
+// Kept in sync with the inline bootstrap in app/layout.tsx: both resolve
+// localStorage.theme and fall back to the OS preference, so there is no flash
+// and no mismatch between the pre-paint attribute and React state.
+function readTheme() {
+	let saved = null;
+	try {
+		saved = localStorage.getItem(THEME_KEY);
+	} catch {}
+	if (saved !== "dark" && saved !== "light") {
+		saved =
+			window.matchMedia &&
+			window.matchMedia("(prefers-color-scheme: dark)").matches
+				? "dark"
+				: "light";
+	}
+	return saved;
+}
+
+function applyTheme(theme) {
+	document.documentElement.setAttribute("data-theme", theme);
+	try {
+		localStorage.setItem(THEME_KEY, theme);
+	} catch {}
+}
+
+const NAV_LINKS = [
+	{ label: "Resources", href: "/resources" },
+	{ label: "Guides", href: "/blog" },
+	{ label: "Tools", href: "/ai-tools" },
+	{ label: "Freelancing", href: "/freelancing-in-nepal" },
+	{ label: "About", href: "/about" },
+];
+
+const MOBILE_LINKS = [
+	...NAV_LINKS,
+	{ label: "Hosting", href: "/blogging-hosting" },
+	{ label: "Payments", href: "/digital-payments" },
+	{ label: "Business tools", href: "/small-business-tools" },
+	{ label: "Write for us", href: "/write-for-us" },
+];
+
+function avatarFor(user) {
+	const raw = user?.user_metadata?.avatar_url || "";
+	if (raw && !raw.includes("dicebear") && !raw.includes("bottts")) return raw;
+	const name = encodeURIComponent(
+		user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Apex",
+	);
+	return `https://ui-avatars.com/api/?name=${name}&background=A8471F&color=fff&size=64`;
+}
 
 export default function Navbar() {
 	const pathname = usePathname();
-	const [theme, setTheme] = useState("light");
+	const router = useRouter();
 	const [user, setUser] = useState(null);
 	const [authModalOpen, setAuthModalOpen] = useState(false);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 
 	useEffect(() => {
-		// Sync theme
-		const syncTheme = async () => {
-			const saved = localStorage.getItem("apex_theme") || "light";
-			if (saved === "dark") {
-				document.documentElement.classList.add("dark");
-			} else {
-				document.documentElement.classList.remove("dark");
-			}
-			await Promise.resolve();
-			setTheme(saved);
-		};
-		syncTheme();
+		// Adopt whatever the bootstrap script already painted (it runs in <head>
+		// before hydration). The toggle itself never needs React state — the
+		// moon/sun icons are swapped by [data-theme] in CSS.
+		applyTheme(readTheme());
 
 		// Check active user session
 		const getSession = async () => {
@@ -66,14 +112,11 @@ export default function Navbar() {
 	}, []);
 
 	const toggleTheme = () => {
-		const next = theme === "dark" ? "light" : "dark";
-		setTheme(next);
-		localStorage.setItem("apex_theme", next);
-		if (next === "dark") {
-			document.documentElement.classList.add("dark");
-		} else {
-			document.documentElement.classList.remove("dark");
-		}
+		const next =
+			document.documentElement.getAttribute("data-theme") === "dark"
+				? "light"
+				: "dark";
+		applyTheme(next);
 	};
 
 	const handleLogout = async () => {
@@ -83,178 +126,170 @@ export default function Navbar() {
 		setDropdownOpen(false);
 	};
 
-	const handleAuthSuccess = (activeUser) => {
+	const handleAuthSuccess = useCallback((activeUser) => {
 		setUser(activeUser);
 		if (activeUser.id.startsWith("demo-")) {
 			localStorage.setItem("apex_demo_user", JSON.stringify(activeUser));
 		}
+	}, []);
+
+	const startWriting = () => {
+		if (user) router.push("/studio");
+		else setAuthModalOpen(true);
 	};
 
 	return (
 		<>
-			<header className="sticky top-0 z-40 h-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition">
-				<div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-					{/* Brand */}
+			<header className="header" id="header">
+				<div className="wrap header__in">
 					<Link
 						href="/"
-						className="flex items-center gap-2 sm:gap-3 font-black text-slate-900 dark:text-white group min-w-0"
-						aria-label="Apex home"
+						className="brand"
+						aria-label="Apex Nepal home"
+						onClick={() => setMobileMenuOpen(false)}
 					>
-						<img
-							src="/apex-community-logo.svg"
-							alt="Apex logo"
-							className="w-36 sm:w-52 md:w-56 h-auto max-h-12 object-contain dark:brightness-0 dark:invert group-hover:scale-[1.02] transition transform flex-shrink-0"
-						/>
+						Apex<span className="dot" />
+						Nepal
 					</Link>
 
-					{/* Desktop Nav */}
-					<nav className="hidden md:flex items-center gap-8 font-extrabold text-sm text-slate-600 dark:text-slate-300">
-						<Link
-							href="/"
-							className={`hover:text-indigo-600 dark:hover:text-indigo-400 transition ${pathname === "/" ? "text-indigo-600 dark:text-indigo-400 font-black" : ""}`}
-						>
-							Stories
-						</Link>
+					<nav className="nav" aria-label="Main">
+						{NAV_LINKS.map((item) => (
+							<Link
+								key={item.href}
+								href={item.href}
+								className={
+									pathname === item.href ||
+									pathname.startsWith(`${item.href}/`)
+										? "is-active"
+										: undefined
+								}
+							>
+								{item.label}
+							</Link>
+						))}
 					</nav>
 
-					{/* Actions */}
-					<div className="flex items-center gap-3">
-						{/* Write CTA */}
+					<div className="header__actions">
+						{/* §16 — the icon path swaps between moon and sun. */}
 						<button
-							onClick={() => {
-								if (user) window.location.href = "/studio";
-								else setAuthModalOpen(true);
-							}}
-							className="btn btn-primary px-4 py-2.5 rounded-xl font-black text-xs shadow-md shadow-indigo-600/25 flex items-center gap-1.5 transform hover:-translate-y-0.5 transition"
+							type="button"
+							className="icon-btn"
+							id="themeBtn"
+							onClick={toggleTheme}
+							aria-label="Toggle dark mode"
 						>
-							<Edit3 className="w-4 h-4" />
-							<span className="hidden sm:inline">Write</span>
+							<IconSun className="icon theme-icon theme-icon--sun" />
+							<IconMoon className="icon theme-icon theme-icon--moon" />
 						</button>
 
-						{/* User Zone / Login Triggers */}
 						{user ? (
 							<div className="relative">
 								<button
-									onClick={() => setDropdownOpen(!dropdownOpen)}
-									className="flex items-center gap-2 pl-2 pr-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition cursor-pointer"
+									type="button"
+									onClick={() => setDropdownOpen((v) => !v)}
+									aria-expanded={dropdownOpen}
+									aria-haspopup="true"
+									className="icon-btn !h-9 !w-auto gap-2 !border-[var(--hairline)] !px-2"
 								>
-								<img
-									src={
-										user?.user_metadata?.avatar_url &&
-										!user.user_metadata.avatar_url.includes('dicebear')
-											? user.user_metadata.avatar_url
-											: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-													user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Apex'
-											  )}&background=4f46e5&color=fff&size=64`
-									}
-									alt="Avatar"
-									className="w-7 h-7 rounded-full object-cover border border-white dark:border-slate-700 flex-shrink-0"
-								/>
-									<span className="text-xs font-black text-slate-900 dark:text-white truncate max-w-[100px] sm:max-w-[140px]">
-										{user?.user_metadata?.full_name || "Architect"}
+									<Image
+										src={avatarFor(user)}
+										alt=""
+										width={24}
+										height={24}
+										className="h-6 w-6 rounded-full object-cover"
+									/>
+									<span className="hidden max-w-[9rem] truncate text-[0.8125rem] font-medium sm:inline">
+										{user.user_metadata?.full_name ||
+											user.email?.split("@")[0] ||
+											"Writer"}
 									</span>
 								</button>
 
 								{dropdownOpen && (
-									<div className="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl py-3 text-left animate-fadeIn">
-										<div className="px-5 py-2 border-b border-slate-100 dark:border-slate-800 mb-1">
-											<div className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-wider">
-												Active Author
+									<div className="glass absolute right-0 top-[calc(100%+0.75rem)] w-60 animate-fadeIn rounded-[var(--radius)] p-2 text-left shadow-[var(--shadow)]">
+										<div className="border-b border-[var(--hairline)] px-3 pb-2 pt-1">
+											<div className="eyebrow !mb-1 !text-[0.625rem]">
+												Active author
 											</div>
-											<div className="text-xs font-bold text-slate-500 truncate">
-												{user.email || "Author Session"}
+											<div className="truncate text-[0.8125rem] text-[var(--ink-muted)]">
+												{user.email || "Author session"}
 											</div>
 										</div>
-
 										<Link
 											href="/dashboard"
 											onClick={() => setDropdownOpen(false)}
-											className="flex items-center gap-2.5 px-5 py-2.5 text-xs font-extrabold text-slate-700 dark:text-slate-300 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition"
+											className="flex items-center gap-2 rounded-[var(--radius)] px-3 py-2 text-[0.875rem] text-[var(--ink-muted)] transition-colors hover:text-[var(--clay)]"
 										>
-											<LayoutDashboard className="w-4 h-4 text-indigo-500" />
-											<span>Dashboard & Profile</span>
+											<IconDashboard />
+											Dashboard & profile
 										</Link>
-
 										<button
+											type="button"
 											onClick={handleLogout}
-											className="w-full flex items-center gap-2.5 px-5 py-2.5 text-xs font-extrabold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition text-left cursor-pointer"
+											className="flex w-full cursor-pointer items-center gap-2 rounded-[var(--radius)] px-3 py-2 text-left text-[0.875rem] text-[var(--ink-muted)] transition-colors hover:text-[var(--clay)]"
 										>
-											<LogOut className="w-4 h-4" />
-											<span>Sign Out Live</span>
+											<IconLogout />
+											Sign out
 										</button>
 									</div>
 								)}
 							</div>
 						) : (
 							<button
+								type="button"
 								onClick={() => setAuthModalOpen(true)}
-								className="btn btn-secondary px-3 py-2.5 sm:px-4 rounded-xl font-extrabold text-xs flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+								className="btn btn--ghost !px-3 !py-2 !text-[0.875rem]"
 							>
-								<User className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-								<span className="hidden sm:inline">Log In / Join</span>
+								<IconUser />
+								<span className="hidden sm:inline">Log in / Join</span>
 							</button>
 						)}
 
-						{/* Theme Toggle */}
 						<button
-							onClick={toggleTheme}
-							className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm transition"
-							title="Toggle Theme"
+							type="button"
+							onClick={startWriting}
+							className="btn btn--primary !px-4 !py-2 !text-[0.875rem]"
 						>
-							{theme === "dark" ? (
-								<Sun className="w-4 h-4 text-amber-400" />
-							) : (
-								<Moon className="w-4 h-4 text-slate-700" />
-							)}
+							<IconPen />
+							<span className="hidden sm:inline">Write a story</span>
+							<IconArrowRight className="icon icon--15" />
 						</button>
 
-						{/* Hamburger */}
 						<button
-							onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-							className="md:hidden p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+							type="button"
+							onClick={() => setMobileMenuOpen((v) => !v)}
+							className="icon-btn md:hidden"
+							aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+							aria-expanded={mobileMenuOpen}
 						>
-							{mobileMenuOpen ? (
-								<X className="w-4 h-4" />
-							) : (
-								<Menu className="w-4 h-4" />
-							)}
+							{mobileMenuOpen ? <IconClose /> : <IconMenu />}
 						</button>
 					</div>
 				</div>
 
-				{/* Mobile menu */}
+				{/* The brief hides the desktop nav at 820px — the drawer keeps
+				    every route reachable below that. */}
 				{mobileMenuOpen && (
-					<div className="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-6 shadow-2xl space-y-4 font-extrabold text-sm text-left animate-fadeIn">
-						<Link
-							href="/"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							Stories
-						</Link>
-						<Link
-							href="/studio"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							✍️ Writing Studio
-						</Link>
-						<Link
-							href="/kanban"
-							onClick={() => setMobileMenuOpen(false)}
-							className="block py-2 text-slate-800 dark:text-slate-200 hover:text-indigo-600 border-b border-slate-100 dark:border-slate-800"
-						>
-							📅 Workflow Kanban
-						</Link>
-						{user && (
-							<Link
-								href="/dashboard"
-								onClick={() => setMobileMenuOpen(false)}
-								className="block py-2 text-indigo-600 dark:text-indigo-400"
-							>
-								📊 My Author Dashboard
-							</Link>
-						)}
+					<div className="nav-mobile md:hidden">
+						<div className="wrap">
+							{MOBILE_LINKS.map((item) => (
+								<Link
+									key={item.href}
+									href={item.href}
+									onClick={() => setMobileMenuOpen(false)}
+								>
+									{item.label}
+								</Link>
+							))}
+							{user && (
+								<Link
+									href="/dashboard"
+									onClick={() => setMobileMenuOpen(false)}
+								>
+									My dashboard
+								</Link>
+							)}
+						</div>
 					</div>
 				)}
 			</header>

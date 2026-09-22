@@ -8,12 +8,12 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
       <div className="max-w-4xl mx-auto px-6 py-16 sm:py-24">
         <span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Contact</span>
         <h1 className="text-4xl sm:text-5xl font-black tracking-tight mt-3 mb-4">Talk to a real human.</h1>
         <p className="text-lg text-slate-600 dark:text-slate-300 mb-12 max-w-2xl">
-          We read every message. Typical reply: 24–48 hours, Sun–Thu (Qatar time, UTC+3).
+          We read every message. Typical reply: within 7 days for corrections and 24–48 hours for urgent partnership or press requests.
         </p>
 
         <div className="grid md:grid-cols-2 gap-10">
@@ -21,7 +21,7 @@ export default function ContactPage() {
             <div>
               <div className="text-xs font-black uppercase tracking-wider text-slate-500 mb-1">Editorial</div>
               <a href="mailto:editor@apex-nepal.com" className="text-xl font-black text-indigo-600 dark:text-indigo-400">editor@apex-nepal.com</a>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">Corrections, fact-checks, story pitches.</p>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">Corrections, fact-checks, story pitches, and resource suggestions for Nepal-tested tools.</p>
             </div>
             <div>
               <div className="text-xs font-black uppercase tracking-wider text-slate-500 mb-1">Press & Partnerships</div>
@@ -35,8 +35,8 @@ export default function ContactPage() {
               <div className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Postal</div>
               <p className="text-slate-700 dark:text-slate-300">
                 Apex Editorial<br/>
-                Doha, Qatar<br/>
-                Baladiyat ad Dawhah
+                Butwal, Nepal<br/>
+                Lumbini Province
               </p>
               <p className="text-xs text-slate-500 mt-3">No walk-ins. Email first.</p>
             </div>
@@ -44,8 +44,7 @@ export default function ContactPage() {
               <div className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Social</div>
               <p className="space-x-4 font-bold">
                 <a href="https://github.com/akash0526" target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline">GitHub</a>
-                <a href="https://x.com/" target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline">X / Twitter</a>
-                <a href="https://www.linkedin.com/" target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline">LinkedIn</a>
+                <a href="https://x.com/apex_nepal" target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline">X / Twitter</a>
               </p>
             </div>
           </div>
@@ -86,6 +85,6 @@ export default function ContactPage() {
           <p><strong>Corrections policy:</strong> see <a href="/editorial" className="underline text-indigo-600 dark:text-indigo-400 font-bold">Editorial Policy</a>. Verified errors are fixed within 24h with a public correction note.</p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

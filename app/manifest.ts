@@ -9,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "An open multi-topic community publishing platform where creators share stories, technical guides, and ideas with a global audience.",
     start_url: "/",
     display: "standalone",
-    background_color: "#0f172a",
-    theme_color: "#4f46e5",
+    background_color: "#F7F3EC",
+    theme_color: "#A8471F",
     icons: [
       {
         src: "/icon.svg",

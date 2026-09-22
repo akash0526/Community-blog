@@ -1,8 +1,8 @@
-# Apex Community Platform — Multi-User Developer Blogging & Expert CMS
+# Apex Community Platform — Open Global Blogging
 
-**Apex Community Platform** is a live, high-performance open-publishing ecosystem. It transforms the highly technical developer experience of a personal engineering studio into a truly open community platform where *anyone* can visit, draft an article, pass a real-time AI/SEO engine audit, and drop live to the internet with fully automated Server-Side Open Graph metadata.
+**Apex Community Platform** (live at [apex-nepal.com](https://www.apex-nepal.com)) is a high-performance open-publishing platform where *anyone* can visit, draft a story, run it through a real-time SEO checklist, and publish it to the internet with fully automated server-side Open Graph metadata.
 
-Built natively with **Next.js (App Router)**, **Tailwind CSS v4**, and **Supabase (PostgreSQL, Authentication, and Storage Buckets)**.
+Built with **Next.js (App Router)**, **Tailwind CSS v4**, and **Supabase (PostgreSQL, Authentication, and Storage Buckets)**. Content spans personal essays, Qatar expat guides, remittance comparisons, tech, food, travel, and culture — in English and Nepali.
 
 ---
 

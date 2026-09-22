@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function DisclaimerPage(){
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
       <div className="max-w-3xl mx-auto px-6 py-16 sm:py-20 prose prose-slate dark:prose-invert prose-lg">
         <h1>Disclaimer</h1>
         <p className="lead">Last updated: July 7, 2026</p>
@@ -33,6 +33,6 @@ export default function DisclaimerPage(){
 
         <p>Questions: <a href="mailto:editor@apex-nepal.com">editor@apex-nepal.com</a></p>
       </div>
-    </main>
+    </div>
   );
 }

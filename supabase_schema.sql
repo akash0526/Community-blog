@@ -11,6 +11,12 @@ CREATE TABLE public.profiles (
     avatar_url text NOT NULL,
     professional_role text DEFAULT 'Software Engineer'::text,
     bio text DEFAULT 'Writing high output engineering dispatches.'::text,
+    username text UNIQUE,
+    website text,
+    twitter text,
+    linkedin text,
+    location text DEFAULT 'Doha, Qatar'::text,
+    expertise text[],
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -48,6 +54,7 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 CREATE TABLE public.articles (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     published_at date DEFAULT CURRENT_DATE NOT NULL,
     author_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
     title text NOT NULL,
@@ -62,6 +69,20 @@ CREATE TABLE public.articles (
     claps integer DEFAULT 0 NOT NULL,
     status text DEFAULT 'published'::text NOT NULL
 );
+
+-- Keep updated_at fresh on every edit (drives "Last updated" badges + sitemap).
+CREATE OR REPLACE FUNCTION public.set_articles_updated_at()
+RETURNS trigger AS $$
+BEGIN
+  NEW.updated_at = timezone('utc'::text, now());
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_articles_updated_at ON public.articles;
+CREATE TRIGGER trg_articles_updated_at
+  BEFORE UPDATE ON public.articles
+  FOR EACH ROW EXECUTE PROCEDURE public.set_articles_updated_at();
 
 ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
 

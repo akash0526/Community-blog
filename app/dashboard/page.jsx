@@ -28,6 +28,10 @@ export default function AuthorDashboard() {
 		profession: "",
 		bio: "",
 		avatarUrl: "",
+		website: "",
+		twitter: "",
+		linkedin: "",
+		location: "",
 	});
 	const [profileSaving, setProfileSaving] = useState(false);
 	const [profileMessage, setProfileMessage] = useState(null);
@@ -73,13 +77,17 @@ export default function AuthorDashboard() {
 						activeUser.user_metadata?.avatar_url &&
 						!activeUser.user_metadata.avatar_url.includes("dicebear")
 							? activeUser.user_metadata.avatar_url
-							: `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUser.user_metadata?.full_name || activeUser.email?.split("@")[0] || "Apex")}&background=4f46e5&color=fff`,
+							: `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUser.user_metadata?.full_name || activeUser.email?.split("@")[0] || "Apex")}&background=A8471F&color=fff`,
+					website: activeUser.user_metadata?.website || "",
+					twitter: activeUser.user_metadata?.twitter || "",
+					linkedin: activeUser.user_metadata?.linkedin || "",
+					location: activeUser.user_metadata?.location || "",
 				};
 
 				try {
 					const { data: profile } = await supabase
 						.from("profiles")
-						.select("full_name, professional_role, bio, avatar_url")
+						.select("full_name, professional_role, bio, avatar_url, website, twitter, linkedin, location")
 						.eq("id", activeUser.id)
 						.maybeSingle();
 
@@ -91,6 +99,10 @@ export default function AuthorDashboard() {
 						initialProfile.bio = profile.bio || initialProfile.bio;
 						initialProfile.avatarUrl =
 							profile.avatar_url || initialProfile.avatarUrl;
+						initialProfile.website = profile.website || initialProfile.website;
+						initialProfile.twitter = profile.twitter || initialProfile.twitter;
+						initialProfile.linkedin = profile.linkedin || initialProfile.linkedin;
+						initialProfile.location = profile.location || initialProfile.location;
 					}
 				} catch {}
 
@@ -222,7 +234,11 @@ export default function AuthorDashboard() {
 				"Writing and sharing stories with the open community.",
 			avatarUrl:
 				profileForm.avatarUrl.trim() ||
-				`https://ui-avatars.com/api/?name=${encodeURIComponent(profileForm.fullName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Apex")}&background=4f46e5&color=fff`,
+				`https://ui-avatars.com/api/?name=${encodeURIComponent(profileForm.fullName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Apex")}&background=A8471F&color=fff`,
+			website: profileForm.website.trim(),
+			twitter: profileForm.twitter.trim(),
+			linkedin: profileForm.linkedin.trim(),
+			location: profileForm.location.trim(),
 		};
 
 		const updatedMetadata = {
@@ -231,6 +247,10 @@ export default function AuthorDashboard() {
 			professional_role: cleanProfile.profession,
 			bio: cleanProfile.bio,
 			avatar_url: cleanProfile.avatarUrl,
+			website: cleanProfile.website,
+			twitter: cleanProfile.twitter,
+			linkedin: cleanProfile.linkedin,
+			location: cleanProfile.location,
 		};
 
 		try {
@@ -246,6 +266,10 @@ export default function AuthorDashboard() {
 						professional_role: cleanProfile.profession,
 						bio: cleanProfile.bio,
 						avatar_url: cleanProfile.avatarUrl,
+						website: cleanProfile.website || null,
+						twitter: cleanProfile.twitter || null,
+						linkedin: cleanProfile.linkedin || null,
+						location: cleanProfile.location || null,
 					})
 					.eq("id", user.id);
 			}
@@ -278,7 +302,7 @@ export default function AuthorDashboard() {
 	}
 
 	return (
-		<main className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-8 transition text-left">
+		<div className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white pb-24 pt-8 transition text-left">
 			<div className="max-w-7xl mx-auto px-6">
 				{/* Dashboard Head */}
 				<div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-10 bg-white dark:bg-slate-900 p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -320,9 +344,9 @@ export default function AuthorDashboard() {
 				<div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 text-left">
 					<div className="card p-7 border-l-4 border-indigo-600 bg-white dark:bg-slate-900 flex flex-col justify-between shadow-lg">
 						<div className="flex items-center justify-between text-xs font-black uppercase text-slate-400">
-							<span>Total Captured Pageviews</span>
+							<span>Total pageviews</span>
 							<span className="text-indigo-600 dark:text-indigo-400 font-bold">
-								100% Genuine
+								All time
 							</span>
 						</div>
 						<div className="text-4xl font-black text-slate-900 dark:text-white my-3 font-mono">
@@ -332,7 +356,7 @@ export default function AuthorDashboard() {
 							</span>
 						</div>
 						<div className="text-xs text-slate-500 dark:text-slate-400 font-bold">
-							Across {articles.length} published dispatches
+							Across {articles.length} {articles.length === 1 ? "story" : "stories"} in your vault
 						</div>
 					</div>
 
@@ -434,7 +458,7 @@ export default function AuthorDashboard() {
 									My Written Stories Vault
 								</h3>
 								<span className="text-xs font-extrabold text-slate-400">
-									Fully Indexable & Public
+									Drafts stay private until published
 								</span>
 							</div>
 
@@ -512,9 +536,9 @@ export default function AuthorDashboard() {
 															👏 {art.claps || 0} Claps
 														</span>
 														<span>•</span>
-														<span className="text-indigo-500">
-															⚡ {art.seo_score} Reach Points
-														</span>
+																<span className="text-indigo-500">
+																	SEO score: {art.seo_score ?? "–"}
+																</span>
 													</div>
 												</div>
 											</div>
@@ -689,7 +713,7 @@ export default function AuthorDashboard() {
 										>
 											<div className="flex items-center gap-3.5 min-w-0">
 												<img
-													src={`https://ui-avatars.com/api/?name=${encodeURIComponent(creator)}&background=4f46e5&color=fff`}
+													src={`https://ui-avatars.com/api/?name=${encodeURIComponent(creator)}&background=A8471F&color=fff`}
 													alt="Creator"
 													className="w-12 h-12 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700 flex-shrink-0"
 												/>
@@ -752,7 +776,7 @@ export default function AuthorDashboard() {
 										<img
 											src={
 												profileForm.avatarUrl ||
-												`https://ui-avatars.com/api/?name=${encodeURIComponent(profileForm.fullName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Apex")}&background=4f46e5&color=fff&size=256`
+												`https://ui-avatars.com/api/?name=${encodeURIComponent(profileForm.fullName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Apex")}&background=A8471F&color=fff&size=256`
 											}
 											alt="Profile avatar preview"
 											className="w-28 h-28 rounded-3xl object-cover border-4 border-white dark:border-slate-900 shadow-xl mx-auto mb-4"
@@ -828,20 +852,85 @@ export default function AuthorDashboard() {
 											/>
 										</div>
 
-										<div>
-											<label className="block text-xs font-black text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
-												Bio
-											</label>
-											<textarea
-												rows="5"
-												value={profileForm.bio}
-												onChange={(e) =>
-													handleProfileChange("bio", e.target.value)
-												}
-												className="input font-medium text-sm py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 dark:border-slate-700 leading-relaxed resize-none"
-												placeholder="Tell readers about your interests, expertise, or community voice..."
-											/>
-										</div>
+																<div>
+																	<label className="block text-xs font-black text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+																		Bio
+																	</label>
+																	<textarea
+																		rows="5"
+																		value={profileForm.bio}
+																		onChange={(e) =>
+																			handleProfileChange("bio", e.target.value)
+																		}
+																		className="input font-medium text-sm py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 dark:border-slate-700 leading-relaxed resize-none"
+																		placeholder="Tell readers about your interests, expertise, or community voice..."
+																	/>
+																</div>
+
+																<div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+																	<div>
+																		<label className="block text-xs font-black text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+																			Website
+																		</label>
+																		<input
+																			type="url"
+																			value={profileForm.website}
+																			onChange={(e) =>
+																				handleProfileChange("website", e.target.value)
+																			}
+																			className="input font-mono text-xs py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 dark:border-slate-700"
+																			placeholder="https://your-site.com"
+																		/>
+																	</div>
+
+																	<div>
+																		<label className="block text-xs font-black text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+																			Location
+																		</label>
+																		<input
+																			type="text"
+																			value={profileForm.location}
+																			onChange={(e) =>
+																				handleProfileChange("location", e.target.value)
+																			}
+																			className="input font-bold text-sm py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 dark:border-slate-700"
+																			placeholder="Doha, Qatar"
+																		/>
+																	</div>
+
+																	<div>
+																		<label className="block text-xs font-black text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+																			X / Twitter
+																		</label>
+																		<input
+																			type="url"
+																			value={profileForm.twitter}
+																			onChange={(e) =>
+																				handleProfileChange("twitter", e.target.value)
+																			}
+																			className="input font-mono text-xs py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 dark:border-slate-700"
+																			placeholder="https://x.com/your-handle"
+																		/>
+																	</div>
+
+																	<div>
+																		<label className="block text-xs font-black text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+																			LinkedIn
+																		</label>
+																		<input
+																			type="url"
+																			value={profileForm.linkedin}
+																			onChange={(e) =>
+																				handleProfileChange("linkedin", e.target.value)
+																			}
+																			className="input font-mono text-xs py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 dark:border-slate-700"
+																			placeholder="https://linkedin.com/in/you"
+																		/>
+																	</div>
+																</div>
+																<p className="text-[11px] text-slate-500 font-semibold">
+																	These links appear on your public author page and under each of your stories.
+																</p>
 
 										<button
 											type="submit"
@@ -862,6 +951,6 @@ export default function AuthorDashboard() {
 					)}
 				</div>
 			</div>
-		</main>
+		</div>
 	);
 }

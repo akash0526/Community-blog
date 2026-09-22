@@ -82,6 +82,13 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
     ? await getArticlesByAuthor(profile.id)
     : [];
 
+  // Hide placeholder social URLs that point at a network's homepage.
+  const isRealUrl = (u?: string) =>
+    !!u && !/^(https?:\/\/)?(www\.)?(linkedin\.com|x\.com|twitter\.com|github\.com)\/?$/i.test(u.trim());
+  const website = isRealUrl(profile.website) ? profile.website : null;
+  const twitter = isRealUrl(profile.twitter) ? profile.twitter : null;
+  const linkedin = isRealUrl(profile.linkedin) ? profile.linkedin : null;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -97,11 +104,11 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
   };
 
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950">
+    <div className="flex-1 bg-white dark:bg-slate-950">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="max-w-4xl mx-auto px-6 py-14 sm:py-20">
         <div className="flex flex-col sm:flex-row gap-8 items-start mb-12">
-          <img src={profile.avatar_url?.includes('dicebear') ? `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name)}&background=4f46e5&color=fff&size=256` : profile.avatar_url} 
+          <img src={profile.avatar_url?.includes('dicebear') ? `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name)}&background=A8471F&color=fff&size=256` : profile.avatar_url} 
             alt={profile.full_name} className="w-28 h-28 rounded-2xl object-cover border border-slate-200 dark:border-slate-800" />
           <div className="flex-1">
             <h1 className="text-3xl sm:text-4xl font-black mb-2">{profile.full_name}</h1>
@@ -110,8 +117,9 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
             <div className="flex flex-wrap gap-3 text-xs mt-4 font-bold">
               <span className="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">{profile.location || "Doha, Qatar"}</span>
               <a href="mailto:editor@apex-nepal.com" className="px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">Contact</a>
-              <a href="https://github.com/akash0526" target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">GitHub →</a>
-              <a href="https://www.linkedin.com/" target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">LinkedIn →</a>
+              {website && <a href={website} target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">Website →</a>}
+              {twitter && <a href={twitter} target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">X →</a>}
+              {linkedin && <a href={linkedin} target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">LinkedIn →</a>}
             </div>
             {profile.expertise && (
               <div className="flex flex-wrap gap-2 mt-4 text-[11px]">
@@ -158,6 +166,6 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
           <p>Apex author profiles include: full name, photo, credentials, bio, location, social links, and full article archive. <Link href="/editorial" className="underline">Learn about our E-E-A-T standards</Link>.</p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

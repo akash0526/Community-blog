@@ -2,7 +2,7 @@ import { Sparkles } from 'lucide-react';
 
 export default function BlogArticleLoading() {
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-32 pt-8 transition text-left">
+    <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white pb-32 pt-8 transition text-left">
       <div className="max-w-4xl mx-auto px-6">
         {/* Skeleton Breadcrumb */}
         <div className="py-6 mb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 animate-pulse">
@@ -56,6 +56,6 @@ export default function BlogArticleLoading() {
           <span>Loading dispatch...</span>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

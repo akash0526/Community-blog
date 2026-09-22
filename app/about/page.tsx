@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
       <div className="max-w-4xl mx-auto px-6 py-16 sm:py-24">
         <div className="mb-10">
           <span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">About Apex</span>
@@ -42,7 +42,7 @@ export default function AboutPage() {
           <h2>Where we are based</h2>
           <ul>
             <li><strong>Editorial base:</strong> Doha, Qatar</li>
-            <li><strong>Community contributors:</strong> Nepal, India, Philippines, UK, US, and globally</li>
+            <li><strong>Founding community:</strong> Nepal & Qatar • Open to verified writers worldwide</li>
             <li><strong>Launched:</strong> November 2025</li>
             <li><strong>Domain:</strong> apex-nepal.com – “Nepal” reflects our founding community roots, the platform is global</li>
           </ul>
@@ -93,6 +93,6 @@ export default function AboutPage() {
           </p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

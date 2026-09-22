@@ -14,6 +14,7 @@ export default function DiscussionThread({ articleSlug }) {
 	const [content, setContent] = useState("");
 	const [authorName, setAuthorName] = useState("");
 	const [submitting, setSubmitting] = useState(false);
+	const [formError, setFormError] = useState("");
 
 	// Load session and comments
 	useEffect(() => {
@@ -76,6 +77,15 @@ export default function DiscussionThread({ articleSlug }) {
 		e.preventDefault();
 		if (!content.trim()) return;
 
+		// Lightweight spam throttle: one comment per 30 seconds per browser.
+		try {
+			const last = parseInt(localStorage.getItem("apex_comment_last") || "0", 10);
+			if (Date.now() - last < 30000) {
+				setFormError("Please wait a few seconds before posting again.");
+				return;
+			}
+		} catch {}
+		setFormError("");
 		setSubmitting(true);
 
 		const activeName = authorName.trim() || "Community Storyteller";
@@ -83,7 +93,7 @@ export default function DiscussionThread({ articleSlug }) {
 			user?.user_metadata?.avatar_url &&
 			!user.user_metadata.avatar_url.includes("dicebear")
 				? user.user_metadata.avatar_url
-				: `https://ui-avatars.com/api/?name=${encodeURIComponent(activeName)}&background=4f46e5&color=fff`;
+				: `https://ui-avatars.com/api/?name=${encodeURIComponent(activeName)}&background=A8471F&color=fff`;
 		const activeRole =
 			user?.user_metadata?.professional_role || "Community Reader";
 
@@ -125,6 +135,9 @@ export default function DiscussionThread({ articleSlug }) {
 		} catch (err) {}
 
 		setContent("");
+		try {
+			localStorage.setItem("apex_comment_last", String(Date.now()));
+		} catch {}
 		setSubmitting(false);
 	};
 
@@ -193,7 +206,7 @@ export default function DiscussionThread({ articleSlug }) {
 						/>
 					</div>
 					<span className="text-[11px] font-extrabold text-slate-400 sm:self-center uppercase tracking-wider">
-						Markdown Supported
+						Be kind · No spam
 					</span>
 				</div>
 
@@ -202,8 +215,14 @@ export default function DiscussionThread({ articleSlug }) {
 					value={content}
 					onChange={(e) => setContent(e.target.value)}
 					placeholder="What are your thoughts on this story? Leave an authentic perspective..."
+					maxLength={2000}
 					className="w-full bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-4 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition leading-relaxed resize-none"
 				></textarea>
+				{formError && (
+					<p role="alert" className="text-xs font-bold text-amber-600 dark:text-amber-400">
+						{formError}
+					</p>
+				)}
 
 				<div className="flex items-center justify-between gap-3 pt-2">
 					<div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
@@ -269,7 +288,7 @@ export default function DiscussionThread({ articleSlug }) {
 											comm.author_avatar &&
 											!comm.author_avatar.includes("dicebear")
 												? comm.author_avatar
-												: `https://ui-avatars.com/api/?name=${encodeURIComponent(comm.author_name || "Apex")}&background=4f46e5&color=fff&size=64`
+												: `https://ui-avatars.com/api/?name=${encodeURIComponent(comm.author_name || "Apex")}&background=A8471F&color=fff&size=64`
 										}
 										alt={comm.author_name || "Commenter"}
 										width={40}

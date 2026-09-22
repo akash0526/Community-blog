@@ -189,6 +189,9 @@ export default function Navbar() {
 									onClick={() => setDropdownOpen((v) => !v)}
 									aria-expanded={dropdownOpen}
 									aria-haspopup="true"
+									// On mobile the name span is hidden and the avatar has
+									// alt="", so the button needs its own accessible name.
+									aria-label={`${user.user_metadata?.full_name || user.email?.split("@")[0] || "Writer"} account menu`}
 									className="icon-btn !h-9 !w-auto gap-2 !border-[var(--hairline)] !px-2"
 								>
 									<Image
@@ -234,26 +237,36 @@ export default function Navbar() {
 									</div>
 								)}
 							</div>
-						) : (
-							<button
-								type="button"
-								onClick={() => setAuthModalOpen(true)}
-								className="btn btn--ghost !px-3 !py-2 !text-[0.875rem]"
-							>
-								<IconUser />
-								<span className="hidden sm:inline">Log in / Join</span>
-							</button>
-						)}
-
+					) : (
 						<button
 							type="button"
-							onClick={startWriting}
-							className="btn btn--primary !px-4 !py-2 !text-[0.875rem]"
+							onClick={() => setAuthModalOpen(true)}
+							className="btn btn--ghost !px-3 !py-2 !text-[0.875rem]"
+							// Label stays in the a11y tree even when the visible
+							// text is hidden below the sm breakpoint (axe button-name).
+							aria-label="Log in / Join"
 						>
-							<IconPen />
-							<span className="hidden sm:inline">Write a story</span>
-							<IconArrowRight className="icon icon--15" />
+							<IconUser />
+							<span className="hidden sm:inline" aria-hidden="true">
+								Log in / Join
+							</span>
 						</button>
+					)}
+
+					<button
+						type="button"
+						onClick={startWriting}
+						className="btn btn--primary !px-4 !py-2 !text-[0.875rem]"
+						// Same responsive-hide pattern as the Log in button:
+						// keep a persistent accessible name for agents/screen readers.
+						aria-label="Write a story"
+					>
+						<IconPen />
+						<span className="hidden sm:inline" aria-hidden="true">
+							Write a story
+						</span>
+						<IconArrowRight className="icon icon--15" />
+					</button>
 
 						<button
 							type="button"

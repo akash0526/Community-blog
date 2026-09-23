@@ -9,6 +9,9 @@ import CommunityFeed from "@/components/CommunityFeed";
 import NewsletterForm from "@/components/NewsletterForm";
 import Hero from "@/components/Hero";
 import { BlogCard } from "@/components/BlogCard";
+import { FeaturesSection } from "@/components/sections/FeaturesSection";
+import { StatsSection } from "@/components/sections/StatsSection";
+import { CTASection } from "@/components/sections/CTASection";
 import {
 	monthlyPicks,
 	resourceCategories,
@@ -184,7 +187,10 @@ export default async function Homepage() {
 				</div>
 			</div>
 
-			{/* ═══ §7 CATEGORIES — bento grid ═══ */}
+			{/* ═══ ANIMATION PLAN §9 — why APEX (glass feature cards) ═══ */}
+		<FeaturesSection />
+
+		{/* ═══ §7 CATEGORIES — bento grid ═══ */}
 			<section className="section">
 				<div className="wrap">
 					<p className="eyebrow reveal">
@@ -288,7 +294,20 @@ export default async function Homepage() {
 				</div>
 			</section>
 
-			{/* ═══ §10 EDITORIAL QUOTE ═══ */}
+			{/* ═══ ANIMATION PLAN §11 — community stats (real data) ═══ */}
+		<StatsSection
+			stats={[
+				{ value: RESOURCE_COUNT, suffix: "+", label: "Resources" },
+				{ value: Math.max(totalCount, 1), suffix: "+", label: "Guides" },
+				{
+					value: resourceCategories.length,
+					label: "Categories",
+				},
+				{ value: 100, suffix: "%", label: "Tested" },
+			]}
+		/>
+
+		{/* ═══ §10 EDITORIAL QUOTE ═══ */}
 			<section className="quote-band">
 				<div className="wrap" style={{ paddingBlock: "var(--section)" }}>
 					<div className="quote">
@@ -486,21 +505,24 @@ export default async function Homepage() {
 								</Link>
 								.
 							</p>
-						) : (
-							<div className="card !p-10">
-								<h3 className="mb-2">No published stories yet</h3>
-								<p className="mb-6 text-[0.9375rem] text-[var(--ink-muted)]">
-									Be the first to publish on Apex.
-								</p>
-								<Link href="/studio" className="btn btn--primary">
-									Create first story
-									<IconArrowRight />
-								</Link>
-							</div>
-						)}
-					</div>
+				) : (
+						<div className="card !p-10">
+							<h3 className="mb-2">No published stories yet</h3>
+							<p className="mb-6 text-[0.9375rem] text-[var(--ink-muted)]">
+								Be the first to publish on Apex.
+							</p>
+							<Link href="/studio" className="btn btn--primary">
+								Create first story
+								<IconArrowRight />
+							</Link>
+						</div>
+					)}
 				</div>
-			</section>
-		</div>
-	);
+			</div>
+		</section>
+
+		{/* ═══ ANIMATION PLAN §12 — closing call-to-action ═══ */}
+		<CTASection />
+	</div>
+);
 }

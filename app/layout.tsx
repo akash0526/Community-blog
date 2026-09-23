@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
+import { PageLoader } from "@/components/PageLoader";
+import { PageTransition } from "@/components/PageTransition";
+import { ScrollProgress } from "@/components/ScrollProgress";
+import { SmoothScroll } from "@/components/SmoothScroll";
 import LazyCookieConsent from "@/components/LazyCookieConsent";
 import CookieSettingsButton from "@/components/CookieSettingsButton";
 import SiteEffects from "@/components/SiteEffects";
@@ -196,23 +200,30 @@ export default function RootLayout({
 				Skip to content
 			</a>
 
-			<Providers>
-				{/* Fixed background layer (plan §3): paper colour + mesh
-				    gradient + faint grid, behind everything (the body is
-				    transparent). z -10 keeps it under all content. */}
-				<div
-					className="fixed inset-0 -z-10 bg-(--paper) transition-[background-color] duration-500"
-					aria-hidden="true"
-				>
-					<div className="mesh-gradient absolute inset-0" />
-					<div className="absolute inset-0 bg-[url('/grid.svg')] bg-repeat opacity-[0.02]" />
-				</div>
+		<Providers>
+			<SmoothScroll>
+			{/* Fixed background layer (plan §3): paper colour + mesh
+			gradient + faint grid, behind everything (the body is
+			transparent). z -10 keeps it under all content. */}
+			<div
+				className="fixed inset-0 -z-10 bg-(--paper) transition-[background-color] duration-500"
+				aria-hidden="true"
+			>
+				<div className="mesh-gradient absolute inset-0" />
+				<div className="absolute inset-0 bg-[url('/grid.svg')] bg-repeat opacity-[0.02]" />
+			</div>
 
-				<Navbar />
+			{/* Page transition system (animation plan §1) — the curtain
+			only appears on client-side route changes; the progress bar
+			and % dial track reading position site-wide. */}
+			<PageLoader />
+			<ScrollProgress />
 
-				<main id="main" className="flex flex-1 flex-col" tabIndex={-1}>
-					{children}
-				</main>
+			<Navbar />
+
+			<main id="main" className="flex flex-1 flex-col" tabIndex={-1}>
+				<PageTransition>{children}</PageTransition>
+			</main>
 
 				{/* §12 — site-wide footer, all previously published routes kept. */}
 				<footer className="footer mt-auto">
@@ -318,9 +329,10 @@ export default function RootLayout({
 					</div>
 				</footer>
 
-				<LazyCookieConsent />
-				<SiteEffects />
-			</Providers>
+			<LazyCookieConsent />
+			<SiteEffects />
+			</SmoothScroll>
+		</Providers>
 		</body>
 		</html>
 	);

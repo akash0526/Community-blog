@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { ArrowDown, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { useRef } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 
 interface HeroProps {
@@ -28,10 +29,30 @@ export default function Hero({ resources, guides, categories }: HeroProps) {
 		{ value: `${categories}`, label: "Categories" },
 	];
 
+	// Parallax (plan §5): the orb field drifts down (0% → 50%) and
+	// fades while the content recedes (y 0 → 20%, scale 1 → 0.8,
+	// opacity 1 → 0) as the hero scrolls away. All transforms derive
+	// from one useScroll() on the section.
+	const ref = useRef<HTMLElement>(null);
+	const { scrollYProgress } = useScroll({
+		target: ref,
+		offset: ["start start", "end start"],
+	});
+	const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+	const bgOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.4]);
+	const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
+	const contentScale = useTransform(scrollYProgress, [0, 1], [1, 0.8]);
+	const contentOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+	const indicatorOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+
 	return (
-		<section className="relative overflow-hidden">
-			{/* Animated Background Orbs */}
-			<div className="pointer-events-none absolute inset-0" aria-hidden="true">
+		<section ref={ref} className="relative overflow-hidden">
+		{/* Animated Background Orbs */}
+		<motion.div
+			style={{ y: bgY, opacity: bgOpacity }}
+			className="pointer-events-none absolute inset-0"
+			aria-hidden="true"
+		>
 				<motion.div
 					animate={{
 						scale: [1, 1.2, 1],
@@ -59,10 +80,13 @@ export default function Hero({ resources, guides, categories }: HeroProps) {
 					}}
 					className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl"
 				/>
-			</div>
+			</motion.div>
 
 			{/* Hero Content */}
-			<div className="relative mx-auto max-w-7xl px-4 pb-20 pt-14 sm:px-6 lg:px-8">
+			<motion.div
+				style={{ y: contentY, scale: contentScale, opacity: contentOpacity }}
+				className="relative mx-auto max-w-7xl px-4 pb-20 pt-14 sm:px-6 lg:px-8"
+			>
 				<div className="grid min-h-[calc(100vh-14rem)] items-center gap-12 lg:grid-cols-2">
 					{/* Left Column */}
 					<motion.div
@@ -249,7 +273,30 @@ export default function Hero({ resources, guides, categories }: HeroProps) {
 						</motion.div>
 					</motion.div>
 				</div>
-			</div>
+			</motion.div>
+
+			{/* Scroll indicator (plan §5) — fades out as you start scrolling */}
+			<motion.div
+				style={{ opacity: indicatorOpacity }}
+				className="pointer-events-none absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 md:block"
+				aria-hidden="true"
+			>
+				<div className="flex flex-col items-center gap-1.5">
+					<span className="text-[0.6875rem] font-medium uppercase tracking-[0.25em] text-[var(--ink-muted)]">
+						Scroll to explore
+					</span>
+					<motion.span
+						animate={{ y: [0, 8, 0] }}
+						transition={{
+							duration: 1.8,
+							repeat: Infinity,
+							ease: "easeInOut",
+						}}
+					>
+						<ArrowDown size={18} className="text-purple-400" />
+					</motion.span>
+				</div>
+			</motion.div>
 		</section>
 	);
 }

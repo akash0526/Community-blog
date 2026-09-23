@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { motion, useScroll } from "framer-motion";
+import { motion } from "framer-motion";
 import {
 	Briefcase,
 	Compass,
@@ -81,7 +81,6 @@ export default function Navbar() {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 
-	const { scrollYProgress } = useScroll();
 
 	useEffect(() => {
 		// The Supabase client (~60 KB gzip) is not required to paint the
@@ -162,13 +161,6 @@ export default function Navbar() {
 
 	return (
 		<>
-			{/* Scroll progress bar (plan §4) */}
-			<motion.div
-				aria-hidden="true"
-				className="fixed inset-x-0 top-0 z-[110] h-1 origin-left bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500"
-				style={{ scaleX: scrollYProgress }}
-			/>
-
 			<header id="header" className="header">
 				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 					<div className="flex h-20 items-center justify-between gap-4">

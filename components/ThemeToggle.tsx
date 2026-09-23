@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 /** Hydration flag without an effect: false on the server / first paint,
  *  true once the component has mounted on the client. */
-function hasHydrated() {
+function useHasHydrated() {
 	return useSyncExternalStore(
 		() => () => {},
 		() => true,
@@ -24,7 +24,7 @@ function hasHydrated() {
  */
 export function ThemeToggle() {
 	const { resolvedTheme, setTheme } = useTheme();
-	const mounted = hasHydrated();
+	const mounted = useHasHydrated();
 
 	// Avoid hydration mismatch: the icon depends on the resolved theme,
 	// which only exists on the client.

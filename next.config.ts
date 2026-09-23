@@ -2,6 +2,11 @@ import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The sandbox live-preview proxy serves the dev server from a
+  // different origin (*.e2b.app). Next 16 rejects cross-origin requests
+  // to the dev server unless the origin is allowlisted — without this
+  // the HMR websocket and page loads break behind the proxy.
+  allowedDevOrigins: ["*.e2b.app"],
   // Next hard-requires its legacy client polyfills (polyfill-module) from
   // next/dist/client/app-globals.js. Every target in `browserslist`
   // (safari >= 15.4, chrome/edge/firefox >= 93) implements those APIs

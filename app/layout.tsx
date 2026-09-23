@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import Providers from "@/components/Providers";
 import LazyCookieConsent from "@/components/LazyCookieConsent";
 import CookieSettingsButton from "@/components/CookieSettingsButton";
 import SiteEffects from "@/components/SiteEffects";
@@ -10,8 +11,14 @@ import { SITE_URL } from "@/lib/articles";
 // the critical path (PSI "render-blocking requests" / FCP insight), and
 // one fewer origin to preconnect. `font-display: swap` keeps text visible
 // while the woff2 files stream in.
-import "@fontsource-variable/fraunces/opsz.css";
+// Space Grotesk (latin-only subset — the display face of the glass
+// redesign) replaces the Fraunces serif; Inter stays the body face and
+// Mukta covers Devanagari.
 import "@fontsource-variable/inter";
+import "@fontsource/space-grotesk/latin-400.css";
+import "@fontsource/space-grotesk/latin-500.css";
+import "@fontsource/space-grotesk/latin-600.css";
+import "@fontsource/space-grotesk/latin-700.css";
 import "@fontsource/mukta/400.css";
 import "@fontsource/mukta/600.css";
 import "./globals.css";
@@ -159,7 +166,7 @@ export default function RootLayout({
 	};
 
 	return (
-		<html lang="en" suppressHydrationWarning>
+		<html lang="en" suppressHydrationWarning className="scrollbar-custom">
 			<head>
 				{/* Preconnect only to origins that serve above-the-fold resources.
 				    Keep this list ≤4 — Lighthouse warns when a page opens more
@@ -183,11 +190,23 @@ export default function RootLayout({
 					dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
 				/>
 			</head>
-			<body className="flex min-h-screen flex-col">
-				{/* §2.4 — first focusable element on every page. */}
-				<a className="skip" href="#main">
-					Skip to content
-				</a>
+		<body className="flex min-h-screen flex-col">
+			{/* §2.4 — first focusable element on every page. */}
+			<a className="skip" href="#main">
+				Skip to content
+			</a>
+
+			<Providers>
+				{/* Fixed background layer (plan §3): paper colour + mesh
+				    gradient + faint grid, behind everything (the body is
+				    transparent). z -10 keeps it under all content. */}
+				<div
+					className="fixed inset-0 -z-10 bg-(--paper) transition-[background-color] duration-500"
+					aria-hidden="true"
+				>
+					<div className="mesh-gradient absolute inset-0" />
+					<div className="absolute inset-0 bg-[url('/grid.svg')] bg-repeat opacity-[0.02]" />
+				</div>
 
 				<Navbar />
 
@@ -301,7 +320,8 @@ export default function RootLayout({
 
 				<LazyCookieConsent />
 				<SiteEffects />
-			</body>
+			</Providers>
+		</body>
 		</html>
 	);
 }

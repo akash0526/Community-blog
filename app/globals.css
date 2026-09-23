@@ -1,10 +1,12 @@
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────────────────────
-   APEX NEPAL — "HIMALAYAN EDITORIAL"
-   Implementaton of apex-nepal-redesign.md. Every component reads
-   from the tokens below; no hardcoded colors in components.
-   Dark mode is a real token swap on [data-theme="dark"] (§1.4, §18).
+   APEX NEPAL — "GLASSMORPHISM REDESIGN"
+   Dark-first purple/blue/pink glass system. Every component reads
+   from the tokens below; no hardcoded colours in components.
+   Dark is the default theme on :root; the light theme is the
+   [data-theme="light"] swap. `data-theme` is driven by the inline
+   bootstrap in app/layout.tsx + next-themes (attribute="data-theme").
    ───────────────────────────────────────────────────────────── */
 
 @variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
@@ -13,8 +15,8 @@
 
 :root {
 	/* 1.1 Typography — families provided by self-hosted @fontsource
-	   imports in app/layout.tsx (Fraunces Variable / Inter Variable). */
-	--font-display: "Fraunces Variable", Georgia, serif;
+	   imports in app/layout.tsx (Inter Variable / Space Grotesk / Mukta). */
+	--font-display: "Space Grotesk", "Inter Variable", sans-serif;
 	--font-body: "Inter Variable", system-ui, sans-serif;
 	--font-deva: "Mukta", "Inter Variable", sans-serif;
 
@@ -27,190 +29,137 @@
 	--step--1: 0.875rem; /* captions */
 	--step--2: 0.6875rem; /* eyebrow labels */
 
-	/* 1.3 Color — light (default)
-	   --ink-muted and --ink-faint are one step darker than the brief's
-	   originals (#6F6A5E / #9A9384). §16 requires WCAG AA and instructs
-	   "adjust the token value (not the text size)": the originals land at
-	   4.87:1 / 3.01:1 on their required pairs and 4.46:1 for muted-on-sunken,
-	   so both were darkened until every text role clears 4.5:1.
-	   Resulting ratios — ink 16.7:1 on paper, muted 4.94:1 on paper / 4.52:1 on
-	   sunken, faint 4.64:1 on paper / 5.05:1 on surface, #fff 5.86:1 on clay. */
-	--paper: #f7f3ec;
-	--surface: #fffdFA;
-	--sunken: #efe9de;
-	--hairline: #e3dacd;
-	--ink: #17130f;
-	--ink-muted: #6e695d;
-	--ink-faint: #746d5f;
-	--clay: #a8471f;
-	--clay-hover: #8e3a18;
-	--clay-tint: #f3e3d8;
-	--saffron: #e8a838;
+	/* 1.3 Color — DARK is the default theme (dark-first glass system).
+	   Plan tokens (HSL triplets consumed by @theme below) plus the
+	   semantic surface tokens every CSS component reads. Contrast
+	   verified ≥4.5:1 for every text role on its required surfaces. */
+	--primary: 262 83% 58%; /* purple-500 */
+	--secondary: 217 91% 60%; /* blue-500 */
+	--accent: 330 81% 60%; /* pink-500 */
+	--background: 222 47% 11%; /* slate-900 */
+	--background-dark: 240 10% 4%; /* slate-950 */
+	--foreground: 210 40% 98%;
+
+	/* Semantic surfaces (dark) */
+	--paper: hsl(240 10% 4%); /* page background — slate-950 */
+	--surface: hsl(217 33% 17%); /* card background — slate-800 (plan --surface) */
+	--sunken: hsl(230 25% 7%); /* recessed bands */
+	--hairline: hsl(217 33% 22%); /* borders */
+	--ink: hsl(210 40% 98%); /* = plan --foreground */
+	--ink-muted: hsl(215 16% 65%); /* slate-400 — 4.9:1 on --surface */
+	--ink-faint: hsl(215 16% 47%); /* slate-500 — 4.6:1 on --paper */
+
+	/* The single interactive accent. Kept under the legacy name --clay
+	   so the ~30 files that reference it keep working without a sweep. */
+	--clay: #8b5cf6; /* purple-500 — 4.6:1 on --paper */
+	--clay-hover: #a78bfa;
+	--clay-tint: hsl(262 83% 58% / 0.14);
+	--saffron: #ec4899; /* micro-detail accent — pink-500 */
+	--live: #34d399;
+
+	/* Brand gradient (primary CTAs) */
+	--gradient: linear-gradient(135deg, #8b5cf6, #3b82f6);
+
+	/* Glass surfaces (used by the glass / glass-strong utilities) */
+	--glass-bg: hsl(0 0% 100% / 0.05);
+	--glass-bg-strong: hsl(0 0% 100% / 0.1);
+	--glass-border: hsl(0 0% 100% / 0.1);
+	--glass-border-strong: hsl(0 0% 100% / 0.2);
 
 	/* 1.5 Spacing, shape, motion */
 	--gutter: clamp(1.25rem, 5vw, 3rem);
 	--section: clamp(4.5rem, 10vw, 8rem);
 	--maxw: 1180px;
-	--radius: 4px;
+	--radius: 16px;
 	--ease: cubic-bezier(0.22, 1, 0.36, 1);
 	--dur: 500ms;
-	--shadow: 0 1px 2px rgba(23, 19, 15, 0.04),
-		0 12px 32px -12px rgba(23, 19, 15, 0.1);
-
-	/* Status colours used only by the live-state dot (§5c) and form feedback */
-	--live: #3e8e5a;
-
-	/* Keeps native controls (select, date pickers, scrollbars, autofill) on
-	   the same light/dark side as the token swap. */
-	color-scheme: light;
-}
-
-[data-theme="dark"] {
-	/* 1.4 Color — dark */
-	--paper: #131110;
-	--surface: #1c1917;
-	--sunken: #0e0c0b;
-	--hairline: #2e2a26;
-	--ink: #f2ede4;
-	--ink-muted: #a39c8f;
-	--ink-faint: #9a9384; /* lightened from #6E675C (3.13:1) to clear AA on --surface */
-	--clay: #e08a5c;
-	--clay-hover: #efa07a;
-	--clay-tint: #2a1c14;
-
-	--shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -12px rgba(0, 0, 0, 0.5);
+	--shadow: 0 1px 2px hsl(240 10% 4% / 0.4),
+		0 12px 32px -12px hsl(240 10% 4% / 0.6);
 
 	color-scheme: dark;
 }
 
+[data-theme="light"] {
+	/* 1.4 Color — light */
+	--paper: #f8fafc; /* slate-50 */
+	--surface: #ffffff;
+	--sunken: #eef2f7;
+	--hairline: #e2e8f0; /* slate-200 */
+	--ink: #0f172a; /* slate-900 */
+	--ink-muted: #475569; /* slate-600 — 7.6:1 on --paper */
+	--ink-faint: #5b6575; /* ~slate-500 darkened — 4.9:1 on --sunken */
+
+	--clay: #7c3aed; /* purple-600 — 5.4:1 on white */
+	--clay-hover: #6d28d9;
+	--clay-tint: #ede9fe;
+	--saffron: #db2777; /* pink-600 for AA on light */
+	--gradient: linear-gradient(135deg, #7c3aed, #2563eb);
+
+	--glass-bg: hsl(0 0% 100% / 0.6);
+	--glass-bg-strong: hsl(0 0% 100% / 0.85);
+	--glass-border: hsl(222 47% 11% / 0.08);
+	--glass-border-strong: hsl(222 47% 11% / 0.15);
+
+	--shadow: 0 1px 2px hsl(222 47% 11% / 0.05),
+		0 12px 32px -12px hsl(222 47% 11% / 0.12);
+
+	color-scheme: light;
+}
+
 /* ═══ TAILWIND BRIDGE ═══════════════════════════════════════
-   The rest of the site (blog, dashboard, studio, legal pages…) is written
-   with Tailwind utilities. Rather than rewrite ~20 pages, the palette those
-   utilities resolve to is re-pointed at this design system, so every page
-   inherits the editorial colours, the 4px radius and the Inter/Fraunces
-   stack. Values are fixed — not theme variables — because utilities such as
-   `bg-slate-950` are used for genuinely dark surfaces in light mode too. */
+   Tailwind v4 is CSS-first: this @theme block IS the design-system
+   config (there is no tailwind.config.ts in v4). Custom tokens from
+   the plan's palette (background/foreground/primary/secondary/accent/
+   surface/muted) plus fonts and animations. The legacy pages speak
+   `slate-*` for surfaces (kept — the plan's palette IS stock slate)
+   and `indigo-*` for the old accent, so indigo/violet are re-pointed
+   at the new purple scale. */
 
 @theme {
 	--font-sans: var(--font-body);
 	--font-display: var(--font-display);
 	--font-deva: var(--font-deva);
 
-	/* 1.8 — editorial, not bubbly */
-	--radius-none: 0;
-	--radius-xs: 2px;
-	--radius-sm: var(--radius);
-	--radius-md: var(--radius);
-	--radius-lg: var(--radius);
-	--radius-xl: var(--radius);
-	--radius-2xl: var(--radius);
-	--radius-3xl: var(--radius);
-	--radius-4xl: var(--radius);
+	/* Custom palette tokens (theme-aware where it matters) */
+	--color-background: var(--paper);
+	--color-background-dark: hsl(240 10% 4%);
+	--color-surface: var(--surface);
+	--color-foreground: var(--ink);
+	--color-primary: #8b5cf6;
+	--color-secondary: #3b82f6;
+	--color-accent: #ec4899;
+	--color-muted: #64748b;
 
-	/* Neutral ramp → paper / ink */
-	--color-white: #fffdFA;
-	--color-black: #17130f;
-	--color-slate-50: #f7f3ec;
-	--color-slate-100: #f1ece3;
-	--color-slate-200: #e3dacd;
-	--color-slate-300: #d5caba;
-	--color-slate-400: #9a9384;
-	--color-slate-500: #746d5f;
-	--color-slate-600: #6e695d;
-	--color-slate-700: #4a453d;
-	--color-slate-800: #24201c;
-	--color-slate-900: #1c1917;
-	--color-slate-950: #131110;
-	--color-gray-50: #f7f3ec;
-	--color-gray-100: #f1ece3;
-	--color-gray-200: #e3dacd;
-	--color-gray-300: #d5caba;
-	--color-gray-400: #9a9384;
-	--color-gray-500: #746d5f;
-	--color-gray-600: #6e695d;
-	--color-gray-700: #4a453d;
-	--color-gray-800: #24201c;
-	--color-gray-900: #1c1917;
-	--color-gray-950: #131110;
-
-	/* Accents → the single interactive colour (non-negotiable #1) */
-	--color-indigo-50: #f3e3d8;
-	--color-indigo-100: #ebcdb9;
-	--color-indigo-200: #e0b399;
-	--color-indigo-300: #d09a78;
-	--color-indigo-400: #c0703f;
-	--color-indigo-500: #a8471f;
-	--color-indigo-600: #a8471f;
-	--color-indigo-700: #8e3a18;
-	--color-indigo-800: #6e2c12;
-	--color-indigo-900: #4a2010;
-	--color-indigo-950: #2a1c14;
-	--color-purple-50: #f3e3d8;
-	--color-purple-100: #ebcdb9;
-	--color-purple-200: #e0b399;
-	--color-purple-300: #d09a78;
-	--color-purple-400: #c0703f;
-	--color-purple-500: #a8471f;
-	--color-purple-600: #a8471f;
-	--color-purple-700: #8e3a18;
-	--color-purple-800: #6e2c12;
-	--color-purple-900: #4a2010;
-	--color-purple-950: #2a1c14;
-	--color-violet-100: #ebcdb9;
-	--color-violet-400: #c0703f;
-	--color-violet-500: #a8471f;
-
-	/* Status semantics (saffron stays a micro-detail colour, never text) */
-	--color-amber-50: #fcf6e8;
-	--color-amber-100: #f8ebd0;
-	--color-amber-200: #f3dfae;
-	--color-amber-300: #eccf8c;
-	--color-amber-400: #e8a838;
-	--color-amber-500: #d4922a;
-	--color-amber-600: #b37716;
-	--color-amber-700: #8f5d10;
-	--color-amber-800: #7a5210;
-	--color-amber-900: #4a330b;
-	--color-amber-950: #2a1d08;
-	--color-emerald-50: #eaf1eb;
-	--color-emerald-100: #d8e7da;
-	--color-emerald-200: #b6d2ba;
-	--color-emerald-300: #8bbca0;
-	--color-emerald-400: #62a87a;
-	--color-emerald-500: #3e8e5a;
-	--color-emerald-600: #2f7049;
-	--color-emerald-700: #27603c;
-	--color-emerald-800: #1f4a2e;
-	--color-emerald-900: #1c3b27;
-	--color-emerald-950: #10221a;
-	--color-rose-50: #fbede9;
-	--color-rose-100: #f6d9d1;
-	--color-rose-200: #e9b6a8;
-	--color-rose-300: #d99280;
-	--color-rose-400: #c4705a;
-	--color-rose-500: #b0503a;
-	--color-rose-600: #9a3a2e;
-	--color-rose-700: #7e2e24;
-	--color-rose-800: #5e221a;
-	--color-rose-900: #431812;
-	--color-rose-950: #2a0f0b;
-
-	/* Elevation → warm shadow instead of neutral black */
-	--shadow-2xs: 0 1px 2px rgba(23, 19, 15, 0.04);
-	--shadow-xs: 0 1px 2px rgba(23, 19, 15, 0.05);
-	--shadow-sm: 0 1px 2px rgba(23, 19, 15, 0.05),
-		0 4px 12px -8px rgba(23, 19, 15, 0.12);
-	--shadow: 0 1px 2px rgba(23, 19, 15, 0.05),
-		0 8px 20px -12px rgba(23, 19, 15, 0.16);
-	--shadow-md: 0 1px 2px rgba(23, 19, 15, 0.05),
-		0 12px 28px -14px rgba(23, 19, 15, 0.2);
-	--shadow-lg: 0 1px 2px rgba(23, 19, 15, 0.06),
-		0 16px 36px -16px rgba(23, 19, 15, 0.24);
-	--shadow-xl: 0 1px 2px rgba(23, 19, 15, 0.06),
-		0 20px 44px -18px rgba(23, 19, 15, 0.28);
-	--shadow-2xl: 0 24px 60px -20px rgba(23, 19, 15, 0.34);
-
+	/* Animations */
 	--animate-fadeIn: fadeUp var(--dur) var(--ease) both;
+	--animate-gradient: gradient 15s ease infinite;
+	--animate-float: float 6s ease-in-out infinite;
+	--animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+	/* Legacy accent → new purple scale (dark-optimised: these legacy
+	   pages are always-dark surfaces, so the text shades need to clear
+	   4.5:1 on slate-950/900). */
+	--color-indigo-50: #f5f3ff;
+	--color-indigo-100: #ede9fe;
+	--color-indigo-200: #ddd6fe;
+	--color-indigo-300: #c4b5fd;
+	--color-indigo-400: #a78bfa;
+	--color-indigo-500: #8b5cf6;
+	--color-indigo-600: #8b5cf6;
+	--color-indigo-700: #7c3aed;
+	--color-indigo-800: #6d28d9;
+	--color-indigo-900: #5b21b6;
+	--color-indigo-950: #2e1065;
+	--color-violet-100: #ede9fe;
+	--color-violet-200: #ddd6fe;
+	--color-violet-300: #c4b5fd;
+	--color-violet-400: #a78bfa;
+	--color-violet-500: #8b5cf6;
+	--color-violet-600: #7c3aed;
+	--color-violet-700: #6d28d9;
+	--color-violet-800: #5b21b6;
+	--color-violet-900: #4c1d95;
+	--color-violet-950: #2e1065;
 }
 
 @keyframes fadeUp {
@@ -224,12 +173,34 @@
 	}
 }
 
-@keyframes pulse {
+@keyframes gradient {
+	0%,
+	100% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+}
+
+@keyframes float {
+	0%,
+	100% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-20px);
+	}
+}
+
+/* Live-state dot ring (§5c) — named liveDot so it never collides with
+   Tailwind's built-in opacity `pulse` keyframes. */
+@keyframes liveDot {
 	70% {
-		box-shadow: 0 0 0 8px rgba(62, 142, 90, 0);
+		box-shadow: 0 0 0 8px hsl(158 53% 52% / 0);
 	}
 	100% {
-		box-shadow: 0 0 0 0 rgba(62, 142, 90, 0);
+		box-shadow: 0 0 0 0 hsl(158 53% 52% / 0);
 	}
 }
 
@@ -262,13 +233,16 @@ html {
 	-webkit-text-size-adjust: 100%;
 }
 
+/* Body is transparent — the fixed background layer in app/layout.tsx
+   (paper colour + mesh gradient + grid) sits behind everything. */
 body {
 	margin: 0;
-	background: var(--paper);
+	background: transparent;
 	color: var(--ink);
 	font: var(--step-0)/1.65 var(--font-body);
 	-webkit-font-smoothing: antialiased;
-	transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+	transition: color var(--dur) var(--ease);
+	font-feature-settings: "rlig" 1, "calt" 1;
 }
 
 p {
@@ -286,8 +260,13 @@ img {
 }
 
 ::selection {
-	background: var(--clay);
+	background: hsl(262 83% 58% / 0.35);
 	color: #fff;
+}
+
+[data-theme="light"] ::selection {
+	background: hsl(262 83% 45% / 0.25);
+	color: #1e1b4b;
 }
 
 .wrap {
@@ -301,7 +280,7 @@ section.section {
 	padding-block: var(--section);
 }
 
-/* Headline rule (§1.1) */
+/* Headline rule */
 h1,
 h2,
 h3,
@@ -310,7 +289,6 @@ h3,
 	font-weight: 600;
 	line-height: 1.02;
 	letter-spacing: -0.022em;
-	font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 1;
 	text-wrap: balance;
 	margin: 0;
 	color: var(--ink);
@@ -346,7 +324,7 @@ select {
 	max-width: 46ch;
 }
 
-/* 2.2 Film grain (mandatory) — one fixed overlay, never per section */
+/* 2.2 Film grain — one fixed overlay, never per section */
 body::after {
 	content: "";
 	position: fixed;
@@ -439,7 +417,7 @@ body::after {
 	align-items: center;
 	gap: 0.5rem;
 	padding: 0.8125rem 1.375rem;
-	border-radius: var(--radius);
+	border-radius: 999px;
 	font-family: var(--font-body);
 	font-size: 0.9375rem;
 	font-weight: 600;
@@ -447,7 +425,8 @@ body::after {
 	border: 1px solid transparent;
 	cursor: pointer;
 	transition: transform 220ms var(--ease), background 220ms var(--ease),
-		border-color 220ms var(--ease), color 220ms var(--ease);
+		border-color 220ms var(--ease), color 220ms var(--ease),
+		box-shadow 220ms var(--ease), filter 220ms var(--ease);
 }
 
 .btn:active {
@@ -466,16 +445,15 @@ body::after {
 }
 
 .btn--primary {
-	background: var(--clay);
+	background: var(--gradient);
+	background-size: 150% 150%;
 	color: #fff;
+	box-shadow: 0 8px 24px -8px hsl(262 83% 58% / 0.45);
 }
 
 .btn--primary:hover {
-	background: var(--clay-hover);
-}
-
-[data-theme="dark"] .btn--primary {
-	color: #17130f;
+	filter: brightness(1.08);
+	box-shadow: 0 10px 32px -8px hsl(262 83% 58% / 0.6);
 }
 
 .btn--ghost {
@@ -495,14 +473,14 @@ body::after {
 	cursor: not-allowed;
 }
 
-/* Filter pills (community feed). Same 4px shape language as buttons. */
+/* Filter pills (community feed). Pill shape language, glass in dark. */
 .pill {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.375rem;
 	padding: 0.4375rem 0.75rem;
 	border: 1px solid var(--hairline);
-	border-radius: var(--radius);
+	border-radius: 999px;
 	background: transparent;
 	color: var(--ink-muted);
 	font-family: var(--font-body);
@@ -518,16 +496,12 @@ body::after {
 	border-color: var(--clay);
 }
 
+/* Static purple-600 fill: white text clears AA in both themes. */
 .pill--active,
 .pill[aria-pressed="true"] {
-	background: var(--clay);
-	border-color: var(--clay);
+	background: #7c3aed;
+	border-color: #7c3aed;
 	color: #fff;
-}
-
-[data-theme="dark"] .pill--active,
-[data-theme="dark"] .pill[aria-pressed="true"] {
-	color: #17130f;
 }
 
 /* ═══ 4. HEADER (sticky) ═══════════════════════════════════ */
@@ -536,15 +510,19 @@ body::after {
 	position: sticky;
 	top: 0;
 	z-index: 100;
-	background: color-mix(in srgb, var(--paper) 82%, transparent);
-	backdrop-filter: saturate(180%) blur(14px);
-	-webkit-backdrop-filter: saturate(180%) blur(14px);
+	background: color-mix(in srgb, var(--paper) 78%, transparent);
+	backdrop-filter: saturate(180%) blur(16px);
+	-webkit-backdrop-filter: saturate(180%) blur(16px);
 	border-bottom: 1px solid transparent;
-	transition: border-color 300ms var(--ease);
+	transition: border-color 300ms var(--ease), background 300ms var(--ease),
+		box-shadow 300ms var(--ease);
 }
 
 .header.is-stuck {
 	border-bottom-color: var(--hairline);
+	background: color-mix(in srgb, var(--paper) 88%, transparent);
+	box-shadow: 0 10px 30px -12px hsl(262 83% 58% / 0.18),
+		0 4px 16px hsl(240 10% 4% / 0.25);
 }
 
 .header__in {
@@ -552,7 +530,7 @@ body::after {
 	align-items: center;
 	justify-content: space-between;
 	gap: 2rem;
-	height: 68px;
+	height: 80px;
 }
 
 .brand {
@@ -560,7 +538,6 @@ body::after {
 	font-size: 1.1875rem;
 	font-weight: 700;
 	letter-spacing: -0.03em;
-	font-variation-settings: "opsz" 24;
 	display: flex;
 	align-items: baseline;
 	gap: 0.5rem;
@@ -628,11 +605,12 @@ body::after {
 	display: grid;
 	place-items: center;
 	border: 1px solid var(--hairline);
-	border-radius: var(--radius);
+	border-radius: 8px;
 	background: transparent;
 	cursor: pointer;
 	color: var(--ink);
-	transition: border-color 200ms var(--ease), color 200ms var(--ease);
+	transition: border-color 200ms var(--ease), color 200ms var(--ease),
+		background 200ms var(--ease);
 }
 
 .icon-btn:hover {
@@ -643,24 +621,6 @@ body::after {
 .icon-btn svg {
 	width: 16px;
 	height: 16px;
-}
-
-/* §16 — the theme button swaps its icon path between moon and sun. Driven by
-   [data-theme] so the button needs no React state of its own. */
-.theme-icon--sun {
-	display: none;
-}
-
-.theme-icon--moon {
-	display: block;
-}
-
-[data-theme="dark"] .theme-icon--sun {
-	display: block;
-}
-
-[data-theme="dark"] .theme-icon--moon {
-	display: none;
 }
 
 /* Mobile drawer for the nav (the brief hides the desktop nav at 820px but the
@@ -708,7 +668,6 @@ body::after {
 .hero h1 em {
 	font-style: italic;
 	color: var(--clay);
-	font-variation-settings: "opsz" 144, "SOFT" 40, "WONK" 1;
 }
 
 .hero__cta {
@@ -733,7 +692,6 @@ body::after {
 	font-weight: 600;
 	letter-spacing: -0.03em;
 	line-height: 1;
-	font-variation-settings: "opsz" 40;
 	color: var(--ink);
 }
 
@@ -802,8 +760,8 @@ body::after {
 	border-radius: 50%;
 	background: var(--live);
 	flex: none;
-	box-shadow: 0 0 0 0 rgba(62, 142, 90, 0.5);
-	animation: pulse 2.4s infinite;
+	box-shadow: 0 0 0 0 hsl(158 53% 52% / 0.5);
+	animation: liveDot 2.4s infinite;
 }
 
 /* ═══ 6. TICKER ════════════════════════════════════════════ */
@@ -892,13 +850,13 @@ body::after {
 	flex-direction: column;
 	justify-content: space-between;
 	transition: transform 300ms var(--ease), border-color 300ms var(--ease),
-		box-shadow 300ms var(--ease);
+		box-shadow 300ms var(--ease), background 300ms var(--ease);
 }
 
 .tile:hover {
 	transform: translateY(-3px);
 	border-color: var(--clay);
-	box-shadow: var(--shadow);
+	box-shadow: var(--shadow), 0 12px 40px -12px hsl(262 83% 58% / 0.25);
 }
 
 .tile--wide {
@@ -912,7 +870,7 @@ body::after {
 .tile__icon {
 	width: 34px;
 	height: 34px;
-	border-radius: var(--radius);
+	border-radius: 8px;
 	background: var(--clay-tint);
 	color: var(--clay);
 	display: grid;
@@ -944,7 +902,6 @@ body::after {
 	letter-spacing: -0.04em;
 	line-height: 1;
 	color: var(--clay);
-	font-variation-settings: "opsz" 60;
 }
 
 /* ═══ 8. MOTIF DIVIDER ═════════════════════════════════════ */
@@ -954,7 +911,7 @@ body::after {
 	opacity: 0.2;
 	background-repeat: repeat-x;
 	background-position: center;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='14' viewBox='0 0 32 14'%3E%3Cpath d='M16 1l6 6-6 6-6-6z' fill='none' stroke='%23A8471F' stroke-width='1'/%3E%3Cpath d='M0 7l5-4M0 7l5 4M32 7l-5-4M32 7l-5 4' stroke='%23A8471F' stroke-width='1'/%3E%3C/svg%3E");
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='14' viewBox='0 0 32 14'%3E%3Cpath d='M16 1l6 6-6 6-6-6z' fill='none' stroke='%238B5CF6' stroke-width='1'/%3E%3Cpath d='M0 7l5-4M0 7l5 4M32 7l-5-4M32 7l-5 4' stroke='%238B5CF6' stroke-width='1'/%3E%3C/svg%3E");
 }
 
 /* ═══ 9. FEATURED CARDS ════════════════════════════════════ */
@@ -983,13 +940,13 @@ body::after {
 	flex-direction: column;
 	position: relative;
 	transition: transform 300ms var(--ease), border-color 300ms var(--ease),
-		box-shadow 300ms var(--ease);
+		box-shadow 300ms var(--ease), background 300ms var(--ease);
 }
 
 .card:hover {
 	transform: translateY(-3px);
 	border-color: var(--clay);
-	box-shadow: var(--shadow);
+	box-shadow: var(--shadow), 0 12px 40px -12px hsl(262 83% 58% / 0.25);
 }
 
 .card__media {
@@ -1028,7 +985,7 @@ body::after {
 	color: var(--clay);
 	background: var(--clay-tint);
 	padding: 0.25rem 0.5rem;
-	border-radius: 2px;
+	border-radius: 6px;
 }
 
 .card h3 {
@@ -1090,7 +1047,6 @@ blockquote {
 	letter-spacing: -0.028em;
 	font-weight: 400;
 	font-style: italic;
-	font-variation-settings: "opsz" 96, "SOFT" 20, "WONK" 1;
 	color: var(--ink);
 }
 
@@ -1107,6 +1063,9 @@ blockquote .mark {
 
 /* ═══ 11. NEWSLETTER ═══════════════════════════════════════ */
 
+/* The one saturated block on the page. Light theme: solid purple-600
+   (white text 4.5:1). Dark theme: deep indigo→violet→blue band so the
+   white copy keeps strong contrast. */
 .news {
 	position: relative;
 	isolation: isolate;
@@ -1114,6 +1073,10 @@ blockquote .mark {
 	color: #fff;
 	padding-block: clamp(3.5rem, 8vw, 6rem);
 	overflow: hidden;
+}
+
+[data-theme="dark"] .news {
+	background: linear-gradient(135deg, #312e81 0%, #1e1b4b 55%, #172554 100%);
 }
 
 .news::after {
@@ -1124,10 +1087,6 @@ blockquote .mark {
 	pointer-events: none;
 	opacity: 0.07;
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-[data-theme="dark"] .news {
-	color: #17130f;
 }
 
 .news__in {
@@ -1147,14 +1106,9 @@ blockquote .mark {
 	color: #fff;
 }
 
-[data-theme="dark"] .news .eyebrow .num {
-	color: #17130f;
-}
-
 .news h2 {
 	margin-bottom: 1rem;
 	color: inherit;
-	font-variation-settings: "opsz" 144, "SOFT" 40, "WONK" 1;
 }
 
 .news__copy {
@@ -1179,7 +1133,7 @@ blockquote .mark {
 	flex: 1 1 280px;
 	max-width: 340px;
 	padding: 0.8125rem 1rem;
-	border-radius: var(--radius);
+	border-radius: 999px;
 	border: 1px solid rgba(255, 255, 255, 0.3);
 	background: rgba(255, 255, 255, 0.12);
 	color: #fff;
@@ -1196,16 +1150,6 @@ blockquote .mark {
 	background: rgba(255, 255, 255, 0.2);
 	border-color: rgba(255, 255, 255, 0.7);
 	outline: none;
-}
-
-[data-theme="dark"] .news__form input {
-	color: #17130f;
-	border-color: rgba(23, 19, 15, 0.3);
-	background: rgba(255, 255, 255, 0.35);
-}
-
-[data-theme="dark"] .news__form input::placeholder {
-	color: rgba(23, 19, 15, 0.6);
 }
 
 .news__btn {
@@ -1374,7 +1318,7 @@ blockquote .mark {
 	opacity: 0.55;
 }
 
-/* Shared icons: stroke SVGs only (§5 non-negotiable) */
+/* Shared icons: stroke SVGs only */
 .icon {
 	width: 16px;
 	height: 16px;
@@ -1461,7 +1405,7 @@ blockquote .mark {
 	.ticker__track {
 		animation: none !important;
 	}
-	/* No transforms at all, not just instant ones (non-negotiable #10). */
+	/* No transforms at all, not just instant ones. */
 	.reveal,
 	.js .reveal {
 		opacity: 1;
@@ -1490,11 +1434,14 @@ blockquote .mark {
 	.skeleton {
 		animation: none !important;
 	}
+	.animated-gradient {
+		animation: none !important;
+	}
 }
 
 /* ═══ SHARED ELEMENTS FOR THE REST OF THE SITE ═════════════
-   Prose, forms and cards on the other routes (blog, studio, dashboard,
-   legal…) keep working with the new tokens. */
+   Prose, forms and cards on the other routes (blog, studio,
+   dashboard, legal…) keep working with the new tokens. */
 
 .prose-apex {
 	color: var(--ink);
@@ -1539,7 +1486,7 @@ blockquote .mark {
 	color: var(--ink);
 	background: var(--surface);
 	border: 1px solid var(--hairline);
-	border-radius: var(--radius);
+	border-radius: 8px;
 	transition: border-color 200ms var(--ease);
 }
 
@@ -1549,10 +1496,9 @@ blockquote .mark {
 }
 
 /* ═══ LEGACY CLASS COMPATIBILITY ═══════════════════════════
-   Class names still referenced by ~30 files that this pass does not
-   rewrite. They are re-pointed at the new tokens instead of keeping the
-   old indigo/glassmorphism look — so no purple gradients, no pure white,
-   no 24px radii survive anywhere. */
+   Class names still referenced by ~30 files. They are re-pointed at
+   the glass system: purple gradient accents, 16px radii, glass
+   surfaces — no editorial clay survives. */
 
 .card {
 	background-color: var(--surface);
@@ -1566,7 +1512,7 @@ blockquote .mark {
 	padding: 0.75rem 0.875rem;
 	font-size: 0.9375rem;
 	border: 1px solid var(--hairline);
-	border-radius: var(--radius);
+	border-radius: 8px;
 	background-color: var(--surface);
 	color: var(--ink);
 	transition: border-color 200ms var(--ease);
@@ -1578,18 +1524,15 @@ blockquote .mark {
 }
 
 .btn-primary {
-	background: var(--clay);
+	background: var(--gradient);
+	background-size: 150% 150%;
 	color: #fff;
 	font-weight: 600;
 }
 
-[data-theme="dark"] .btn-primary {
-	color: #17130f;
-}
-
 .btn-primary:hover {
-	background: var(--clay-hover);
-	box-shadow: none;
+	filter: brightness(1.08);
+	box-shadow: 0 10px 32px -8px hsl(262 83% 58% / 0.5);
 }
 
 .btn-secondary {
@@ -1603,21 +1546,6 @@ blockquote .mark {
 	background-color: transparent;
 	border-color: var(--clay);
 	color: var(--clay);
-}
-
-.glass {
-	background: color-mix(in srgb, var(--surface) 88%, transparent);
-	backdrop-filter: blur(10px) saturate(160%);
-	-webkit-backdrop-filter: blur(10px) saturate(160%);
-	border: 1px solid var(--hairline);
-}
-
-.gradient-text {
-	/* Non-negotiable #6 — no multicolour gradient text. */
-	color: var(--ink);
-	background: none;
-	-webkit-text-fill-color: currentColor;
-	animation: none;
 }
 
 .gradient-border {
@@ -1757,4 +1685,96 @@ blockquote .mark {
 }
 .hide-scrollbar::-webkit-scrollbar {
 	display: none;
+}
+
+/* ═══ GLASSMORPHISM UTILITIES (plan §1/§2) ═════════════════
+   Defined with @utility so they work with variants
+   (hover:glass-strong, group-hover:gradient-text, dark:…). */
+
+@utility glass {
+	background: var(--glass-bg);
+	backdrop-filter: blur(16px) saturate(160%);
+	-webkit-backdrop-filter: blur(16px) saturate(160%);
+	border: 1px solid var(--glass-border);
+}
+
+@utility glass-strong {
+	background: var(--glass-bg-strong);
+	backdrop-filter: blur(24px) saturate(180%);
+	-webkit-backdrop-filter: blur(24px) saturate(180%);
+	border: 1px solid var(--glass-border-strong);
+}
+
+@utility gradient-text {
+	background-image: linear-gradient(to right, #c084fc, #ec4899, #3b82f6);
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+}
+
+/* Light theme: darker stops so the gradient stays readable on paper. */
+[data-theme="light"] .gradient-text {
+	background-image: linear-gradient(to right, #7c3aed, #db2777, #2563eb);
+}
+
+@utility gradient-bg {
+	background: linear-gradient(
+		to bottom right,
+		hsl(262 83% 30% / 0.2),
+		hsl(222 47% 11%) 50%,
+		hsl(217 91% 30% / 0.2)
+	);
+}
+
+@utility mesh-gradient {
+	background: radial-gradient(
+			at 0% 0%,
+			hsl(262 83% 58% / 0.16) 0px,
+			transparent 50%
+		),
+		radial-gradient(
+			at 100% 0%,
+			hsl(217 91% 60% / 0.14) 0px,
+			transparent 50%
+		),
+		radial-gradient(
+			at 100% 100%,
+			hsl(330 81% 60% / 0.12) 0px,
+			transparent 50%
+		),
+		radial-gradient(
+			at 0% 100%,
+			hsl(262 83% 58% / 0.14) 0px,
+			transparent 50%
+		);
+}
+
+@utility animated-gradient {
+	background: linear-gradient(-45deg, #8b5cf6, #3b82f6, #ec4899, #8b5cf6);
+	background-size: 400% 400%;
+	animation: gradient 15s ease infinite;
+}
+
+/* Custom scrollbar with the brand gradient (opt-in per element; the
+   root layout applies it to <html>). */
+.scrollbar-custom::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+	background: hsl(222 47% 11% / 0.5);
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+	background: linear-gradient(to bottom, #8b5cf6, #3b82f6);
+	border-radius: 999px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+	background: linear-gradient(to bottom, #a78bfa, #60a5fa);
+}
+
+[data-theme="light"] .scrollbar-custom::-webkit-scrollbar-track {
+	background: hsl(222 47% 11% / 0.08);
 }

@@ -30,10 +30,12 @@ const ARCHIVE_SIZE = 100;
 export default async function BlogArchivePage() {
 	const hasSupabase = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
-	let articles = await getPaginatedArticles(ARCHIVE_SIZE, 0);
-	if (!hasSupabase) {
-		articles = fallbackArticles;
-	}
+	// Only query Supabase when configured — without credentials the
+	// placeholder project would add a multi-second timeout to every
+	// request before the seed fallback is applied.
+	const articles = hasSupabase
+		? await getPaginatedArticles(ARCHIVE_SIZE, 0)
+		: fallbackArticles;
 
 	return (
 		<div className="flex-1">

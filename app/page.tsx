@@ -152,12 +152,21 @@ export default async function Homepage() {
 	// the homepage still renders real-looking content.
 	const hasSupabase = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
-	let articles: ArticleRow[] = (await getPaginatedArticles(
-		PAGE_SIZE,
-		0,
-	)) as unknown as ArticleRow[];
-	let totalCount = await getPublishedArticleCount();
-	if (!hasSupabase) {
+	let articles: ArticleRow[];
+	let totalCount: number;
+	if (hasSupabase) {
+		// Two independent queries — run them concurrently (saves a
+		// round-trip on the real backend).
+		const [rows, count] = await Promise.all([
+			getPaginatedArticles(PAGE_SIZE, 0),
+			getPublishedArticleCount(),
+		]);
+		articles = rows as unknown as ArticleRow[];
+		totalCount = count;
+	} else {
+		// No credentials: never touch the (placeholder) Supabase client —
+		// an unreachable project would add a multi-second timeout to
+		// every request before the fallback below is applied.
 		articles = fallbackArticles as unknown as ArticleRow[];
 		totalCount = fallbackArticles.length;
 	}

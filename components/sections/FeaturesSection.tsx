@@ -130,21 +130,26 @@ function FeatureCard({ feature }: { feature: Feature }) {
 	);
 }
 
-/** Two large blurred orbs that drift at different scroll speeds (plan §9). */
+/** Two large blurred orbs that drift at different scroll speeds (plan §9).
+ *  `whileInView` (once: false) so the blur filters stop rendering entirely
+ *  when the section is off-screen — constant blur re-paints are the main
+ *  GPU cost of these decorations. */
 function ParallaxBlobs() {
 	return (
 		<div aria-hidden="true" className="absolute inset-0">
 			<motion.div
 				aria-hidden="true"
-				animate={{ y: [0, -40, 0], x: [0, 20, 0] }}
+				whileInView={{ y: [0, -40, 0], x: [0, 20, 0] }}
+				viewport={{ once: false, amount: 0.2 }}
 				transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-				className="absolute left-[10%] top-[20%] h-[400px] w-[400px] rounded-full bg-purple-500/20 blur-[120px]"
+				className="absolute left-[10%] top-[20%] h-[320px] w-[320px] rounded-full bg-purple-500/20 blur-[90px]"
 			/>
 			<motion.div
 				aria-hidden="true"
-				animate={{ y: [0, 40, 0], x: [0, -20, 0] }}
+				whileInView={{ y: [0, 40, 0], x: [0, -20, 0] }}
+				viewport={{ once: false, amount: 0.2 }}
 				transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-				className="absolute right-[10%] bottom-[20%] h-[350px] w-[350px] rounded-full bg-blue-500/20 blur-[100px]"
+				className="absolute right-[10%] bottom-[20%] h-[300px] w-[300px] rounded-full bg-blue-500/20 blur-[80px]"
 			/>
 		</div>
 	);

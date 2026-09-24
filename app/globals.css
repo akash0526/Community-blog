@@ -229,7 +229,10 @@
 }
 
 html {
-	scroll-behavior: smooth;
+	/* NO `scroll-behavior: smooth` here — Lenis (components/SmoothScroll)
+	   owns wheel smoothing and drives per-frame scrollTo() calls; CSS
+	   smooth would re-animate every one of them (double easing = the
+	   page feels extremely laggy while scrolling). */
 	-webkit-text-size-adjust: 100%;
 }
 

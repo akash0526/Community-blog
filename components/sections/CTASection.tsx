@@ -23,19 +23,21 @@ export function CTASection() {
 				<GlassCard className="relative overflow-hidden rounded-3xl px-6 py-16 text-center md:px-12 md:py-20">
 					<motion.div
 						aria-hidden="true"
-						animate={{
+						whileInView={{
 							y: [0, -30, 0],
 							opacity: [0.4, 0.7, 0.4],
 						}}
+						viewport={{ once: false, amount: 0.2 }}
 						transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
 						className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-purple-500/20 blur-[80px]"
 					/>
 					<motion.div
 						aria-hidden="true"
-						animate={{
+						whileInView={{
 							y: [0, 30, 0],
 							opacity: [0.3, 0.6, 0.3],
 						}}
+						viewport={{ once: false, amount: 0.2 }}
 						transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
 						className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-blue-500/20 blur-[80px]"
 					/>

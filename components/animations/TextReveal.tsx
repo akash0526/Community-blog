@@ -10,9 +10,10 @@ interface TextRevealProps {
 }
 
 const container: Variants = {
-	hidden: { opacity: 0 },
+	// No opacity here: the block is visible from first paint (LCP
+	// safe) and only the words animate.
+	hidden: {},
 	visible: (delay: number) => ({
-		opacity: 1,
 		transition: {
 			staggerChildren: 0.12,
 			delayChildren: delay,
@@ -20,9 +21,13 @@ const container: Variants = {
 	}),
 };
 
+// Transform-only word reveal: words start 24px low and spring into
+// place. Starting at opacity 0 would hide the heading until the
+// animation finishes — on a first-paint heading (LCP element) that
+// directly delays LCP by the full reveal duration.
 const word: Variants = {
+	hidden: { y: 24 },
 	visible: {
-		opacity: 1,
 		y: 0,
 		transition: {
 			type: "spring",
@@ -30,15 +35,11 @@ const word: Variants = {
 			stiffness: 100,
 		},
 	},
-	hidden: {
-		opacity: 0,
-		y: 20,
-	},
 };
 
 /**
- * Word-by-word spring reveal (plan §3). Words rise into place with a
- * 120ms stagger once the block scrolls into view.
+ * Word-by-word spring reveal (plan §3), LCP-tuned — see the variant
+ * comments: fully visible from first paint, transform-only.
  */
 export function TextReveal({
 	text,

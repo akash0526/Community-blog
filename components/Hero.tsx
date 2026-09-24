@@ -90,19 +90,22 @@ export default function Hero({ resources, guides, categories }: HeroProps) {
 				className="relative mx-auto max-w-7xl px-4 pb-20 pt-14 sm:px-6 lg:px-8"
 			>
 				<div className="grid min-h-[calc(100vh-14rem)] items-center gap-12 lg:grid-cols-2">
-					{/* Left Column */}
+				{/* Left Column — transform-only entrance (no opacity 0):
+				    the h1 is the LCP element on mobile, and an invisible
+				    start would delay LCP by the full animation duration.
+				    Sliding in while fully visible costs nothing. */}
+				<motion.div
+					initial={{ x: -50 }}
+					animate={{ x: 0 }}
+					transition={{ duration: 0.8 }}
+					className="space-y-8"
+				>
+					{/* Badge */}
 					<motion.div
-						initial={{ opacity: 0, x: -50 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.8 }}
-						className="space-y-8"
+						initial={{ y: 20 }}
+						animate={{ y: 0 }}
+						transition={{ delay: 0.2 }}
 					>
-						{/* Badge */}
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.2 }}
-						>
 							<span className="glass inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
 								<Sparkles size={16} className="text-purple-400" />
 								<span>Welcome to Apex Nepal</span>
@@ -160,10 +163,10 @@ export default function Hero({ resources, guides, categories }: HeroProps) {
 						<div className="grid grid-cols-3 gap-6 pt-8">
 							{stats.map((stat, index) => (
 								<motion.div
-									key={stat.label}
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ delay: 0.6 + index * 0.1 }}
+							key={stat.label}
+							initial={{ y: 20 }}
+							animate={{ y: 0 }}
+							transition={{ delay: 0.6 + index * 0.1 }}
 									className="text-center"
 								>
 									<div className="gradient-text font-display text-3xl font-bold">
@@ -177,10 +180,12 @@ export default function Hero({ resources, guides, categories }: HeroProps) {
 						</div>
 					</motion.div>
 
-					{/* Right Column - Floating Cards */}
+					{/* Right Column - Floating Cards (transform-only:
+					    the priority image inside is the desktop LCP
+					    element and must be visible on first paint) */}
 					<motion.div
-						initial={{ opacity: 0, x: 50 }}
-						animate={{ opacity: 1, x: 0 }}
+						initial={{ x: 50 }}
+						animate={{ x: 0 }}
 						transition={{ duration: 0.8 }}
 						className="relative hidden lg:block"
 					>
@@ -199,7 +204,7 @@ export default function Hero({ resources, guides, categories }: HeroProps) {
 										src="/redesign/hero-builder.jpg"
 										alt="A Nepali developer writing code on a laptop at a wooden table in a brick-and-timber Kathmandu cafe"
 										fill
-										sizes="(min-width: 1280px) 40vw, 0px"
+										sizes="(min-width: 1024px) 40vw, 1px"
 										className="object-cover object-[70%_50%]"
 										priority
 									/>

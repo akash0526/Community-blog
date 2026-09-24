@@ -1,19 +1,10 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
+import { useHasHydrated } from "@/hooks/useHasHydrated";
 
-/** Hydration flag without an effect: false on the server / first paint,
- *  true once the component has mounted on the client. */
-function useHasHydrated() {
-	return useSyncExternalStore(
-		() => () => {},
-		() => true,
-		() => false,
-	);
-}
 
 /**
  * Animated theme toggle (plan §3).
@@ -27,8 +18,12 @@ export function ThemeToggle() {
 	const mounted = useHasHydrated();
 
 	// Avoid hydration mismatch: the icon depends on the resolved theme,
-	// which only exists on the client.
-	if (!mounted) return null;
+	// which only exists on the client. Reserve the 44px slot with an
+	// invisible placeholder instead of unmounting — appearing after
+	// hydration would shift the neighbouring auth buttons (CLS).
+	if (!mounted) {
+		return <span aria-hidden="true" className="block h-11 w-11" />;
+	}
 
 	const isDark = resolvedTheme === "dark";
 

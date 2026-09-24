@@ -7,13 +7,15 @@ import { useEffect, useRef, useState } from "react";
 /**
  * Page-load curtain (plan §1) — a full-screen gradient veil with the
  * pulsing APEX wordmark and three bouncing dots that covers each route
- * change for ~800ms, then sweeps away from the top.
+ * change, then sweeps away from the top.
  *
- * Hydration note: the curtain starts hidden (matching SSR) and only
- * appears on client-side route changes — the first paint never waits
- * behind a veil (LCP-friendly). z-50 sits above page content but under
- * the sticky glass navbar (z-100), so the frosted header stays visible
- * over the veil, as the plan intends.
+ * Durations were tuned for Core Web Vitals: the veil shows for ~350ms
+ * (the plan's 800ms doubled the perceived navigation time and delayed
+ * the new route's LCP well past the green threshold), and it is never
+ * shown on the initial page load (first paint is never veiled —
+ * LCP-friendly). z-50 sits above page content but under the sticky
+ * glass navbar (z-100), so the frosted header stays visible over the
+ * veil, as the plan intends.
  */
 export function PageLoader() {
 	const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +30,7 @@ export function PageLoader() {
 		}
 
 		setIsLoading(true);
-		const timer = setTimeout(() => setIsLoading(false), 800);
+		const timer = setTimeout(() => setIsLoading(false), 350);
 
 		return () => clearTimeout(timer);
 	}, [pathname]);

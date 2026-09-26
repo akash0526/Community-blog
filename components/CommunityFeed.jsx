@@ -17,7 +17,7 @@ function avatarUrl(art) {
   const raw = art.profiles?.avatar_url || "";
   if (!raw || raw.includes("dicebear") || raw.includes("bottts")) {
     const name = encodeURIComponent(art.profiles?.full_name || "Apex");
-    return `https://ui-avatars.com/api/?name=${name}&background=A8471F&color=fff&size=64`;
+    return `https://ui-avatars.com/api/?name=${name}&background=8b5cf6&color=fff&size=64`;
   }
   return raw;
 }

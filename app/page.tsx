@@ -1,9 +1,23 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getPaginatedArticles, getPublishedArticleCount } from "@/lib/articles";
+import {
+	getPaginatedArticles,
+	getPublishedArticleCount,
+} from "@/lib/articles";
+import { fallbackArticles } from "@/lib/seedData";
 import CommunityFeed from "@/components/CommunityFeed";
 import NewsletterForm from "@/components/NewsletterForm";
-import { monthlyPicks, resourceCategories, countResources, countByCategory } from "@/lib/resources";
+import Hero from "@/components/Hero";
+import { BlogCard } from "@/components/BlogCard";
+import { FeaturesSection } from "@/components/sections/FeaturesSection";
+import { StatsSection } from "@/components/sections/StatsSection";
+import { CTASection } from "@/components/sections/CTASection";
+import {
+	monthlyPicks,
+	resourceCategories,
+	countResources,
+	countByCategory,
+} from "@/lib/resources";
 import { cleanExcerpt } from "@/lib/seoUtils";
 import {
 	IconArrowRight,
@@ -23,11 +37,9 @@ export const metadata = {
 
 const PAGE_SIZE = 12;
 
-// §9 — the three picks that have photography in public/redesign/ become media
-// cards; the rest stay text cards in the same grid. Files are used at their
-// original 1408x768 and framed with object-position (see globals.css), so the
-// repo keeps the untrimmed photos for reuse elsewhere.
-const PICK_PHOTOS = {
+// §9 — the three picks that have photography in public/redesign/ become
+// media cards; the rest stay text cards in the same grid.
+const PICK_PHOTOS: Record<string, { src: string; alt: string }> = {
 	DeepSeek: {
 		src: "/redesign/deepseek.jpg",
 		alt: "A hand on a mechanical keyboard beside a notebook of merge-sort diagrams, with a laptop of code behind",
@@ -45,10 +57,12 @@ const PICK_PHOTOS = {
 const RESOURCE_COUNT = countResources();
 const CATEGORY_COUNTS = countByCategory();
 
-// §6 — ticker topics. Duplicated once inside the component so the 42s loop is seamless.
+// §6 — ticker topics. Duplicated once inside the component so the 42s
+// loop is seamless.
 const TICKER_ITEMS = resourceCategories.map((category) => category.title);
 
-// Six tiles, one per directory category, with counts taken from lib/resources.js.
+// Six tiles, one per directory category, with counts taken from
+// lib/resources.js.
 const CATEGORY_TILES = [
 	{
 		variant: "tile--wide",
@@ -95,24 +109,68 @@ const CATEGORY_TILES = [
 	},
 ];
 
+/** Minimal article row shape shared by the Supabase list query and the
+ *  seed fallback (the fields the card UIs read). */
+interface ArticleRow {
+	id?: string | null;
+	slug: string;
+	title: string;
+	meta_description?: string;
+	category?: string;
+	image_url?: string | null;
+	published_at?: string | null;
+	created_at?: string | null;
+	content?: string;
+	profiles?: { full_name?: string; avatar_url?: string } | null;
+}
 
-function cleanTitle(title) {
+function cleanTitle(title: unknown) {
 	if (!title) return "";
 	return String(title).replace(/\s*Slug:.*$/i, "").trim();
 }
 
-function formatDate(value) {
+function formatDate(value: unknown) {
 	if (!value) return "";
-	return new Date(value).toLocaleDateString("en-GB", {
+	return new Date(String(value)).toLocaleDateString("en-GB", {
 		year: "numeric",
 		month: "short",
 		day: "numeric",
 	});
 }
 
+/** Reading time from the body when the query includes it (seed data);
+ *  the slim Supabase list query does not fetch content. */
+function readTimeFor(art: { content?: string }) {
+	if (!art?.content) return undefined;
+	const minutes = Math.max(2, Math.round(art.content.split(/\s+/).length / 200));
+	return `${minutes} min read`;
+}
+
 export default async function Homepage() {
-	const articles = await getPaginatedArticles(PAGE_SIZE, 0);
-	const totalCount = await getPublishedArticleCount();
+	// Without Supabase credentials (local demo / CI) the queries fail
+	// closed with an empty list — fall back to the seeded articles so
+	// the homepage still renders real-looking content.
+	const hasSupabase = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+
+	let articles: ArticleRow[];
+	let totalCount: number;
+	if (hasSupabase) {
+		// Two independent queries — run them concurrently (saves a
+		// round-trip on the real backend).
+		const [rows, count] = await Promise.all([
+			getPaginatedArticles(PAGE_SIZE, 0),
+			getPublishedArticleCount(),
+		]);
+		articles = rows as unknown as ArticleRow[];
+		totalCount = count;
+	} else {
+		// No credentials: never touch the (placeholder) Supabase client —
+		// an unreachable project would add a multi-second timeout to
+		// every request before the fallback below is applied.
+		articles = fallbackArticles as unknown as ArticleRow[];
+		totalCount = fallbackArticles.length;
+	}
+
 	const featured = articles.slice(0, 3);
 	const rest = articles.slice(3);
 	const hasMore = totalCount > PAGE_SIZE;
@@ -120,69 +178,12 @@ export default async function Homepage() {
 
 	return (
 		<div className="flex-1">
-			{/* ═══ §5 HERO — asymmetric, left-aligned ═══ */}
-			<section className="hero">
-				<div className="wrap hero__grid">
-					<div>
-						<p className="eyebrow">
-							<span className="num">01</span> Curated for Nepal
-						</p>
-
-						<h1>
-							Everything you need to build <em>from here</em>.
-						</h1>
-
-						<p className="lede">
-							A hand-checked directory of the tools, payment rails, guides and
-							communities that actually work for freelancers, founders and
-							creators based in Nepal.
-						</p>
-
-						<div className="hero__cta">
-							<Link href="/resources" className="btn btn--primary">
-								Browse resources
-								<IconArrowRight />
-							</Link>
-							<Link href="/blog" className="btn btn--ghost">
-								Read the guides
-							</Link>
-						</div>
-
-						<div className="hero__stats">
-							<div>
-								<div className="stat__n">{RESOURCE_COUNT}</div>
-								<div className="stat__l">Resources</div>
-							</div>
-							<div>
-								<div className="stat__n">{resourceCategories.length}</div>
-								<div className="stat__l">Categories</div>
-							</div>
-							<div>
-								<div className="stat__n">Weekly</div>
-								<div className="stat__l">Updated</div>
-							</div>
-						</div>
-					</div>
-
-					<div className="hero__visual">
-						<div className="hero__block" aria-hidden="true" />
-						<div className="hero__img">
-							<Image
-								src="/redesign/hero-builder.jpg"
-								alt="A Nepali developer writing code on a laptop at a wooden table in a brick-and-timber Kathmandu cafe"
-								width={1408}
-								height={768}
-								priority
-								quality={65}
-								sizes="(max-width: 900px) min(90vw, 420px), 420px"
-							/>
-						</div>
-						<div className="hero__chip">
-							<span className="pulse" aria-hidden="true" />Updated Sept 2026
-						</div>
-					</div>
-				</div>
-			</section>
+			{/* ═══ NEW GLASSMORPHISM HERO (plan §5) ═══ */}
+			<Hero
+				resources={RESOURCE_COUNT}
+				guides={Math.max(totalCount, 1)}
+				categories={resourceCategories.length}
+			/>
 
 			{/* ═══ §6 TICKER ═══ */}
 			<div className="ticker" aria-hidden="true">
@@ -195,7 +196,10 @@ export default async function Homepage() {
 				</div>
 			</div>
 
-			{/* ═══ §7 CATEGORIES — bento grid ═══ */}
+			{/* ═══ ANIMATION PLAN §9 — why APEX (glass feature cards) ═══ */}
+		<FeaturesSection />
+
+		{/* ═══ §7 CATEGORIES — bento grid ═══ */}
 			<section className="section">
 				<div className="wrap">
 					<p className="eyebrow reveal">
@@ -205,8 +209,8 @@ export default async function Homepage() {
 						Start where you are.
 					</h2>
 					<p className="lede reveal" style={{ marginTop: "1.125rem" }}>
-						Six working categories, each one checked on Nepali internet with
-						Nepali payment methods — not copied from a global list.
+						Six working categories, each one checked on Nepali internet
+						with Nepali payment methods — not copied from a global list.
 					</p>
 
 					<div className="bento">
@@ -240,7 +244,7 @@ export default async function Homepage() {
 				<div className="motif" aria-hidden="true" />
 			</div>
 
-			{/* ═══ §9 FEATURED CARDS ═══ */}
+			{/* ═══ §9 FEATURED — glass BlogCards (plan §6) ═══ */}
 			<section className="section">
 				<div className="wrap">
 					<div className="section-head--split">
@@ -250,7 +254,10 @@ export default async function Homepage() {
 							</p>
 							<h2 className="reveal">Picked this week.</h2>
 						</div>
-						<Link href={featured.length ? "/blog" : "/resources"} className="link link--arrow reveal">
+						<Link
+							href={featured.length ? "/blog" : "/resources"}
+							className="link link--arrow reveal"
+						>
 							{featured.length ? "See all stories" : "See all resources"}
 							<IconArrowRight className="icon icon--15" />
 						</Link>
@@ -259,38 +266,29 @@ export default async function Homepage() {
 					{featured.length > 0 ? (
 						<div className="cards">
 							{featured.map((art) => (
-								<article className="card reveal" key={art.id || art.slug}>
-									<Link
-										href={`/blog/${art.slug}`}
-										className="flex flex-1 flex-col"
-										aria-label={cleanTitle(art.title)}
-									>
-										<div className="card__media">
-											<Image
-												src={art.image_url || "/opengraph-image"}
-												alt={cleanTitle(art.title)}
-												width={640}
-												height={400}
-												quality={60}
-												sizes="(max-width: 860px) 90vw, calc((min(100vw, 1180px) - 136px) / 3)"
-												loading="lazy"
-											/>
-										</div>
-										<div className="card__body">
-											<span className="card__tag">{art.category || "Guide"}</span>
-											<h3>{cleanTitle(art.title)}</h3>
-											<p>{cleanExcerpt(art.meta_description)}</p>
-											<div className="card__foot">
-												<span>
-													{formatDate(
-														art.published_at || art.created_at,
-													) || "Recently"}
-												</span>
-												<span>{art.profiles?.full_name || "Apex Editorial"}</span>
-											</div>
-										</div>
-									</Link>
-								</article>
+								<BlogCard
+									key={art.id || art.slug}
+									title={cleanTitle(art.title)}
+									excerpt={cleanExcerpt(art.meta_description)}
+									image={art.image_url || "/opengraph-image"}
+									author={{
+										name:
+											art.profiles?.full_name || "Apex Editorial",
+										avatar:
+											art.profiles?.avatar_url ||
+											`https://ui-avatars.com/api/?name=${encodeURIComponent(
+												art.profiles?.full_name || "Apex",
+											)}&background=8b5cf6&color=fff&size=64`,
+									}}
+									date={
+										formatDate(
+											art.published_at || art.created_at,
+										) || "Recently"
+									}
+									readTime={readTimeFor(art)}
+									slug={art.slug}
+									category={art.category || "Guide"}
+								/>
 							))}
 						</div>
 					) : (
@@ -305,34 +303,48 @@ export default async function Homepage() {
 				</div>
 			</section>
 
-			{/* ═══ §10 EDITORIAL QUOTE ═══ */}
+			{/* ═══ ANIMATION PLAN §11 — community stats (real data) ═══ */}
+		<StatsSection
+			stats={[
+				{ value: RESOURCE_COUNT, suffix: "+", label: "Resources" },
+				{ value: Math.max(totalCount, 1), suffix: "+", label: "Guides" },
+				{
+					value: resourceCategories.length,
+					label: "Categories",
+				},
+				{ value: 100, suffix: "%", label: "Tested" },
+			]}
+		/>
+
+		{/* ═══ §10 EDITORIAL QUOTE ═══ */}
 			<section className="quote-band">
 				<div className="wrap" style={{ paddingBlock: "var(--section)" }}>
 					<div className="quote">
 						<div className="quote__img reveal">
 							<Image
-									src="/redesign/quote-kathmandu.jpg"
-									alt="A carved wooden lattice window set in weathered red brick, with a notebook and a clay cup of tea on the ledge below it"
-									width={1408}
-									height={768}
-									loading="lazy"
-									quality={60}
-									sizes="(max-width: 860px) 320px, 40vw"
-								/>
+								src="/redesign/quote-kathmandu.jpg"
+								alt="A carved wooden lattice window set in weathered red brick, with a notebook and a clay cup of tea on the ledge below it"
+								width={1408}
+								height={768}
+								loading="lazy"
+								quality={60}
+								sizes="(max-width: 860px) 320px, 40vw"
+							/>
 						</div>
 						<div>
 							<p className="eyebrow reveal">
 								<span className="num">04</span> Why this exists
 							</p>
 							<blockquote className="reveal">
-								<span className="mark">&ldquo;</span>Most advice for builders
-								assumes you&rsquo;re in San Francisco. This assumes you&rsquo;re
-								in Kathmandu — and that everything should still work.
+								<span className="mark">&ldquo;</span>Most advice for
+								builders assumes you&rsquo;re in San Francisco. This
+								assumes you&rsquo;re in Kathmandu — and that everything
+								should still work.
 								<span className="mark">&rdquo;</span>
 							</blockquote>
 							<p className="quote__support reveal">
-								Every entry is checked against one question: does this actually
-								function from Nepal, today?
+								Every entry is checked against one question: does this
+								actually function from Nepal, today?
 							</p>
 						</div>
 					</div>
@@ -369,7 +381,7 @@ export default async function Homepage() {
 					</div>
 
 					<div className="cards">
-						{[
+						={[
 							{
 								title: "Student Starter Kit",
 								copy: "Free courses, free AI study help, free books. NPR 0 to start learning.",
@@ -427,7 +439,8 @@ export default async function Homepage() {
 					<div className="section-head--split">
 						<div>
 							<p className="eyebrow reveal">
-								<span className="num">07</span> This month&rsquo;s picks
+								<span className="num">07</span> This
+								month&rsquo;s picks
 							</p>
 							<h2 className="reveal">Useful now in Nepal</h2>
 						</div>
@@ -463,7 +476,9 @@ export default async function Homepage() {
 										<h3>{pick.name}</h3>
 										<p>{pick.what}</p>
 										<p className="text-[0.8125rem]">
-											<strong className="font-semibold">Why Nepal:</strong>{" "}
+											<strong className="font-semibold">
+												Why Nepal:
+											</strong>{" "}
 											{pick.why}
 										</p>
 									</div>
@@ -474,7 +489,8 @@ export default async function Homepage() {
 				</div>
 			</section>
 
-			{/* Community feed + search keeps its behaviour, gains the new tokens. */}
+			{/* Community feed + search keeps its behaviour, gains the new
+			    tokens. */}
 			<section className="section" id="feed" style={{ paddingTop: 0 }}>
 				<div className="wrap">
 					<p className="eyebrow reveal">
@@ -483,34 +499,39 @@ export default async function Homepage() {
 					<h2 className="reveal">Latest from the community</h2>
 					<div className="mt-8">
 						{showFeed ? (
-							<CommunityFeed
-								initialArticles={rest}
-								hasMore={hasMore}
-								initialOffset={PAGE_SIZE}
-							/>
+						<CommunityFeed
+							// CommunityFeed is untyped JS and infers its
+							// default `initialArticles = []` as never[].
+							initialArticles={rest as unknown as never[]}
+							hasMore={hasMore}
+							initialOffset={PAGE_SIZE}
+						/>
 						) : articles.length > 0 ? (
 							<p className="lede" style={{ marginTop: "1.125rem" }}>
-								That’s the latest story.{" "}
+								That&rsquo;s the latest story.{" "}
 								<Link href="/write-for-us" className="link">
 									Write the next one
 								</Link>
 								.
 							</p>
-						) : (
-							<div className="card !p-10">
-								<h3 className="mb-2">No published stories yet</h3>
-								<p className="mb-6 text-[0.9375rem] text-[var(--ink-muted)]">
-									Be the first to publish on Apex.
-								</p>
-								<Link href="/studio" className="btn btn--primary">
-									Create first story
-									<IconArrowRight />
-								</Link>
-							</div>
-						)}
-					</div>
+				) : (
+						<div className="card !p-10">
+							<h3 className="mb-2">No published stories yet</h3>
+							<p className="mb-6 text-[0.9375rem] text-[var(--ink-muted)]">
+								Be the first to publish on Apex.
+							</p>
+							<Link href="/studio" className="btn btn--primary">
+								Create first story
+								<IconArrowRight />
+							</Link>
+						</div>
+					)}
 				</div>
-			</section>
-		</div>
-	);
+			</div>
+		</section>
+
+		{/* ═══ ANIMATION PLAN §12 — closing call-to-action ═══ */}
+		<CTASection />
+	</div>
+);
 }

@@ -1,6 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import Providers from "@/components/Providers";
+import { PageLoader } from "@/components/PageLoader";
+import { PageTransition } from "@/components/PageTransition";
+import { ScrollProgress } from "@/components/ScrollProgress";
+import { SmoothScroll } from "@/components/SmoothScroll";
 import LazyCookieConsent from "@/components/LazyCookieConsent";
 import CookieSettingsButton from "@/components/CookieSettingsButton";
 import SiteEffects from "@/components/SiteEffects";
@@ -16,8 +21,14 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 // the critical path (PSI "render-blocking requests" / FCP insight), and
 // one fewer origin to preconnect. `font-display: swap` keeps text visible
 // while the woff2 files stream in.
-import "@fontsource-variable/fraunces/opsz.css";
+// Space Grotesk (latin-only subset — the display face of the glass
+// redesign) replaces the Fraunces serif; Inter stays the body face and
+// Mukta covers Devanagari.
 import "@fontsource-variable/inter";
+import "@fontsource/space-grotesk/latin-400.css";
+import "@fontsource/space-grotesk/latin-500.css";
+import "@fontsource/space-grotesk/latin-600.css";
+import "@fontsource/space-grotesk/latin-700.css";
 import "@fontsource/mukta/400.css";
 import "@fontsource/mukta/600.css";
 import "./globals.css";
@@ -165,7 +176,7 @@ export default function RootLayout({
 	};
 
 	return (
-		<html lang="en" suppressHydrationWarning>
+		<html lang="en" suppressHydrationWarning className="scrollbar-custom">
 			<head>
 				{/* Preconnect only to origins that serve above-the-fold resources.
 				    Keep this list ≤4 — Lighthouse warns when a page opens more
@@ -189,17 +200,36 @@ export default function RootLayout({
 					dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
 				/>
 			</head>
-			<body className="flex min-h-screen flex-col">
-				{/* §2.4 — first focusable element on every page. */}
-				<a className="skip" href="#main">
-					Skip to content
-				</a>
+		<body className="flex min-h-screen flex-col">
+			{/* §2.4 — first focusable element on every page. */}
+			<a className="skip" href="#main">
+				Skip to content
+			</a>
 
-				<Navbar />
+		<Providers>
+			<SmoothScroll>
+			{/* Fixed background layer (plan §3): paper colour + mesh
+			gradient + faint grid, behind everything (the body is
+			transparent). z -10 keeps it under all content. */}
+			<div
+				className="fixed inset-0 -z-10 bg-(--paper) transition-[background-color] duration-500"
+				aria-hidden="true"
+			>
+				<div className="mesh-gradient absolute inset-0" />
+				<div className="absolute inset-0 bg-[url('/grid.svg')] bg-repeat opacity-[0.02]" />
+			</div>
 
-				<main id="main" className="flex flex-1 flex-col" tabIndex={-1}>
-					{children}
-				</main>
+			{/* Page transition system (animation plan §1) — the curtain
+			only appears on client-side route changes; the progress bar
+			and % dial track reading position site-wide. */}
+			<PageLoader />
+			<ScrollProgress />
+
+			<Navbar />
+
+			<main id="main" className="flex flex-1 flex-col" tabIndex={-1}>
+				<PageTransition>{children}</PageTransition>
+			</main>
 
 				{/* §12 — site-wide footer, all previously published routes kept. */}
 				<footer className="footer mt-auto">
@@ -305,13 +335,17 @@ export default function RootLayout({
 					</div>
 				</footer>
 
-				<LazyCookieConsent />
-				<SiteEffects />
+			<LazyCookieConsent />
+			<SiteEffects />
+			</SmoothScroll>
+		</Providers>
 
-				{/* Cookieless traffic + Core Web Vitals measurement. */}
-				<Analytics />
-				<SpeedInsights />
-			</body>
+			{/* Cookieless traffic + Core Web Vitals measurement. Outside
+			    <Providers> on purpose: they are independent of app state and
+			    must keep reporting even if a provider throws. */}
+			<Analytics />
+			<SpeedInsights />
+		</body>
 		</html>
 	);
 }

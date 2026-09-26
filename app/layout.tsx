@@ -10,6 +10,12 @@ import LazyCookieConsent from "@/components/LazyCookieConsent";
 import CookieSettingsButton from "@/components/CookieSettingsButton";
 import SiteEffects from "@/components/SiteEffects";
 import { SITE_URL } from "@/lib/articles";
+// Privacy-first, cookieless analytics. Both scripts are served first-party
+// from /_vercel/… so they add no third-party origin, no cookies, and no
+// personal data — which is why they sit outside the cookie-consent gate.
+// See GROWTH_PLAN.md §Phase 0 and /privacy for the user-facing disclosure.
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 // Self-hosted fonts (via @fontsource) instead of a render-blocking
 // fonts.googleapis.com stylesheet: no third-party DNS/TLS round-trip in
 // the critical path (PSI "render-blocking requests" / FCP insight), and
@@ -333,6 +339,12 @@ export default function RootLayout({
 			<SiteEffects />
 			</SmoothScroll>
 		</Providers>
+
+			{/* Cookieless traffic + Core Web Vitals measurement. Outside
+			    <Providers> on purpose: they are independent of app state and
+			    must keep reporting even if a provider throws. */}
+			<Analytics />
+			<SpeedInsights />
 		</body>
 		</html>
 	);

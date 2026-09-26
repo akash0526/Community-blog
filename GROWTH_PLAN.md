@@ -44,7 +44,7 @@ You cannot grow what you cannot see. Everything after this phase depends on it.
 |---|---|---|---|
 | 0.1 | **Google Search Console** — verify `www.apex-nepal.com` (DNS TXT via GoDaddy). Submit `/sitemap.xml`. Check *Pages → Not indexed* weekly. | GoDaddy DNS | 30 min |
 | 0.2 | **Bing Webmaster Tools** — import from GSC in one click. Bing feeds ChatGPT search. | — | 10 min |
-| 0.3 | **Privacy-first analytics** — Vercel Analytics (zero-config, no cookie banner needed) or self-hosted Plausible. Avoid GA4 unless you want the consent complexity you just cleaned up. | `app/layout.tsx`, then update `app/privacy/page.tsx` to stay honest | 45 min |
+| 0.3 | ✅ **DONE (26 Sep 2026)** — **Privacy-first analytics**: Vercel Web Analytics + Speed Insights mounted in `app/layout.tsx`; cookieless, first-party, outside the consent gate. `app/privacy/page.tsx` updated to describe exactly what is collected. **Remaining: enable Analytics + Speed Insights in the Vercel dashboard (Project → Analytics → Enable) and redeploy — no data is collected until you do.** | `app/layout.tsx`, `app/privacy/page.tsx` | done |
 | 0.4 | **Outbound click tracking** on resource/affiliate links | `app/resources/page.jsx`, `lib/resources.js` | 1 h |
 | 0.5 | **IndexNow ping** on publish — instant Bing/Yandex indexing | new `app/api/indexnow/route.ts`, called from the publish action in `app/studio/` | 1 h |
 | 0.6 | **Confirm host canonicalisation** — the apex domain 301s to `www`; make sure `NEXT_PUBLIC_SITE_URL` is set to `https://www.apex-nepal.com` in Vercel so sitemap + canonicals never split signals | Vercel env | 10 min |

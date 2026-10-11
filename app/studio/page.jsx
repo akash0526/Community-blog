@@ -1,8 +1,14 @@
 "use client";
 
-import { useState, useEffect, useMemo, Suspense } from "react";
+import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { uploadArticleImage } from "@/lib/imagekitUpload";
+import {
+	createMarkdownImage,
+	imageAltFromFileName,
+	insertMarkdownBlockAtSelection,
+} from "@/lib/markdownImages";
 import { analyzeSeo, generateCleanSlug } from "@/lib/seoEngine";
 import { storyCategories } from "@/lib/categories";
 import ReactMarkdown from "react-markdown";
@@ -59,11 +65,19 @@ function StudioForm() {
 	const [imageUrl, setImageUrl] = useState(emptyDraft.imageUrl);
 	const [content, setContent] = useState(emptyDraft.content);
 	const [customSlug, setCustomSlug] = useState("");
+	const [inlineImageAlt, setInlineImageAlt] = useState("");
+	const [inlineImageCaption, setInlineImageCaption] = useState("");
+	const [inlineUploadProgress, setInlineUploadProgress] = useState(null);
+	const featuredImageInputRef = useRef(null);
+	const inlineImageInputRef = useRef(null);
+	const markdownEditorRef = useRef(null);
+	const imageInsertionRangeRef = useRef(null);
 
 	const [activeTab, setActiveTab] = useState("write"); // write vs preview
 
 	// Scoring & Auth state
 	const [uploading, setUploading] = useState(false);
+	const inlineUploading = Boolean(inlineUploadProgress);
 	const [publishing, setPublishing] = useState(false);
 	const [savingDraft, setSavingDraft] = useState(false);
 	const [error, setError] = useState(null);
@@ -122,6 +136,8 @@ function StudioForm() {
 		setImageUrl(emptyDraft.imageUrl);
 		setContent(emptyDraft.content);
 		setCustomSlug("");
+		setInlineImageAlt("");
+		setInlineImageCaption("");
 	};
 
 	const resolvedSlugPreview = customSlug.trim()
@@ -175,43 +191,115 @@ function StudioForm() {
 		getSession();
 	}, []);
 
-	const handleImageUpload = async (e) => {
-		const file = e.target.files?.[0];
+	const handleFeaturedImageUpload = async (event) => {
+		const file = event.target.files?.[0];
+		event.target.value = "";
 		if (!file) return;
 
 		setUploading(true);
 		setError(null);
 
 		try {
-			const fileExt = file.name.split(".").pop();
-			const fileName = `community-${Date.now()}.${fileExt}`;
-			const { error: uploadErr } = await supabase.storage
-				.from("article_images")
-				.upload(fileName, file, { upsert: true });
-
-			if (uploadErr) {
-				throw uploadErr;
-			}
-
-			const {
-				data: { publicUrl },
-			} = supabase.storage.from("article_images").getPublicUrl(fileName);
-
-			setImageUrl(publicUrl);
-		} catch {
+			const uploadedImage = await uploadArticleImage(file);
+			setImageUrl(uploadedImage.url);
+		} catch (uploadError) {
 			setError(
-				"⚡ Storage Notice: Using live professional backup CDNs for instant preview.",
-			);
-			setImageUrl(
-				"https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
+				uploadError?.message || "ImageKit could not upload this image. Please try again.",
 			);
 		} finally {
 			setUploading(false);
 		}
 	};
 
+	const openInlineImagePicker = () => {
+		const editor = markdownEditorRef.current;
+		imageInsertionRangeRef.current = editor
+			? { start: editor.selectionStart, end: editor.selectionEnd }
+			: { start: content.length, end: content.length };
+		inlineImageInputRef.current?.click();
+	};
+
+	const handleInlineImageUpload = async (event) => {
+		const files = Array.from(event.target.files || []);
+		event.target.value = "";
+		if (files.length === 0) return;
+		if (files.length > 10) {
+			setError("Upload up to 10 inline photos at a time.");
+			return;
+		}
+
+		const insertionRange = imageInsertionRangeRef.current || {
+			start: content.length,
+			end: content.length,
+		};
+		imageInsertionRangeRef.current = null;
+		setError(null);
+		setInlineUploadProgress({ current: 0, total: files.length });
+
+		const uploadedImages = [];
+		let failedUpload = null;
+
+		for (const [index, file] of files.entries()) {
+			setInlineUploadProgress({ current: index + 1, total: files.length });
+			try {
+				const uploadedImage = await uploadArticleImage(file);
+				const customText = files.length === 1;
+				uploadedImages.push(
+					createMarkdownImage({
+						url: uploadedImage.url,
+						alt:
+							customText && inlineImageAlt.trim()
+								? inlineImageAlt.trim()
+								: imageAltFromFileName(file.name),
+						caption: customText ? inlineImageCaption.trim() : "",
+					}),
+				);
+			} catch (uploadError) {
+				failedUpload = uploadError;
+				break;
+			}
+		}
+
+		if (uploadedImages.length > 0) {
+			const markdown = uploadedImages.join("\n\n");
+			const insertion = insertMarkdownBlockAtSelection(
+				content,
+				insertionRange,
+				markdown,
+			);
+			setContent(insertion.content);
+			setInlineImageAlt("");
+			setInlineImageCaption("");
+			requestAnimationFrame(() => {
+				const editor = markdownEditorRef.current;
+				if (!editor) return;
+				editor.focus();
+				editor.setSelectionRange(
+					insertion.cursorPosition,
+					insertion.cursorPosition,
+				);
+			});
+		}
+
+		if (failedUpload) {
+			const partialMessage = uploadedImages.length
+				? `Uploaded ${uploadedImages.length} of ${files.length} photos; the successful photo${uploadedImages.length === 1 ? " is" : "s are"} inserted in your story. `
+				: "";
+			setError(
+				`${partialMessage}${failedUpload.message || "ImageKit could not upload a photo."}`,
+			);
+		}
+
+		setInlineUploadProgress(null);
+	};
+
 	// Save or Publish Live
 	const handleSave = async (targetStatus = "published") => {
+		if (uploading || inlineUploading) {
+			setError("Wait for your ImageKit upload to finish before saving the story.");
+			return;
+		}
+
 		if (!title.trim()) {
 			setError("Please add a headline before saving your story.");
 			return;
@@ -465,7 +553,8 @@ function StudioForm() {
 							onClick={() =>
 								setActiveTab(activeTab === "write" ? "preview" : "write")
 							}
-							className="btn btn-secondary px-4 py-2.5 rounded-xl text-xs font-black flex-1 sm:flex-none cursor-pointer"
+							disabled={inlineUploading}
+							className="btn btn-secondary px-4 py-2.5 rounded-xl text-xs font-black flex-1 sm:flex-none cursor-pointer disabled:opacity-60"
 						>
 							{activeTab === "write" ? "👁️ Preview Story" : "✍️ Edit Markdown"}
 						</button>
@@ -474,7 +563,7 @@ function StudioForm() {
 						<button
 							type="button"
 							onClick={() => handleSave("draft")}
-							disabled={publishing || savingDraft}
+							disabled={publishing || savingDraft || uploading || inlineUploading}
 							className="btn px-4 py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20 transition transform hover:scale-105 flex-1 sm:flex-none cursor-pointer"
 						>
 							<Save className="w-3.5 h-3.5" />
@@ -485,7 +574,7 @@ function StudioForm() {
 						<button
 							type="button"
 							onClick={() => handleSave("published")}
-							disabled={publishing || savingDraft}
+							disabled={publishing || savingDraft || uploading || inlineUploading}
 							className={`btn px-6 py-2.5 rounded-xl text-xs font-black shadow-lg flex items-center justify-center gap-1.5 flex-1 sm:flex-none transition transform hover:scale-105 cursor-pointer ${
 								audit.totalScore >= 80
 									? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/30"
@@ -670,25 +759,51 @@ function StudioForm() {
 										/>
 									</div>
 
-									<div className="relative flex-shrink-0 w-full sm:w-auto">
-										<input
-											type="file"
-											accept="image/*"
-											onChange={handleImageUpload}
-											disabled={uploading}
-											className="absolute inset-0 opacity-0 cursor-pointer z-10"
-										/>
-										<button
-											type="button"
-											className="btn btn-secondary w-full px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 cursor-pointer"
-										>
-											<Upload className="w-4 h-4 text-indigo-500" />
-											<span>
-												{uploading ? "Uploading..." : "⚡ Cloud Upload"}
-											</span>
-										</button>
+										<div className="flex-shrink-0 w-full sm:w-auto">
+											<input
+												ref={featuredImageInputRef}
+												type="file"
+												accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
+												onChange={handleFeaturedImageUpload}
+												disabled={uploading}
+												className="sr-only"
+												aria-label="Upload featured image to ImageKit"
+											/>
+											<button
+												type="button"
+												onClick={() => featuredImageInputRef.current?.click()}
+												disabled={uploading}
+												className="btn btn-secondary w-full px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 cursor-pointer disabled:opacity-60"
+											>
+												<Upload className="w-4 h-4 text-indigo-500" />
+												<span>
+													{uploading ? "Uploading to ImageKit..." : "Upload to ImageKit"}
+												</span>
+											</button>
+										</div>
 									</div>
-								</div>
+									<p className="mt-2 text-[11px] leading-relaxed text-slate-500">
+										Uploads go directly to ImageKit; only the image URL is saved with your article.
+									</p>
+									{imageUrl && (
+										<div className="mt-3 flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-2">
+											{/* eslint-disable-next-line @next/next/no-img-element -- The preview can use any manually entered URL. */}
+											<img
+												src={imageUrl}
+												alt="Featured image preview"
+												className="h-16 w-28 rounded-lg object-cover"
+											/>
+											<span className="min-w-0 flex-1 truncate text-[11px] text-slate-500">Featured image preview</span>
+											<button
+												type="button"
+												onClick={() => setImageUrl("")}
+												className="text-xs font-bold text-rose-500 hover:underline"
+												aria-label="Remove featured image"
+											>
+												Remove
+											</button>
+										</div>
+									)}
 
 								{/* Instant Creative Presets */}
 								<div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1 scrollbar-none">
@@ -740,10 +855,63 @@ function StudioForm() {
 
 							{activeTab === "write" ? (
 								<div>
+									<div className="mb-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/70 bg-indigo-50/70 dark:bg-indigo-950/30 p-4 space-y-3">
+										<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+											<p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+												Place the cursor where the photo should appear, then upload one or more images.
+											</p>
+											<input
+												ref={inlineImageInputRef}
+												type="file"
+												accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
+												multiple
+												onChange={handleInlineImageUpload}
+												disabled={inlineUploading}
+												className="sr-only"
+												aria-label="Upload photos and insert them at the editor cursor"
+											/>
+											<button
+												type="button"
+												onClick={openInlineImagePicker}
+												disabled={inlineUploading}
+												className="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-extrabold text-white hover:bg-indigo-500 disabled:cursor-wait disabled:opacity-60"
+											>
+												<Upload className="w-4 h-4" />
+												{inlineUploadProgress
+													? `Uploading ${inlineUploadProgress.current}/${inlineUploadProgress.total}...`
+													: "Upload & insert photos"}
+											</button>
+										</div>
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+											<input
+												type="text"
+												value={inlineImageAlt}
+												onChange={(e) => setInlineImageAlt(e.target.value)}
+												placeholder="Alt text for one image (optional)"
+												aria-label="Alt text for the inline image"
+												disabled={inlineUploading}
+												className="input py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 dark:border-slate-700"
+											/>
+											<input
+												type="text"
+												value={inlineImageCaption}
+												onChange={(e) => setInlineImageCaption(e.target.value)}
+												placeholder="Visible caption for one image (optional)"
+												aria-label="Caption for the inline image"
+												disabled={inlineUploading}
+												className="input py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 dark:border-slate-700"
+											/>
+										</div>
+										<p className="text-[11px] text-slate-500">
+											For a batch, each filename becomes its image description. Images upload to ImageKit and their Markdown is inserted at your cursor.
+										</p>
+									</div>
 									<textarea
+										ref={markdownEditorRef}
 										rows="18"
 										value={content}
 										onChange={(e) => setContent(e.target.value)}
+										readOnly={inlineUploading}
 										placeholder="Craft your beautiful markdown story here..."
 										className="input font-mono text-sm py-4 rounded-3xl bg-slate-50 dark:bg-slate-800/60 dark:border-slate-700/80 leading-relaxed dark:text-slate-200"
 									></textarea>
@@ -755,7 +923,8 @@ function StudioForm() {
 										<button
 											type="button"
 											onClick={resetComposer}
-											className="text-rose-500 hover:underline cursor-pointer"
+											disabled={uploading || inlineUploading}
+											className="text-rose-500 hover:underline cursor-pointer disabled:opacity-50"
 										>
 											Clear Canvas
 										</button>
@@ -763,7 +932,27 @@ function StudioForm() {
 								</div>
 							) : (
 								<div className="p-8 rounded-3xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 prose dark:prose-invert max-w-none min-h-[450px]">
-									<ReactMarkdown remarkPlugins={[remarkGfm]}>
+									<ReactMarkdown
+										remarkPlugins={[remarkGfm]}
+										components={{
+											img: ({ src, alt, title }) => (
+												<figure className="my-8">
+													{/* eslint-disable-next-line @next/next/no-img-element -- Markdown preview accepts arbitrary author-provided URLs. */}
+													<img
+														src={src || ""}
+														alt={alt || "Article image"}
+														className="w-full rounded-2xl border border-slate-200 dark:border-slate-800"
+														loading="lazy"
+													/>
+													{(title || alt) && (
+														<figcaption className="mt-2 text-center text-xs text-slate-500">
+															{title || alt}
+														</figcaption>
+													)}
+												</figure>
+											),
+										}}
+									>
 										{content}
 									</ReactMarkdown>
 								</div>

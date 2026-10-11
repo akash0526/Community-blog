@@ -8,6 +8,7 @@ import Image from "next/image";
 import { ArrowLeft, Share2, Bookmark } from "lucide-react";
 import DiscussionThread from "@/components/DiscussionThread";
 import { sanitizeCmsField, detectLanguage, cleanExcerpt, cleanBio } from "@/lib/seoUtils";
+import { imageKitDeliveryUrl } from "@/lib/imagekitUrl";
 import { IconCheck } from "@/components/Icon";
 
 function cleanTitle(title=""){
@@ -142,7 +143,13 @@ export default function ArticleContent({ serverArticle, slug }) {
       );
     },
     blockquote: ({children}) => <blockquote className="border-l-4 border-slate-300 dark:border-slate-700 pl-5 italic my-8 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/50 py-4 rounded-r-xl">{children}</blockquote>,
-    img: ({src,alt}) => <figure className="my-10"><img src={src} alt={alt||title} className="rounded-2xl w-full border border-slate-200 dark:border-slate-800" loading="lazy" />{alt && <figcaption className="text-xs text-slate-500 mt-2 text-center">{alt}</figcaption>}</figure>,
+    img: ({src,alt,title:caption}) => (
+      <figure className="my-10">
+        {/* eslint-disable-next-line @next/next/no-img-element -- Markdown images may come from arbitrary author-provided URLs. */}
+        <img src={imageKitDeliveryUrl(src)} alt={alt||title} className="rounded-2xl w-full h-auto border border-slate-200 dark:border-slate-800" loading="lazy" decoding="async" />
+        {(caption || alt) && <figcaption className="text-xs text-slate-500 mt-2 text-center">{caption || alt}</figcaption>}
+      </figure>
+    ),
     code({inline,className,children,...props}){
       if(inline) return <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[0.9em] font-mono" {...props}>{children}</code>
       return <pre className="bg-slate-950 text-slate-100 p-5 rounded-2xl overflow-x-auto my-8 text-sm"><code>{children}</code></pre>
@@ -227,7 +234,7 @@ export default function ArticleContent({ serverArticle, slug }) {
         {article.image_url && (
           <figure className="mb-10">
             <div className="relative w-full aspect-[16/9] max-h-[520px]">
-              <Image src={article.image_url} alt={title} fill className="rounded-2xl border border-slate-200 dark:border-slate-800 object-cover" sizes="(max-width: 768px) 100vw, 768px" priority />
+              <Image src={article.image_url} alt={title} fill className="rounded-2xl border border-slate-200 dark:border-slate-800 object-cover" sizes="(max-width: 768px) 100vw, 768px" quality={85} priority />
             </div>
           </figure>
         )}

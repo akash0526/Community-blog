@@ -252,9 +252,14 @@ p {
 	margin: 0;
 }
 
-a {
-	color: inherit;
-	text-decoration: none;
+/* Keep the anchor reset in Tailwind's base layer so component utilities
+   such as text-slate-900 and underline can override it as intended.
+   An unlayered `a { color: inherit }` wins over every Tailwind utility. */
+@layer base {
+	a {
+		color: inherit;
+		text-decoration: none;
+	}
 }
 
 img {
@@ -1662,6 +1667,16 @@ blockquote .mark {
 
 .card-hover:hover {
 	transform: translateY(-3px);
+	box-shadow: var(--shadow);
+}
+
+/* Reading progress stays legible over every page section and in both themes.
+   An opaque semantic surface is more dependable than a translucent white
+   glass layer over content that can itself be light or dark. */
+.scroll-progress-dial {
+	color: var(--ink);
+	background-color: var(--surface);
+	border: 1px solid var(--hairline);
 	box-shadow: var(--shadow);
 }
 

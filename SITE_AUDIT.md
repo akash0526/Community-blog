@@ -93,7 +93,8 @@ content, plus bigger feature suggestions.
 2. **Rehost hotlinked images.** Covers/avatars currently load from
    `imgs.search.brave.com` (a search proxy — will rot), `onlinekhabar.com`,
    and `news24online.com`. That's a copyright + broken-image risk. Download →
-   upload to your Supabase `article_images` bucket → update `image_url`:
+   upload article images to ImageKit and update `image_url` (profile avatars
+   can use an approved avatar URL):
    ```sql
    SELECT slug, image_url FROM articles
    WHERE image_url LIKE '%brave.com%' OR image_url LIKE '%onlinekhabar%'

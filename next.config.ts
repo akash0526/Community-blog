@@ -1,6 +1,28 @@
 import path from "node:path";
 import type { NextConfig } from "next";
 
+const imageKitRemotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [
+  { protocol: "https", hostname: "ik.imagekit.io" },
+];
+
+const imageKitUrlEndpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT?.trim();
+if (imageKitUrlEndpoint) {
+  try {
+    const endpoint = new URL(imageKitUrlEndpoint);
+    if (endpoint.protocol === "https:") {
+      const basePath = endpoint.pathname.replace(/\/+$/, "");
+      imageKitRemotePatterns.push({
+        protocol: "https",
+        hostname: endpoint.hostname,
+        pathname: basePath ? `${basePath}/**` : "/**",
+      });
+    }
+  } catch {
+    // The standard ImageKit CDN host remains enabled if the optional
+    // custom URL endpoint is missing or malformed.
+  }
+}
+
 const nextConfig: NextConfig = {
   // The sandbox live-preview proxy serves the dev server from a
   // different origin (*.e2b.app). Next 16 rejects cross-origin requests
@@ -44,9 +66,9 @@ const nextConfig: NextConfig = {
     // the image compression factor" delivery insights (often 30–50% fewer
     // bytes than the default WebP-only pipeline).
     formats: ["image/avif", "image/webp"],
-    // Quality ladder used by the quality= props across the site (60 for
-    // below-fold photography, 65 for the LCP hero image, 75 default).
-    qualities: [50, 60, 65, 70, 75],
+    // Keep a high-fidelity option for uploaded article photography while
+    // still allowing smaller sizes for below-the-fold imagery.
+    qualities: [50, 60, 65, 70, 75, 85],
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "**.supabase.co" },
@@ -56,6 +78,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "imgs.search.brave.com" },
       { protocol: "https", hostname: "english.onlinekhabar.com" },
       { protocol: "https", hostname: "news24online.com" },
+      ...imageKitRemotePatterns,
     ],
   },
   compiler: {

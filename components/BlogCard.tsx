@@ -56,6 +56,7 @@ export function BlogCard({
 							alt={title}
 							fill
 							sizes="(max-width: 860px) 90vw, calc((min(100vw, 1180px) - 136px) / 3)"
+							quality={85}
 							className="object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-2"
 						/>
 

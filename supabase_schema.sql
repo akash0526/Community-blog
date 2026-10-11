@@ -160,7 +160,8 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
--- 4. Create Storage Bucket for Interactive Community Image Uploads
+-- 4. Legacy Storage Bucket for Existing Community Images
+-- New writing-studio uploads are stored in ImageKit; keep this bucket for old URLs.
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('article_images', 'article_images', true);
 

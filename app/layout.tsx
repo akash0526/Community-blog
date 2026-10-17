@@ -18,19 +18,15 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 // Self-hosted fonts (via @fontsource) instead of a render-blocking
 // fonts.googleapis.com stylesheet: no third-party DNS/TLS round-trip in
-// the critical path (PSI "render-blocking requests" / FCP insight), and
-// one fewer origin to preconnect. `font-display: swap` keeps text visible
-// while the woff2 files stream in.
-// Space Grotesk (latin-only subset — the display face of the glass
-// redesign) replaces the Fraunces serif; Inter stays the body face and
-// Mukta covers Devanagari.
-import "@fontsource-variable/inter";
+// the critical path (PSI "render-blocking requests" / FCP insight).
+// `font-display: swap` keeps text visible while the woff2 files stream in.
+// We load targeted wght/subsets (400, 600, 700) to keep critical network payloads minimal.
+import "@fontsource-variable/inter/wght.css";
 import "@fontsource/space-grotesk/latin-400.css";
-import "@fontsource/space-grotesk/latin-500.css";
 import "@fontsource/space-grotesk/latin-600.css";
 import "@fontsource/space-grotesk/latin-700.css";
-import "@fontsource/mukta/400.css";
-import "@fontsource/mukta/600.css";
+import "@fontsource/mukta/latin-400.css";
+import "@fontsource/mukta/devanagari-400.css";
 import "./globals.css";
 
 const siteName = "Apex";
@@ -178,15 +174,12 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning className="scrollbar-custom">
 			<head>
-				{/* Preconnect only to origins that serve above-the-fold resources.
-				    Keep this list ≤4 — Lighthouse warns when a page opens more
-				    preconnect connections than that. */}
-				<link rel="preconnect" href="https://images.unsplash.com" />
-				<link rel="preconnect" href="https://avatars.githubusercontent.com" />
-				<link
-					rel="preconnect"
-					href="https://xytyivccxndygcgpqeiu.supabase.co"
-				/>
+				{/* Preconnect only to origins that serve immediate above-the-fold resources.
+				    Keep this list ≤2 — Lighthouse warns when a page opens more
+				    preconnect connections than that or when connections sit unused. */}
+				<link rel="dns-prefetch" href="https://images.unsplash.com" />
+				<link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
+				<link rel="dns-prefetch" href="https://xytyivccxndygcgpqeiu.supabase.co" />
 				<link rel="dns-prefetch" href="https://ui-avatars.com" />
 
 				<script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
@@ -254,7 +247,7 @@ export default function RootLayout({
 							</div>
 
 							<div>
-								<h4>Browse</h4>
+								<p className="footer__title">Browse</p>
 								<ul>
 									<li>
 										<Link href="/resources">All resources</Link>
@@ -275,7 +268,7 @@ export default function RootLayout({
 							</div>
 
 							<div>
-								<h4>About</h4>
+								<p className="footer__title">About</p>
 								<ul>
 									<li>
 										<Link href="/editorial">Our method</Link>
@@ -296,7 +289,7 @@ export default function RootLayout({
 							</div>
 
 							<div>
-								<h4>Elsewhere</h4>
+								<p className="footer__title">Elsewhere</p>
 								<ul>
 									<li>
 										<a

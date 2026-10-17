@@ -19,7 +19,8 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
 	useEffect(() => {
 		if (
 			typeof window === "undefined" ||
-			window.matchMedia("(prefers-reduced-motion: reduce)").matches
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+			!window.matchMedia("(hover: hover) and (pointer: fine)").matches
 		) {
 			return;
 		}
@@ -30,7 +31,7 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
 				Math.min(1, 1.001 - Math.pow(2, -10 * t)),
 			smoothWheel: true,
 			wheelMultiplier: 1,
-			touchMultiplier: 2,
+			touchMultiplier: 1.5,
 			orientation: "vertical",
 			gestureOrientation: "vertical",
 		});

@@ -990,10 +990,14 @@ body::after {
 	font-weight: 600;
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
-	color: var(--clay);
+	color: #c4b5fd;
 	background: var(--clay-tint);
 	padding: 0.25rem 0.5rem;
 	border-radius: 6px;
+}
+
+[data-theme="light"] .card__tag {
+	color: var(--clay);
 }
 
 .card h3 {
@@ -1195,7 +1199,8 @@ blockquote .mark {
 	padding-bottom: 3rem;
 }
 
-.footer h4 {
+.footer h4,
+.footer .footer__title {
 	font-size: 0.6875rem;
 	font-weight: 600;
 	letter-spacing: 0.14em;

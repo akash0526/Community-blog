@@ -51,19 +51,25 @@ function readLocalPublished(initialArticles) {
 }
 
 export default function CommunityFeed({ initialArticles = [], hasMore: initialHasMore = false, initialOffset = 0 }) {
-  const [searchQuery, setSearchQuery] = useState(() => readUrlFilters().q);
-  const [selectedCategory, setSelectedCategory] = useState(() => readUrlFilters().category);
-  const [localArticles] = useState(() => readLocalPublished(initialArticles));
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [localArticles, setLocalArticles] = useState([]);
 
   // Pagination state
   const [serverArticles, setServerArticles] = useState(initialArticles);
   const [offset, setOffset] = useState(initialOffset);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [filtering, setFiltering] = useState(() => {
+  const [filtering, setFiltering] = useState(false);
+
+  // Sync client-only values (URL params & localStorage) safely after mount to avoid hydration mismatch (React error #418)
+  useEffect(() => {
     const { q, category } = readUrlFilters();
-    return Boolean(q.trim() || (category && category !== "All"));
-  });
+    if (q) setSearchQuery(q);
+    if (category && category !== "All") setSelectedCategory(category);
+    if (q || (category && category !== "All")) setFiltering(true);
+    setLocalArticles(readLocalPublished(initialArticles));
+  }, [initialArticles]);
 
   // Server-side search/filter: whenever q/category changes, query the API so
   // results cover the whole archive (not just rows already in the browser).

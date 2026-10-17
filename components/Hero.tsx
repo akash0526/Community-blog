@@ -152,6 +152,7 @@ export default function Hero({ resources, guides, categories }: HeroProps) {
 							>
 								<Link
 									href="/about"
+									aria-label="Learn more about Apex Nepal and our mission"
 									className="glass rounded-full px-8 py-4 font-medium transition-all hover:glass-strong"
 								>
 									Learn More

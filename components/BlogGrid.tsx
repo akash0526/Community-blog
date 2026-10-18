@@ -26,6 +26,9 @@ export interface BlogArticle {
 
 interface BlogGridProps {
 	articles: BlogArticle[];
+	/** Deep-link filters from article pages (`/blog?category=…`, `/blog?q=…`). */
+	initialCategory?: string;
+	initialQuery?: string;
 }
 
 const PAGE_SIZE = 12;

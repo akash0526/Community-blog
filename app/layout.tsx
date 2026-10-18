@@ -22,6 +22,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 // `font-display: swap` keeps text visible while the woff2 files stream in.
 // We load targeted wght/subsets (400, 600, 700) to keep critical network payloads minimal.
 import "@fontsource-variable/inter/wght.css";
+import "@fontsource-variable/fraunces/wght.css";
 import "@fontsource/space-grotesk/latin-400.css";
 import "@fontsource/space-grotesk/latin-600.css";
 import "@fontsource/space-grotesk/latin-700.css";

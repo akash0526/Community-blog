@@ -19,6 +19,9 @@
 	--font-display: "Space Grotesk", "Inter Variable", sans-serif;
 	--font-body: "Inter Variable", system-ui, sans-serif;
 	--font-deva: "Mukta", "Inter Variable", sans-serif;
+	/* Editorial serif for article headlines / pull quotes — the magazine
+	   voice that separates a story from the app's Space Grotesk UI type. */
+	--font-article: "Fraunces Variable", "Fraunces", Georgia, "Times New Roman", serif;
 
 	/* 1.2 Type scale */
 	--step-4: clamp(2.75rem, 7vw, 5.25rem); /* h1 */
@@ -119,6 +122,7 @@
 	--font-sans: var(--font-body);
 	--font-display: var(--font-display);
 	--font-deva: var(--font-deva);
+	--font-article: var(--font-article);
 
 	/* Custom palette tokens (theme-aware where it matters) */
 	--color-background: var(--paper);
@@ -323,6 +327,39 @@ button,
 textarea,
 select {
 	font-family: var(--font-body);
+}
+
+/* Serif article type. Declared unlayered (like the heading rule above)
+   so it actually wins over the global Space Grotesk heading default —
+   Tailwind utilities live in a cascade layer, which unlayered element
+   rules would otherwise beat regardless of specificity. */
+.font-article {
+	font-family: var(--font-article);
+}
+
+/* Article masthead title — fluid editorial scale, independent of the
+   site-wide --step-4 (tuned for hero headlines, too large for a
+   long-form story title). */
+.article-title {
+	font-family: var(--font-article);
+	font-size: clamp(2.35rem, 5.5vw, 3.4rem);
+	line-height: 1.07;
+	letter-spacing: -0.015em;
+	text-wrap: balance;
+}
+
+.article-section-title {
+	font-family: var(--font-article);
+	font-size: clamp(1.7rem, 3vw, 2.1rem);
+	line-height: 1.15;
+	letter-spacing: -0.012em;
+}
+
+.article-card__title {
+	font-family: var(--font-article);
+	font-size: 1.05rem;
+	line-height: 1.35;
+	letter-spacing: -0.008em;
 }
 
 .lede {
@@ -1489,6 +1526,514 @@ blockquote .mark {
 
 .prose-apex a:hover {
 	background-size: 100% 1.5px;
+}
+
+/* ═══ ARTICLE READING EXPERIENCE (.article-prose) ═══════════
+   The published-story typography system, rendered by
+   components/ArticleBody.jsx on /blog/[slug] AND in the Studio
+   preview (one renderer = authors see exactly what readers get).
+
+   Research-backed settings (see PR notes):
+   • 18px body (19px ≥1024px), 1.8 line-height — the 1.5–1.8 range
+     every readability study lands on, at the comfortable end.
+   • ~68ch measure (the article column caps the width; em-based
+     type scales together when a reader bumps the Aa font size,
+     via --article-font-size on the page wrapper).
+   • Serif display headings + drop cap + pull quotes for the
+     editorial rhythm that makes long posts feel finishable.
+   • A visual break roughly every screenful: figures, quotes,
+     tables and code all get generous, consistent spacing. */
+
+.article-prose {
+	font-size: var(--article-font-size, 1.125rem);
+	line-height: 1.8;
+	/* Softer than pure ink for long reads, still ≥7:1 on --paper. */
+	color: color-mix(in srgb, var(--ink) 84%, var(--paper));
+	overflow-wrap: break-word;
+}
+
+@media (min-width: 1024px) {
+	.article-prose {
+		font-size: var(--article-font-size, 1.1875rem);
+	}
+}
+
+.article-prose > *:first-child {
+	margin-top: 0 !important;
+}
+.article-prose > *:last-child {
+	margin-bottom: 0 !important;
+}
+
+/* Paragraphs — the workhorse. 1.8 leading + a full blank line of
+   separation is what stops a post reading as a "wall of text". */
+.article-prose p {
+	margin: 0 0 1.6em;
+	line-height: 1.8;
+}
+
+/* Opening paragraph = the lede: larger, full-strength ink, and a
+   drop cap that gives the story a print-magazine start. */
+.article-prose > p:first-of-type {
+	font-size: 1.16em;
+	line-height: 1.72;
+	color: var(--ink);
+}
+
+.article-prose > p:first-of-type::first-letter {
+	font-family: var(--font-article);
+	font-weight: 600;
+	font-size: 3.4em;
+	line-height: 0.82;
+	float: left;
+	padding: 0.06em 0.14em 0 0;
+	color: var(--clay);
+}
+
+/* Nepali (Devanagari) stories: a drop cap on a combining-script
+   letter can detach its vowel signs, so the lede keeps its size
+   but drops the ornament. */
+[lang="ne"] .article-prose > p:first-of-type::first-letter,
+[lang="ne-NP"] .article-prose > p:first-of-type::first-letter {
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+	float: none;
+	padding: 0;
+	color: inherit;
+}
+
+/* Headings — serif, tight leading, big air above (so a heading
+   reads as a new chapter, not a bold paragraph), anchor on hover. */
+.article-prose .article-h2,
+.article-prose h2 {
+	font-family: var(--font-article);
+	font-size: 1.58em;
+	font-weight: 600;
+	line-height: 1.18;
+	letter-spacing: -0.012em;
+	color: var(--ink);
+	margin: 2.1em 0 0.7em;
+	scroll-margin-top: 6.5rem;
+	text-wrap: balance;
+}
+
+.article-prose .article-h2::before,
+.article-prose h2::before {
+	content: "";
+	display: block;
+	width: 2.75rem;
+	height: 3px;
+	border-radius: 999px;
+	background: var(--gradient);
+	margin-bottom: 0.55em;
+}
+
+.article-prose .article-h3,
+.article-prose h3 {
+	font-family: var(--font-article);
+	font-size: 1.26em;
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: -0.008em;
+	color: var(--ink);
+	margin: 1.8em 0 0.6em;
+	scroll-margin-top: 6.5rem;
+}
+
+.article-prose h4 {
+	font-family: var(--font-body);
+	font-size: 1.02em;
+	font-weight: 700;
+	letter-spacing: 0.01em;
+	color: var(--ink);
+	margin: 1.6em 0 0.5em;
+	scroll-margin-top: 6.5rem;
+}
+
+.article-prose h5,
+.article-prose h6 {
+	font-family: var(--font-body);
+	font-size: 0.82em;
+	font-weight: 700;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	color: var(--ink-muted);
+	margin: 1.5em 0 0.5em;
+}
+
+.article-anchor {
+	display: inline-grid;
+	place-items: center;
+	margin-left: 0.35em;
+	vertical-align: middle;
+	color: var(--clay);
+	opacity: 0;
+	transform: translateX(-3px);
+	transition: opacity 200ms var(--ease), transform 200ms var(--ease);
+}
+
+.article-h2:hover .article-anchor,
+.article-h3:hover .article-anchor,
+.article-anchor:focus-visible {
+	opacity: 1;
+	transform: none;
+}
+
+/* Links — animated gradient underline, never a raw blue. */
+.article-prose a {
+	color: var(--clay);
+	font-weight: 560;
+	text-decoration: none;
+	background-image: linear-gradient(currentColor, currentColor);
+	background-size: 0% 1.5px;
+	background-repeat: no-repeat;
+	background-position: 0 100%;
+	padding-bottom: 1px;
+	transition: background-size 320ms var(--ease);
+}
+
+.article-prose a:hover {
+	background-size: 100% 1.5px;
+}
+
+.article-prose strong {
+	color: var(--ink);
+	font-weight: 680;
+}
+
+.article-prose mark {
+	background: hsl(330 81% 60% / 0.22);
+	color: inherit;
+	padding: 0.05em 0.3em;
+	border-radius: 4px;
+}
+
+[data-theme="light"] .article-prose mark {
+	background: hsl(330 81% 60% / 0.16);
+}
+
+/* Lists — brand markers, breathing room between items so lists
+   scan as a checklist rather than a paragraph with dots. */
+.article-prose ul,
+.article-prose ol {
+	margin: 0 0 1.6em;
+	padding-left: 1.35em;
+}
+
+.article-prose li {
+	margin: 0.45em 0;
+	line-height: 1.7;
+	padding-left: 0.2em;
+}
+
+.article-prose li::marker {
+	color: var(--clay);
+	font-weight: 700;
+}
+
+.article-prose li > ul,
+.article-prose li > ol {
+	margin: 0.45em 0 0.2em;
+}
+
+.article-prose li:has(> input[type="checkbox"]) {
+	list-style: none;
+	margin-left: -1.35em;
+}
+
+.article-prose input[type="checkbox"] {
+	accent-color: var(--clay);
+	width: 1em;
+	height: 1em;
+	margin-right: 0.5em;
+	vertical-align: -0.12em;
+}
+
+/* Pull quotes — a blockquote is the visual pause in the middle
+   of a long post: big serif italic on a tinted, rounded panel. */
+.article-prose blockquote {
+	position: relative;
+	margin: 2.4em 0;
+	padding: 1.6em 1.7em 1.5em 3.4em;
+	background: var(--clay-tint);
+	border: 1px solid var(--hairline);
+	border-radius: 20px;
+	font-family: var(--font-article);
+	font-size: 1.22em;
+	font-style: italic;
+	line-height: 1.5;
+	letter-spacing: -0.01em;
+	color: var(--ink);
+}
+
+.article-prose blockquote::before {
+	content: "“";
+	position: absolute;
+	left: 0.45em;
+	top: 0.18em;
+	font-size: 2.6em;
+	line-height: 1;
+	font-style: normal;
+	background: var(--gradient);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+.article-prose blockquote p {
+	margin: 0 0 0.6em;
+	line-height: 1.5;
+}
+
+.article-prose blockquote p:last-child {
+	margin-bottom: 0;
+}
+
+.article-prose blockquote > p:first-of-type {
+	font-size: inherit;
+	color: inherit;
+}
+
+.article-prose blockquote > p:first-of-type::first-letter {
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+	float: none;
+	padding: 0;
+	color: inherit;
+}
+
+/* Divider — the site's diamond motif between two hairlines. */
+.article-prose hr {
+	border: 0;
+	height: 14px;
+	margin: 3em auto;
+	max-width: 420px;
+	opacity: 0.75;
+	background:
+		linear-gradient(var(--hairline), var(--hairline)) left center / calc(50% - 14px) 1px no-repeat,
+		linear-gradient(var(--hairline), var(--hairline)) right center / calc(50% - 14px) 1px no-repeat,
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath d='M7 1l6 6-6 6-6-6z' fill='none' stroke='%238B5CF6' stroke-width='1.4'/%3E%3C/svg%3E")
+			center / 14px 14px no-repeat;
+}
+
+/* Figures — slightly wider than the text column (a visual break,
+   not a thumbnail), deep radius, soft shadow, centred caption. */
+.article-figure {
+	margin: 2.6em 0;
+}
+
+@media (min-width: 768px) {
+	.article-figure {
+		margin-inline: -1.75rem;
+	}
+}
+
+.article-figure img {
+	width: 100%;
+	height: auto;
+	border-radius: 20px;
+	border: 1px solid var(--hairline);
+	box-shadow: var(--shadow);
+}
+
+.article-figure figcaption {
+	margin-top: 0.85em;
+	text-align: center;
+	font-size: 0.78rem;
+	line-height: 1.55;
+	color: var(--ink-faint);
+}
+
+/* Inline code + code blocks (always dark — code reads as a
+   terminal in both themes), with a labelled header bar. */
+.article-prose :not(pre) > code {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 0.84em;
+	background: var(--sunken);
+	border: 1px solid var(--hairline);
+	border-radius: 6px;
+	padding: 0.14em 0.42em;
+	color: var(--ink);
+	white-space: break-spaces;
+}
+
+.article-code {
+	margin: 2.2em 0;
+	border-radius: 16px;
+	overflow: hidden;
+	border: 1px solid hsl(240 10% 18%);
+	background: hsl(240 12% 7%);
+	box-shadow: var(--shadow);
+}
+
+.article-code__bar {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.55rem 0.9rem;
+	background: hsl(240 10% 10%);
+	border-bottom: 1px solid hsl(240 10% 16%);
+}
+
+.article-code__dots {
+	display: inline-flex;
+	gap: 6px;
+}
+
+.article-code__dots i {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: hsl(240 8% 26%);
+}
+
+.article-code__dots i:first-child {
+	background: #f87171;
+}
+.article-code__dots i:nth-child(2) {
+	background: #fbbf24;
+}
+.article-code__dots i:last-child {
+	background: #34d399;
+}
+
+.article-code__lang {
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	font-size: 0.68rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: hsl(215 16% 65%);
+}
+
+.article-code__copy {
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: hsl(215 16% 75%);
+	background: hsl(0 0% 100% / 0.06);
+	border: 1px solid hsl(0 0% 100% / 0.1);
+	border-radius: 7px;
+	padding: 0.3rem 0.6rem;
+	cursor: pointer;
+	transition: color 200ms var(--ease), border-color 200ms var(--ease);
+}
+
+.article-code__copy:hover {
+	color: #fff;
+	border-color: var(--clay);
+}
+
+.article-code pre {
+	margin: 0;
+	padding: 1.15rem 1.25rem;
+	overflow-x: auto;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 0.83rem;
+	line-height: 1.7;
+	color: hsl(210 40% 92%);
+}
+
+.article-code pre code {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: 0;
+	padding: 0;
+	white-space: pre;
+}
+
+/* Tables — carded, striped, with a sticky-feeling header row;
+   the wrapper scrolls sideways on phones instead of squeezing. */
+.article-table {
+	margin: 2.2em 0;
+	overflow-x: auto;
+	border: 1px solid var(--hairline);
+	border-radius: 16px;
+	background: var(--surface);
+	box-shadow: var(--shadow);
+}
+
+.article-table:focus-visible {
+	outline: 2px solid var(--clay);
+	outline-offset: 2px;
+}
+
+.article-table table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.83em;
+	line-height: 1.55;
+}
+
+.article-table th {
+	text-align: left;
+	font-size: 0.78em;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: var(--ink);
+	background: var(--sunken);
+	padding: 0.85em 1em;
+	border-bottom: 1px solid var(--hairline);
+	white-space: nowrap;
+}
+
+.article-table td {
+	padding: 0.8em 1em;
+	border-bottom: 1px solid var(--hairline);
+	color: inherit;
+	vertical-align: top;
+}
+
+.article-table tbody tr:nth-child(even) td {
+	background: color-mix(in srgb, var(--sunken) 55%, transparent);
+}
+
+.article-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.article-table tbody tr {
+	transition: background 180ms var(--ease);
+}
+
+.article-table tbody tr:hover td {
+	background: var(--clay-tint);
+}
+
+/* Small print / keyboard hints */
+.article-prose small {
+	font-size: 0.8em;
+	color: var(--ink-muted);
+}
+
+.article-prose kbd {
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	font-size: 0.78em;
+	background: var(--surface);
+	border: 1px solid var(--hairline);
+	border-bottom-width: 2px;
+	border-radius: 6px;
+	padding: 0.1em 0.45em;
+}
+
+@media print {
+	.article-prose {
+		font-size: 11pt;
+		color: #000;
+	}
+	.article-code,
+	.article-table {
+		box-shadow: none;
+	}
+	.article-code__copy,
+	.article-anchor {
+		display: none;
+	}
 }
 
 .field {

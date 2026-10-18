@@ -27,8 +27,10 @@ const ARCHIVE_SIZE = 100;
  * animated search box, category pills and staggered card grid on top.
  * No mock data: everything rendered is a published article.
  */
-export default async function BlogArchivePage() {
+export default async function BlogArchivePage({ searchParams }) {
 	const hasSupabase = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+	// Deep links from article pages: /blog?category=… and /blog?q=…
+	const { category = "", q = "" } = (await searchParams) || {};
 
 	// Only query Supabase when configured — without credentials the
 	// placeholder project would add a multi-second timeout to every
@@ -39,7 +41,7 @@ export default async function BlogArchivePage() {
 
 	return (
 		<div className="flex-1">
-			<BlogGrid articles={articles} />
+			<BlogGrid articles={articles} initialCategory={category} initialQuery={q} />
 		</div>
 	);
 }

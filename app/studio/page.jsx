@@ -11,8 +11,7 @@ import {
 } from "@/lib/markdownImages";
 import { analyzeSeo, generateCleanSlug } from "@/lib/seoEngine";
 import { storyCategories } from "@/lib/categories";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import ArticleBody from "@/components/ArticleBody";
 import {
 	Image as ImageIcon,
 	CheckCircle2,
@@ -931,30 +930,15 @@ function StudioForm() {
 									</div>
 								</div>
 							) : (
-								<div className="p-8 rounded-3xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 prose dark:prose-invert max-w-none min-h-[450px]">
-									<ReactMarkdown
-										remarkPlugins={[remarkGfm]}
-										components={{
-											img: ({ src, alt, title }) => (
-												<figure className="my-8">
-													{/* eslint-disable-next-line @next/next/no-img-element -- Markdown preview accepts arbitrary author-provided URLs. */}
-													<img
-														src={src || ""}
-														alt={alt || "Article image"}
-														className="w-full rounded-2xl border border-slate-200 dark:border-slate-800"
-														loading="lazy"
-													/>
-													{(title || alt) && (
-														<figcaption className="mt-2 text-center text-xs text-slate-500">
-															{title || alt}
-														</figcaption>
-													)}
-												</figure>
-											),
-										}}
-									>
-										{content}
-									</ReactMarkdown>
+								<div className="p-6 sm:p-8 rounded-3xl bg-(--surface) border border-(--hairline) min-h-[450px]">
+									<p className="mb-6 flex items-center justify-between gap-3 border-b border-(--hairline) pb-4 text-[11px] font-black tracking-[0.13em] text-(--ink-faint) uppercase">
+										<span>Reader preview</span>
+										<span className="font-semibold normal-case tracking-normal">
+											Exactly how this will look once published
+										</span>
+									</p>
+									{/* Same renderer as /blog/[slug] — WYSIWYG by construction. */}
+									<ArticleBody content={content} />
 								</div>
 							)}
 						</div>

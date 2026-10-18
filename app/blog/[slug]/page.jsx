@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { getArticleBySlug, SITE_URL } from "@/lib/articles";
+import { getArticleBySlug, getRelatedArticles, SITE_URL } from "@/lib/articles";
+import { fallbackArticles } from "@/lib/seedData";
 import { sanitizeCmsField, detectLanguage, cleanExcerpt, cleanBio } from "@/lib/seoUtils";
 import ArticleContent from "./ArticleContent";
 
@@ -26,9 +27,26 @@ function cleanTitleField(raw){
   return sanitizeCmsField(String(raw).replace(/\s*Slug:.*$/i,'').trim());
 }
 
+/**
+ * Article lookup for this page. The /blog archive already falls back to
+ * the seed stories when no Supabase project is configured (fresh clones,
+ * offline demos); the article page now does the same so those stories
+ * actually open instead of 404ing. With Supabase configured the seed
+ * fallback is never consulted.
+ */
+async function resolveArticle(slug) {
+  const article = await getArticleBySlug(slug);
+  if (article) return article;
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL) return null;
+  const decoded = decodeURIComponent(slug || "").normalize("NFC");
+  return (
+    fallbackArticles.find((a) => String(a.slug || "").normalize("NFC") === decoded) || null
+  );
+}
+
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const article = await getArticleBySlug(slug);
+  const article = await resolveArticle(slug);
 
   if (!article) {
     return {
@@ -84,7 +102,7 @@ export async function generateMetadata({ params }) {
 
 export default async function ArticlePage({ params }) {
   const { slug } = await params;
-  const article = await getArticleBySlug(slug);
+  const article = await resolveArticle(slug);
 
   if (!article) {
     notFound();
@@ -191,12 +209,19 @@ export default async function ArticlePage({ params }) {
     "sameAs": authorSameAs.length ? authorSameAs : undefined
   };
 
+  // "Keep reading" rail — same category first, then latest stories
+  // (seed stories when running without Supabase, like the archive).
+  let relatedArticles = await getRelatedArticles(article, 3);
+  if (!relatedArticles.length && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    relatedArticles = fallbackArticles.filter((a) => a.slug !== article.slug).slice(0, 3);
+  }
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }} />
-      <ArticleContent serverArticle={article} slug={slug} />
+      <ArticleContent serverArticle={article} slug={slug} relatedArticles={relatedArticles} />
     </>
   );
 }

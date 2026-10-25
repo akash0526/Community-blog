@@ -91,6 +91,10 @@ The implementation was re-audited file-by-file before merge. One serious, two mo
 8. **(Minor, SQL) Trigger missed the new fields:** filling only `tested_method`/`sources` (the exact upgrade advised for batch posts) wouldn't bump `dateModified`. Added to the trigger (jsonb compared as text); `seo_title` intentionally excluded.
 9. **(Minor) Analyser double-penalty:** "Headline Unfurl Length" scored the raw H1 even when a good SEO title existed. Now measures the effective title.
 
+### Post-merge hotfix (after PR #9 merged)
+
+Vercel's build (with real Supabase, so article pages actually prerender) caught one more first-pass mistake the local checks structurally could not: in `app/blog/[slug]/ArticleContent.jsx`, parallel same-file edits had overwritten each other, leaving identifiers *used but never defined* (`authorProfileHref` — also written `href={{...}}` — `testedMethod`, `sources`, `reviewerName`, `normalizeCategory`, `isAffiliateHref`) plus the original import block. Any article prerender threw `ReferenceError`, blocking deploys (the live deployment was unaffected). Fixed by restoring the imports/helper/definitions and the affiliate/reviewed-by blocks; guarded by `tests/articleContent.test.js`, which server-renders the component and reproduces the original error on the broken file, and by a clean repo-wide ESLint `no-undef` scan.
+
 ## Verified before handoff
 
 - `npm test` — 60/60 pass (15 new playbook tests, incl. regression tests for the corrections above).

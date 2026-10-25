@@ -6,10 +6,25 @@ import remarkGfm from "remark-gfm";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Share2, Bookmark } from "lucide-react";
-import DiscussionThread from "@/components/DiscussionThread";
-import { sanitizeCmsField, detectLanguage, cleanExcerpt, cleanBio } from "@/lib/seoUtils";
+import dynamic from "next/dynamic";
+import { sanitizeCmsField, detectLanguage, cleanExcerpt, cleanBio, authorSlugFor, parseSources } from "@/lib/seoUtils";
+import { normalizeCategory } from "@/lib/categories";
 import { imageKitDeliveryUrl } from "@/lib/imagekitUrl";
 import { IconCheck } from "@/components/Icon";
+
+// Playbook §5.6: comments are below the fold on every post — keep their JS
+// out of the critical article bundle (INP/bundle weight on slow Nepali 4G).
+const DiscussionThread = dynamic(() => import("@/components/DiscussionThread"), {
+  ssr: false,
+  loading: () => <div className="text-sm text-slate-500 py-6">Loading discussion…</div>,
+});
+
+// Affiliate links must carry rel="sponsored" (playbook §12.2). We can't know
+// every program, so: explicit markers authors can use today — URLs with
+// ref=/aff/tag= parameters or a "#aff" fragment get sponsored automatically.
+function isAffiliateHref(href = "") {
+  return /[?&#](ref|aff|affiliate|tag|partner)=/i.test(href) || /#aff$/i.test(href);
+}
 
 function cleanTitle(title=""){
   return sanitizeCmsField(String(title).replace(/\s*Slug:.*$/i,'').trim());
@@ -122,10 +137,20 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
   const authorAvatar = getAvatar(author, article.id);
   const published = formatDate(article.published_at || article.created_at);
   const updated = article.updated_at && article.updated_at !== article.created_at ? formatDate(article.updated_at) : null;
-  const category = article.category || "Stories";
-  const isFinance = ["Business & Finance","Finance","Money"].includes(category);
+  const category = categoryName || article.category || "Guides";
+  const canonicalCategory = normalizeCategory(article.category, `${article.title || ""} ${article.target_keyword || ""}`);
+  const isFinance = canonicalCategory === "Payments & Finance";
   const isHealth = (category||"").toLowerCase().includes("health");
   const isLegal = (category||"").toLowerCase().includes("legal");
+  const authorSlug = authorSlugFor(author);
+  const authorProfileHref = `/authors/${encodeURIComponent(authorSlug)}`;
+  // Optional E-E-A-T fields (Supabase columns added by the SEO-playbook
+  // migration; everything degrades gracefully until they are filled in).
+  const testedMethod = String(article.tested_method || "").trim();
+  const sources = parseSources(article.sources);
+  const hasAffiliate = Boolean(article.has_affiliate_links);
+  const reviewerName = String(article.reviewer_name || "").trim();
+  const reviewerUrl = String(article.reviewer_url || "").trim();
 
   const markdownComponents = {
     h1: ({children}) => <h1 className="text-[28px] sm:text-[36px] font-black mt-12 mb-5 leading-tight text-slate-900 dark:text-white">{children}</h1>,
@@ -197,7 +222,7 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
           <Image src={authorAvatar} alt={authorName} width={56} height={56} className="rounded-full object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center flex-wrap gap-2">
-              <Link href={{authorProfileHref}} className="font-black text-slate-900 dark:text-white hover:text-indigo-600">
+              <Link href={authorProfileHref} className="font-black text-slate-900 dark:text-white hover:text-indigo-600">
                 {authorName}
               </Link>
               <span className="text-[11px] bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded-full font-bold text-slate-700 dark:text-slate-300">Verified author</span>
@@ -208,7 +233,7 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
               {author.website && <a href={author.website} target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline font-bold">Website</a>}
               {author.twitter && <a href={author.twitter} target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline font-bold">X</a>}
               {author.linkedin && <a href={author.linkedin} target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline font-bold">LinkedIn</a>}
-              <Link href={{authorProfileHref}} className="text-slate-600 dark:text-slate-400 underline">Full profile →</Link>
+              <Link href={authorProfileHref} className="text-slate-600 dark:text-slate-400 underline">Full profile →</Link>
             </div>
           </div>
           <div className="flex gap-2 flex-shrink-0">
@@ -221,6 +246,27 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
             </button>
           </div>
         </div>
+
+        {/* Affiliate disclosure (playbook §12.2) — shown when the post's
+            has_affiliate_links flag is set in Supabase. */}
+        {hasAffiliate && (
+          <div className="mb-8 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+            <strong>Disclosure:</strong> Some links in this guide are affiliate links. If you sign up or buy through them, Apex Nepal may earn a commission at no extra cost to you. Commissions never decide our rankings — see <Link href="/editorial" className="underline font-bold">how we test and rank</Link>.
+          </div>
+        )}
+
+        {/* Reviewed-by line for YMYL posts (playbook §8) */}
+        {reviewerName && (
+          <div className="mb-8 text-xs text-slate-600 dark:text-slate-400">
+            Reviewed by{" "}
+            {reviewerUrl ? (
+              <a href={reviewerUrl} target="_blank" rel="noopener" className="font-bold underline text-indigo-600 dark:text-indigo-400">{reviewerName}</a>
+            ) : (
+              <strong>{reviewerName}</strong>
+            )}
+            {updated ? ` • Last reviewed ${updated}` : ""}
+          </div>
+        )}
 
         {/* YMYL disclaimer */}
         {(isFinance || isHealth || isLegal) && (
@@ -324,7 +370,7 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
               <div className="font-black">{authorName}</div>
               <div className="text-xs text-slate-600 dark:text-slate-400">{authorRole}</div>
             </div>
-            <Link href={{authorProfileHref}} className="ml-auto text-xs font-bold text-indigo-600 dark:text-indigo-400">View profile →</Link>
+            <Link href={authorProfileHref} className="ml-auto text-xs font-bold text-indigo-600 dark:text-indigo-400">View profile →</Link>
           </div>
           {authorBio && <p className="text-sm text-slate-600 dark:text-slate-400 mt-3">{authorBio}</p>}
         </div>

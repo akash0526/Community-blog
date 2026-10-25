@@ -153,7 +153,11 @@ BEGIN
     location = 'Nepal',
     linkedin = CASE WHEN linkedin ~ '^https?://(www\.)?linkedin\.com/?$' THEN NULL ELSE linkedin END,
     bio = CASE
-      WHEN bio IS NULL OR bio = '' OR bio ILIKE '%Doha%' OR bio ILIKE '%Qatar expat%'
+      -- Narrow match on the known boilerplates only: '%Doha%' alone would
+      -- also wipe a legitimate bio that mentions testing from Doha.
+      WHEN bio IS NULL OR bio = ''
+        OR bio ILIKE '%based in Doha%' OR bio ILIKE 'Full-stack developer in Doha%'
+        OR bio ILIKE '%Qatar expat guides%' OR bio ILIKE '%Qatar expat life%'
       THEN 'Founder and lead editor of Apex Nepal. Full-stack developer (Next.js, Supabase) from Nepal. I personally test remittance services, payment wallets, hosting and AI tools from Nepali networks (NTC/Ncell) and publish the receipts, fees and failures. TODO(owner): add proof numbers here, e.g. "received freelance income via Payoneer since 2023", plus your city.'
       ELSE bio END,
     expertise = COALESCE(expertise, ARRAY['Remittance & payments','Freelancing','AI tools','Next.js','Supabase'])
@@ -292,11 +296,17 @@ WHERE seo_title IS NULL AND title ILIKE 'eSewa vs Khalti for Freelancers%';
 CREATE OR REPLACE FUNCTION public.set_articles_updated_at()
 RETURNS trigger AS $$
 BEGIN
+  -- Content-bearing columns only. tested_method/sources count (filling
+  -- them IS the playbook's post upgrade, so dateModified should move);
+  -- seo_title deliberately does NOT (a title-tag tweak is not a content
+  -- update). sources is compared as text (jsonb has no record-compare).
   IF (NEW.title, NEW.content, NEW.meta_description, NEW.category,
-      NEW.image_url, NEW.slug, NEW.status, NEW.target_keyword)
+      NEW.image_url, NEW.slug, NEW.status, NEW.target_keyword,
+      NEW.tested_method, NEW.sources::text)
      IS DISTINCT FROM
      (OLD.title, OLD.content, OLD.meta_description, OLD.category,
-      OLD.image_url, OLD.slug, OLD.status, OLD.target_keyword)
+      OLD.image_url, OLD.slug, OLD.status, OLD.target_keyword,
+      OLD.tested_method, OLD.sources::text)
   THEN
     NEW.updated_at = timezone('utc'::text, now());
   ELSE

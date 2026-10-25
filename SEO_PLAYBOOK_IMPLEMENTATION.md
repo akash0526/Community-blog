@@ -3,7 +3,7 @@
 What was done with `Apex_Nepal_SEO_Playbook.md`, split into:
 **A. Fixed in code** (this branch) · **B. Fixed by Supabase SQL** (file ready for you to run) · **C. Needs you** (things no code can invent) · **D. Extra bugs found while auditing**.
 
-Deploy order does not matter: the code works before *and* after the SQL runs (defensive column handling everywhere). But for full effect: merge/deploy the branch **and** run `supabase_migrations/20261025_seo_playbook.sql`.
+Deploy order does not matter: the code works before *and* after the SQL runs (defensive column handling everywhere — see the self-review corrections at the end; one route briefly broke this rule and was fixed). But for full effect: merge/deploy the branch **and** run `supabase_migrations/20261025_seo_playbook.sql`.
 
 ---
 
@@ -25,7 +25,7 @@ Deploy order does not matter: the code works before *and* after the SQL runs (de
 | §4 meta keywords | Removed site-wide. | `app/layout.tsx` |
 | §4 homepage stats "0+" | `CountUp` now server-renders the real number and only animates on the client. | `components/animations/CountUp.tsx` |
 | §4 generic H1 | Homepage H1 is now "Tested Tools & Guides for Freelancers, Students & Small Businesses in Nepal" (same visual style). | `components/Hero.tsx` |
-| §5.6 IndexNow/Bing | Key file `public/783775…84f.txt` + `lib/indexnow.js`; Studio pings IndexNow after a successful publish. Bing verification is env-driven: set `BING_SITE_VERIFICATION` in Vercel (see C5). | `lib/indexnow.js`, `app/studio/page.jsx`, `app/layout.tsx` |
+| §5.6 IndexNow/Bing | Key file `public/783775…84f.txt`; Studio pings our own `POST /api/indexnow` after a successful publish and the server submits to IndexNow (the API has no CORS — a direct browser call silently fails). Bing verification is env-driven: set `BING_SITE_VERIFICATION` in Vercel (see C5). | `lib/indexnow.js`, `app/api/indexnow/route.ts`, `app/studio/page.jsx`, `app/layout.tsx` |
 | §5.6 JS weight | Comments (`DiscussionThread`) lazy-loaded out of the article bundle. | `app/blog/[slug]/ArticleContent.jsx` |
 | §6.3/§8 E-E-A-T rendering | "How I tested this" box (from `tested_method`), **Sources** list (from `sources`), "Reviewed by" line (from `reviewer_*`) render automatically when filled. YMYL disclaimer now triggers on the canonical category (the old check used retired names and would have silently stopped firing after the SQL rename). | `app/blog/[slug]/ArticleContent.jsx` |
 | §12.2 affiliates | External links with affiliate parameters (`ref=`, `aff=`, `tag=`, `#aff`) automatically get `rel="… sponsored"`; `has_affiliate_links` shows the disclosure box. Privacy page now has the AdSense/third-party-vendor section required for approval. | `ArticleContent.jsx`, `app/privacy/page.tsx` |
@@ -77,9 +77,23 @@ Quick reference queries you'll reuse monthly (also in the file): titles missing 
 4. **YMYL disclaimer would have died** after the category rename (checked retired names like `Business & Finance`).
 5. **Sitemap listed zero-post/guest author pages** (thin "No published stories" URLs).
 
+## Corrections from self-review (second pass, 25 Oct 2026)
+
+The implementation was re-audited file-by-file before merge. One serious, two moderate and six minor mistakes were found in the first pass and fixed (same branch/PR):
+
+1. **(Serious) Founder page could 404.** `generateMetadata` on `/authors/[slug]` called `notFound()` before the page's hardcoded founder fallback could render — so the 301 target `/authors/akash-adhikari` could 404 in the window before the Supabase merge gives a row that exact slug. Fixed: one shared `resolveAuthor()` for metadata + page; fallback applies only to the canonical founder slug (previously any slug containing "akash") and renders `noindex`. Verified locally: founder URL → 200 fallback, unknown author → 404.
+2. **(Moderate) Category filter casing.** `storedValuesForCategory()` returned lowercase legacy names, but Postgres `IN` is case-sensitive and rows are stored title-case ("Business & Finance") — pre-migration category queries would silently miss them. Now returns DB-cased values; broad buckets documented as SQL-Step-4-only. Regression test added.
+3. **(Moderate) IndexNow from the browser never worked.** JSON `fetch` to `api.indexnow.org` dies on CORS preflight (hidden by the catch). Now submitted server-side via `POST /api/indexnow` with same-host validation.
+4. **(Minor) Title threshold math.** Brand-suffix cutoff was 55 chars; with " | Apex Nepal" (+13) the true cutoff is 47 (47+13=60). Fixed + boundary test.
+5. **(Minor) Hub pages had no ISR.** `PillarPage` became async (cluster posts), but the 5 hub pages exported no `revalidate`, so the list would freeze at build time. Added `revalidate = 3600`.
+6. **(Minor) Authors index ignored `username`** when building profile links (linked the name-derived duplicate URL). Now uses `authorSlugFor()`.
+7. **(Minor, SQL) Over-broad bio wipe:** the merge replaced any bio matching `'%Doha%'`; narrowed to the known boilerplate phrasings so a legitimate "tested from Doha" bio survives.
+8. **(Minor, SQL) Trigger missed the new fields:** filling only `tested_method`/`sources` (the exact upgrade advised for batch posts) wouldn't bump `dateModified`. Added to the trigger (jsonb compared as text); `seo_title` intentionally excluded.
+9. **(Minor) Analyser double-penalty:** "Headline Unfurl Length" scored the raw H1 even when a good SEO title existed. Now measures the effective title.
+
 ## Verified before handoff
 
-- `npm test` — 57/57 pass (12 new playbook tests).
-- `npm run build` — passes; `/blog/category/*` ×6 generated.
+- `npm test` — 60/60 pass (15 new playbook tests, incl. regression tests for the corrections above).
+- `npm run build` — passes; `/blog/category/*` ×6 generated; hub pages on 1h ISR.
 - `npm run lint` — no new errors (1 pre-existing error on `main` remains untouched).
-- Runtime checks (local, no Supabase configured): `/blog/<missing>` → **404**, `/authors/akash` → **308** to canonical, `/llms.txt` shows Nepal + real hubs, sitemap contains category pages, homepage HTML contains real stat numbers (no `0+`).
+- Runtime checks (local, no Supabase configured): `/blog/<missing>` → **404**, `/authors/akash` → **308** → founder page **200** (noindex fallback), unknown author → **404**, `POST /api/indexnow` → 400 foreign host / 202 own host, `/llms.txt` shows Nepal + real hubs, sitemap contains category pages, homepage HTML contains real stat numbers (no `0+`).

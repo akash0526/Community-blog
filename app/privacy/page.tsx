@@ -69,7 +69,7 @@ export default function PrivacyPage() {
             said "Doha, Qatar" while the editorial base is Nepal. Confirm the
             correct legal contact city/country and update this line plus
             /terms (governing law) together. See SEO_PLAYBOOK_IMPLEMENTATION.md. */}
-        <p><strong>Contact:</strong> Apex, Nepal — <a href="mailto:legal@apex-nepal.com">legal@apex-nepal.com</a></p>
+        <p><strong>Contact:</strong> Apex Nepal, Nepal — <a href="mailto:legal@apex-nepal.com">legal@apex-nepal.com</a></p>
       </div>
     </div>
   );

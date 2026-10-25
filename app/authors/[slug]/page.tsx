@@ -3,8 +3,26 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { SITE_URL } from "@/lib/articles";
 import { cleanBio, cleanExcerpt } from "@/lib/seoUtils";
+import { FOUNDER } from "@/lib/siteConfig";
 
 export const revalidate = 120;
+
+// Last-resort founder profile, ONLY for the canonical founder slug. This
+// guarantees the 301 target (/authors/akash-adhikari) can never 404 —
+// e.g. in the window before the Supabase author-merge runs, when no row
+// may match by username or exact name-slug yet. It renders noindex
+// (see generateMetadata) until the real profile exists.
+const FOUNDER_FALLBACK = {
+  id: "fallback-akash",
+  full_name: FOUNDER.name,
+  professional_role: FOUNDER.role,
+  bio: "Full-stack developer (Next.js, Supabase) from Nepal. I test remittance rails, hosting, and AI tools from Nepali networks, and build Apex Nepal as an open publishing directory.",
+  avatar_url: "https://avatars.githubusercontent.com/u/148329502?v=4",
+  email: "editor@apex-nepal.com",
+  website: "https://github.com/akash0526",
+  location: "Nepal",
+  expertise: ["Remittance tech", "Nepal tools", "Next.js", "Supabase"],
+};
 
 async function findAuthorBySlug(slug: string){
   // 1) Canonical byline URL: exact `username` match (playbook §5.2 — one
@@ -35,6 +53,16 @@ async function findAuthorBySlug(slug: string){
   return null;
 }
 
+/** Single resolver shared by generateMetadata and the page, so the two
+ *  can never disagree (metadata previously 404ed before the page's
+ *  founder fallback could render). */
+async function resolveAuthor(slug: string){
+  const author = await findAuthorBySlug(slug);
+  if(author) return { profile: author, isFallback: false };
+  if(slug.toLowerCase() === FOUNDER.slug) return { profile: FOUNDER_FALLBACK, isFallback: true };
+  return { profile: null, isFallback: false };
+}
+
 async function getArticlesByAuthor(authorId: string){
   try{
     const { data } = await supabase
@@ -49,15 +77,15 @@ async function getArticlesByAuthor(authorId: string){
 
 export async function generateMetadata({ params }: { params: Promise<{slug:string}>}){
   const { slug } = await params;
-  const author = await findAuthorBySlug(slug);
+  const { profile: author, isFallback } = await resolveAuthor(slug);
   if(!author){
     // Real 404 (same soft-404 fix as /blog/[slug]).
     notFound();
   }
   const name = author.full_name;
-  // Zero-post bylines ("No published stories") stay reachable but out of
-  // the index (playbook §4) until they have articles.
-  const articles = author.id ? await getArticlesByAuthor(author.id) : [];
+  // Zero-post bylines ("No published stories") and the temporary founder
+  // fallback stay reachable but out of the index (playbook §4).
+  const articles = !isFallback && author.id ? await getArticlesByAuthor(author.id) : [];
   return {
     title: { absolute: `${name} – Author at Apex Nepal` },
     description: cleanBio(author.bio) || `${name} – ${author.professional_role||'Writer'} at Apex Nepal. Read all articles.`,
@@ -75,23 +103,7 @@ export async function generateMetadata({ params }: { params: Promise<{slug:strin
 
 export default async function AuthorPage({ params }: { params: Promise<{slug:string}>}){
   const { slug } = await params;
-  const author = await findAuthorBySlug(slug);
-
-  // fallback: hardcode Akash
-  let profile = author;
-  if(!profile && slug.includes("akash")){
-    profile = {
-      id: "fallback-akash",
-      full_name: "Akash Adhikari",
-      professional_role: "Founder & Lead Editor",
-      bio: "Full-stack developer (Next.js, Supabase) from Nepal. I test remittance rails, hosting, and AI tools from Nepali networks, and build Apex as an open publishing directory.",
-      avatar_url: "https://avatars.githubusercontent.com/u/148329502?v=4",
-      email: "editor@apex-nepal.com",
-      website: "https://github.com/akash0526",
-      location: "Nepal",
-      expertise: ["Remittance tech", "Nepal tools", "Next.js", "Supabase"]
-    }
-  }
+  const { profile } = await resolveAuthor(slug);
 
   if(!profile) notFound();
 
@@ -125,7 +137,7 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
       website,
       twitter,
       linkedin,
-      slug.includes("akash") ? "https://github.com/akash0526" : null,
+      slug.toLowerCase() === FOUNDER.slug ? "https://github.com/akash0526" : null,
     ].filter(Boolean),
   };
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { authorSlugFor } from "@/lib/seoUtils";
 
 export const metadata = {
   title: { absolute: "Authors – Apex Nepal" },
@@ -25,8 +26,10 @@ export default async function AuthorsIndex(){
       <h1 className="text-4xl font-black mb-3">Authors</h1>
       <p className="text-slate-600 dark:text-slate-300 mb-10 max-w-2xl">Every Apex byline links to a real human with credentials, bio, and social proof. No AI farms. No robot avatars.</p>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {authors.map((a: { slug?: string; full_name?: string; avatar_url?: string; professional_role?: string; bio?: string })=>{
-          const slug = a.slug || (a.full_name||'').toLowerCase().replace(/\s+/g,'-');
+        {authors.map((a: { slug?: string; username?: string; full_name?: string; avatar_url?: string; professional_role?: string; bio?: string })=>{
+          // Canonical byline URL: username column wins (was name-only,
+          // which linked to the pre-merge duplicate URL for the founder).
+          const slug = a.slug || authorSlugFor(a);
           const avatar = a.avatar_url?.includes('dicebear') ? `https://ui-avatars.com/api/?name=${encodeURIComponent(a.full_name || "Apex")}&background=A8471F&color=fff` : a.avatar_url;
           return (
             <Link key={slug} href={`/authors/${slug}`} className="border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:shadow-md transition bg-white dark:bg-slate-900">

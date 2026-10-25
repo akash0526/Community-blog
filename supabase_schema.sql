@@ -83,10 +83,12 @@ BEGIN
   -- Only CONTENT edits bump updated_at. Counter writes (pageviews/claps)
   -- must not fake a fresh dateModified (see 20261025_seo_playbook.sql Step 6).
   IF (NEW.title, NEW.content, NEW.meta_description, NEW.category,
-      NEW.image_url, NEW.slug, NEW.status, NEW.target_keyword)
+      NEW.image_url, NEW.slug, NEW.status, NEW.target_keyword,
+      NEW.tested_method, NEW.sources::text)
      IS DISTINCT FROM
      (OLD.title, OLD.content, OLD.meta_description, OLD.category,
-      OLD.image_url, OLD.slug, OLD.status, OLD.target_keyword)
+      OLD.image_url, OLD.slug, OLD.status, OLD.target_keyword,
+      OLD.tested_method, OLD.sources::text)
   THEN
     NEW.updated_at = timezone('utc'::text, now());
   ELSE

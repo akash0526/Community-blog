@@ -1,6 +1,10 @@
 import PillarPage from "@/components/PillarPage";
 import { SITE_URL } from "@/lib/articles";
 
+// ISR: PillarPage now lists cluster posts from Supabase — without this
+// the list would freeze at build time until the next deploy.
+export const revalidate = 3600;
+
 export const metadata = {
 	title: "Digital Payments in Nepal for Online Earners: Payoneer, Wise, eSewa & Banks",
 	description: "A fee-aware Nepal guide for receiving USD, withdrawing to Nepali banks, and using local wallets safely.",

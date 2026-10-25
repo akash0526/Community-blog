@@ -5,6 +5,7 @@ import {
 	categoryFromSlug,
 	categoryPagePath,
 	hubForCategory,
+	storedValuesForCategory,
 } from "../lib/categories.js";
 import {
 	articleMetadataTitle,
@@ -39,6 +40,16 @@ describe("categories (playbook §5.4)", () => {
 		expect(categoryPagePath("Unknown Bucket")).toBe("/blog");
 	});
 
+	it("returns DB-cased stored values for Supabase IN queries (case-sensitive!)", () => {
+		const values = storedValuesForCategory("Payments & Finance");
+		expect(values).toContain("Payments & Finance");
+		expect(values).toContain("Business & Finance"); // exact stored casing
+		expect(values).not.toContain("business & finance");
+		// Broad buckets route by title, never by category alone.
+		expect(values).not.toContain("Tool Reviews & Comparisons");
+		expect(storedValuesForCategory("AI Tools & Automation")).toContain("Tech & AI");
+	});
+
 	it("resolves slugs and hubs", () => {
 		expect(categoryFromSlug("ai-tools")?.value).toBe("AI Tools & Automation");
 		expect(categoryFromSlug("nope")).toBeNull();
@@ -69,6 +80,15 @@ describe("articleMetadataTitle (playbook §5.3/§6.1)", () => {
 
 	it("returns short titles plainly so the template adds the brand", () => {
 		expect(articleMetadataTitle({ title: "Short title" })).toBe("Short title");
+	});
+
+	it("accounts for the ' | Apex Nepal' suffix (47+13=60 boundary)", () => {
+		const fits = "a".repeat(47); // 47 + 13 = 60 → templated is fine
+		const overflows = "a".repeat(50); // 50 + 13 = 63 → must drop suffix
+		expect(articleMetadataTitle({ title: fits })).toBe(fits);
+		expect(articleMetadataTitle({ title: overflows })).toEqual({
+			absolute: overflows,
+		});
 	});
 });
 
@@ -115,6 +135,14 @@ describe("analyzeSeo playbook checks (§14)", () => {
 			seoTitle: "eSewa vs Khalti for Freelancers: Limits & Fees 2026",
 		}).checklist.find((c) => c.metric === "SEO Title Length (≤60)");
 		expect(withSeo.passed).toBe(true);
+	});
+
+	it("does not double-penalize a long H1 that has a good SEO title", () => {
+		const item = analyzeSeo({
+			...base, // 81-char H1
+			seoTitle: "eSewa vs Khalti for Freelancers: Limits & Fees 2026",
+		}).checklist.find((c) => c.metric === "Headline Unfurl Length");
+		expect(item.passed).toBe(true);
 	});
 
 	it("counts in-text internal links, tables and official sources", () => {

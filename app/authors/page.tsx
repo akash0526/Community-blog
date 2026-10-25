@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { authorSlugFor } from "@/lib/seoUtils";
 
 export const metadata = {
-  title: "Authors – Apex",
-  description: "Meet the verified human authors publishing on Apex.",
+  title: { absolute: "Authors – Apex Nepal" },
+  description: "Meet the verified human authors publishing on Apex Nepal.",
+  alternates: { canonical: "/authors" },
 };
 
 export const revalidate = 300;
@@ -16,7 +18,7 @@ export default async function AuthorsIndex(){
   }catch{}
   if(authors.length===0){
     authors = [
-      { full_name:"Akash Adhikari", professional_role:"Founder & Lead Editor", bio:"Full-stack developer in Doha. Remittance tech & Qatar expat guides.", avatar_url:"https://avatars.githubusercontent.com/u/148329502?v=4", slug:"akash-adhikari" }
+      { full_name:"Akash Adhikari", professional_role:"Founder & Lead Editor", bio:"Full-stack developer (Next.js, Supabase) from Nepal. I test remittance rails, hosting, and AI tools from Nepali networks, and build Apex Nepal as an open publishing directory.", avatar_url:"https://avatars.githubusercontent.com/u/148329502?v=4", slug:"akash-adhikari" }
     ];
   }
   return (
@@ -24,8 +26,10 @@ export default async function AuthorsIndex(){
       <h1 className="text-4xl font-black mb-3">Authors</h1>
       <p className="text-slate-600 dark:text-slate-300 mb-10 max-w-2xl">Every Apex byline links to a real human with credentials, bio, and social proof. No AI farms. No robot avatars.</p>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {authors.map((a: { slug?: string; full_name?: string; avatar_url?: string; professional_role?: string; bio?: string })=>{
-          const slug = a.slug || (a.full_name||'').toLowerCase().replace(/\s+/g,'-');
+        {authors.map((a: { slug?: string; username?: string; full_name?: string; avatar_url?: string; professional_role?: string; bio?: string })=>{
+          // Canonical byline URL: username column wins (was name-only,
+          // which linked to the pre-merge duplicate URL for the founder).
+          const slug = a.slug || authorSlugFor(a);
           const avatar = a.avatar_url?.includes('dicebear') ? `https://ui-avatars.com/api/?name=${encodeURIComponent(a.full_name || "Apex")}&background=A8471F&color=fff` : a.avatar_url;
           return (
             <Link key={slug} href={`/authors/${slug}`} className="border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:shadow-md transition bg-white dark:bg-slate-900">

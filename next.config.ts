@@ -45,6 +45,25 @@ const nextConfig: NextConfig = {
       )]: "./lib/next-polyfill-stub.js",
     },
   },
+  // Playbook §5.2: one canonical byline. The founder previously existed at
+  // three URLs (/authors/akash, /authors/akash-adhikari,
+  // /authors/akash-d3682a09). Permanent-redirect the duplicates — pair this
+  // with the author-merge step in supabase_migrations/20261025_seo_playbook.sql
+  // which reassigns every article to the single profile.
+  async redirects() {
+    return [
+      {
+        source: "/authors/akash",
+        destination: "/authors/akash-adhikari",
+        permanent: true,
+      },
+      {
+        source: "/authors/akash-d3682a09",
+        destination: "/authors/akash-adhikari",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

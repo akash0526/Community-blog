@@ -894,7 +894,7 @@ export default function AuthorDashboard() {
 																				handleProfileChange("location", e.target.value)
 																			}
 																			className="input font-bold text-sm py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 dark:border-slate-700"
-																			placeholder="Doha, Qatar"
+																			placeholder="Butwal, Nepal"
 																		/>
 																	</div>
 

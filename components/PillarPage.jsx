@@ -1,9 +1,30 @@
 import Link from "next/link";
 import { getCategory, resourceHref } from "@/lib/resources";
+import { getArticlesForCategory } from "@/lib/articles";
+import { canonicalCategories } from "@/lib/categories";
+import { cleanExcerpt, sanitizeCmsField } from "@/lib/seoUtils";
 import { IconArrowRight, IconArrowUpRight } from "@/components/Icon";
 
-export default function PillarPage({ categoryId, eyebrow, title, description, steps, faqs }) {
+// Resource-directory id -> canonical article category (lib/categories.js).
+const ARTICLE_CATEGORY_BY_RESOURCE_ID = {
+	payments: "Payments & Finance",
+	freelancing: "Freelancing & Remote Work",
+	"ai-tools": "AI Tools & Automation",
+	hosting: "Web Hosting & Domains",
+	business: "Small Business Workflows",
+	students: "Student Resources",
+};
+
+// Hub-and-spoke (playbook §6.4): a pillar page must link to every post in
+// its topic, not only to directory tools. Posts are fetched server-side.
+export default async function PillarPage({ categoryId, eyebrow, title, description, steps, faqs }) {
 	const category = getCategory(categoryId);
+	const articleCategoryValue = ARTICLE_CATEGORY_BY_RESOURCE_ID[categoryId];
+	const canonical = canonicalCategories.find((c) => c.value === articleCategoryValue);
+	const clusterPosts =
+		articleCategoryValue && process.env.NEXT_PUBLIC_SUPABASE_URL
+			? await getArticlesForCategory(articleCategoryValue, 24)
+			: [];
 
 	return (
 		<div className="flex-1">
@@ -90,6 +111,36 @@ export default function PillarPage({ categoryId, eyebrow, title, description, st
 								);
 							})}
 						</div>
+					</div>
+				</section>
+			)}
+
+			{clusterPosts.length > 0 && (
+				<section className="section" style={{ paddingTop: 0 }}>
+					<div className="wrap" style={{ maxWidth: "760px" }}>
+						<div className="section-head--split">
+							<h2>Guides in this topic</h2>
+							{canonical && (
+								<Link href={`/blog/category/${canonical.slug}`} className="link link--arrow">
+									All {canonical.value} guides
+									<IconArrowRight className="icon icon--15" />
+								</Link>
+							)}
+						</div>
+						<ul className="mt-6 space-y-4">
+							{clusterPosts.map((post) => (
+								<li key={post.slug}>
+									<Link href={`/blog/${post.slug}`} className="link" style={{ fontWeight: 600 }}>
+										{sanitizeCmsField(String(post.title || "").replace(/\s*Slug:.*$/i, "").trim())}
+									</Link>
+									{post.meta_description && (
+										<p className="text-[var(--ink-muted)]" style={{ marginTop: "0.25rem" }}>
+											{cleanExcerpt(post.meta_description)}
+										</p>
+									)}
+								</li>
+							))}
+						</ul>
 					</div>
 				</section>
 			)}

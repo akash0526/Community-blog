@@ -3,25 +3,64 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { SITE_URL } from "@/lib/articles";
 import { cleanBio, cleanExcerpt } from "@/lib/seoUtils";
+import { FOUNDER } from "@/lib/siteConfig";
 
 export const revalidate = 120;
 
+// Last-resort founder profile, ONLY for the canonical founder slug. This
+// guarantees the 301 target (/authors/akash-adhikari) can never 404 —
+// e.g. in the window before the Supabase author-merge runs, when no row
+// may match by username or exact name-slug yet. It renders noindex
+// (see generateMetadata) until the real profile exists.
+const FOUNDER_FALLBACK = {
+  id: "fallback-akash",
+  full_name: FOUNDER.name,
+  professional_role: FOUNDER.role,
+  bio: "Full-stack developer (Next.js, Supabase) from Nepal. I test remittance rails, hosting, and AI tools from Nepali networks, and build Apex Nepal as an open publishing directory.",
+  avatar_url: "https://avatars.githubusercontent.com/u/148329502?v=4",
+  email: "editor@apex-nepal.com",
+  website: "https://github.com/akash0526",
+  location: "Nepal",
+  expertise: ["Remittance tech", "Nepal tools", "Next.js", "Supabase"],
+};
+
 async function findAuthorBySlug(slug: string){
-  const nameGuess = slug.replace(/-/g, ' ');
-  // Try exact full_name ilike
+  // 1) Canonical byline URL: exact `username` match (playbook §5.2 — one
+  //    author, one URL). Tolerates the column not existing yet.
   try{
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("username", slug.toLowerCase())
+      .maybeSingle();
+    if(!error && data) return data;
+  }catch{}
+  // 2) Name-derived slug, EXACT match only. The old code fell back to
+  //    `data[0]` of a first-name ilike search, which could render the
+  //    WRONG person at a byline URL. No exact match => 404.
+  try{
+    const nameGuess = slug.replace(/-/g, ' ');
     const { data } = await supabase
       .from("profiles")
       .select("*")
       .ilike("full_name", `%${nameGuess.split(' ')[0]}%`)
       .limit(20);
     if(data && data.length){
-      // find best match
       const exact = data.find(p => (p.full_name||'').toLowerCase().replace(/\s+/g,'-') === slug.toLowerCase());
-      return exact || data[0];
+      if(exact) return exact;
     }
   }catch{}
   return null;
+}
+
+/** Single resolver shared by generateMetadata and the page, so the two
+ *  can never disagree (metadata previously 404ed before the page's
+ *  founder fallback could render). */
+async function resolveAuthor(slug: string){
+  const author = await findAuthorBySlug(slug);
+  if(author) return { profile: author, isFallback: false };
+  if(slug.toLowerCase() === FOUNDER.slug) return { profile: FOUNDER_FALLBACK, isFallback: true };
+  return { profile: null, isFallback: false };
 }
 
 async function getArticlesByAuthor(authorId: string){
@@ -38,17 +77,22 @@ async function getArticlesByAuthor(authorId: string){
 
 export async function generateMetadata({ params }: { params: Promise<{slug:string}>}){
   const { slug } = await params;
-  const author = await findAuthorBySlug(slug);
+  const { profile: author, isFallback } = await resolveAuthor(slug);
   if(!author){
-    return { title: "Author not found | Apex", robots: { index:false } }
+    // Real 404 (same soft-404 fix as /blog/[slug]).
+    notFound();
   }
   const name = author.full_name;
+  // Zero-post bylines ("No published stories") and the temporary founder
+  // fallback stay reachable but out of the index (playbook §4).
+  const articles = !isFallback && author.id ? await getArticlesByAuthor(author.id) : [];
   return {
-    title: `${name} – Author at Apex`,
-    description: cleanBio(author.bio) || `${name} – ${author.professional_role||'Writer'} at Apex. Read all articles.`,
+    title: { absolute: `${name} – Author at Apex Nepal` },
+    description: cleanBio(author.bio) || `${name} – ${author.professional_role||'Writer'} at Apex Nepal. Read all articles.`,
     alternates: { canonical: `/authors/${slug}` },
+    ...(articles.length === 0 ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
-      title: `${name} – Apex`,
+      title: `${name} – Apex Nepal`,
       description: author.bio || "",
       url: `${SITE_URL}/authors/${slug}`,
       type: "profile",
@@ -59,23 +103,7 @@ export async function generateMetadata({ params }: { params: Promise<{slug:strin
 
 export default async function AuthorPage({ params }: { params: Promise<{slug:string}>}){
   const { slug } = await params;
-  const author = await findAuthorBySlug(slug);
-
-  // fallback: hardcode Akash
-  let profile = author;
-  if(!profile && slug.includes("akash")){
-    profile = {
-      id: "fallback-akash",
-      full_name: "Akash Adhikari",
-      professional_role: "Founder & Lead Editor",
-      bio: "Full-stack developer (Next.js, Supabase) from Nepal. I test remittance rails, hosting, and AI tools from Nepali networks, and build Apex as an open publishing directory.",
-      avatar_url: "https://avatars.githubusercontent.com/u/148329502?v=4",
-      email: "editor@apex-nepal.com",
-      website: "https://github.com/akash0526",
-      location: "Nepal",
-      expertise: ["Remittance tech", "Nepal tools", "Next.js", "Supabase"]
-    }
-  }
+  const { profile } = await resolveAuthor(slug);
 
   if(!profile) notFound();
 
@@ -90,6 +118,11 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
   const twitter = isRealUrl(profile.twitter) ? profile.twitter : null;
   const linkedin = isRealUrl(profile.linkedin) ? profile.linkedin : null;
 
+  const knowsAbout = Array.isArray(profile.expertise)
+    ? profile.expertise
+    : profile.expertise
+      ? String(profile.expertise).split(",").map((e: string) => e.trim())
+      : undefined;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -98,12 +131,13 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
     "image": profile.avatar_url,
     "jobTitle": profile.professional_role,
     "description": cleanBio(profile.bio),
-    "worksFor": { "@type": "Organization", "name": "Apex", "url": SITE_URL },
+    "worksFor": { "@type": "Organization", "name": "Apex Nepal", "url": SITE_URL },
+    ...(knowsAbout?.length ? { "knowsAbout": knowsAbout } : {}),
     "sameAs": [
       website,
       twitter,
       linkedin,
-      slug.includes("akash") ? "https://github.com/akash0526" : null,
+      slug.toLowerCase() === FOUNDER.slug ? "https://github.com/akash0526" : null,
     ].filter(Boolean),
   };
 

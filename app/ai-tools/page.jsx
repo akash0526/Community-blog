@@ -1,6 +1,10 @@
 import PillarPage from "@/components/PillarPage";
 import { SITE_URL } from "@/lib/articles";
 
+// ISR: PillarPage now lists cluster posts from Supabase — without this
+// the list would freeze at build time until the next deploy.
+export const revalidate = 3600;
+
 export const metadata = {
 	title: "AI Tools for Nepal: Free Tiers, NPR Value & What to Skip",
 	description: "A Nepal-first guide to AI tools that actually work for students, freelancers, and small businesses.",

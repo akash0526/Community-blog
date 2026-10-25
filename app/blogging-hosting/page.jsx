@@ -1,6 +1,10 @@
 import PillarPage from "@/components/PillarPage";
 import { SITE_URL } from "@/lib/articles";
 
+// ISR: PillarPage now lists cluster posts from Supabase — without this
+// the list would freeze at build time until the next deploy.
+export const revalidate = 3600;
+
 export const metadata = {
 	title: "Blogging & Hosting in Nepal: Domains, Hosting, CDN and Free Options",
 	description: "A Nepal-first blogging and hosting guide with free static hosting, WordPress options, domains, CDN, and NPR cost checks.",

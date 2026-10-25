@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy – Apex",
-  description: "How Apex collects, uses, and protects your data. GDPR/CCPA compliant.",
+  title: { absolute: "Privacy Policy – Apex Nepal" },
+  description: "How Apex Nepal collects, uses, and protects your data. GDPR/CCPA compliant.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -11,9 +11,9 @@ export default function PrivacyPage() {
     <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
       <div className="max-w-3xl mx-auto px-6 py-16 sm:py-20 prose prose-slate dark:prose-invert prose-lg">
         <h1>Privacy Policy</h1>
-        <p className="lead">Last updated: September 26, 2026</p>
+        <p className="lead">Last updated: October 25, 2026</p>
 
-        <p>Apex (“we”, “us”) operates apex-nepal.com. We respect your privacy and comply with GDPR, CCPA, and Qatar PDPL principles.</p>
+        <p>Apex Nepal (“we”, “us”) operates apex-nepal.com. We respect your privacy and comply with GDPR and CCPA principles.</p>
 
         <h2>1. Data we collect</h2>
         <ul>
@@ -59,10 +59,17 @@ export default function PrivacyPage() {
         <h2>9. International transfers</h2>
         <p>Data may be processed in the US / EU with Standard Contractual Clauses.</p>
 
-        <h2>10. Changes</h2>
+        <h2>10. Advertising & third-party ad vendors</h2>
+        <p>We may display ads served by Google AdSense. Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this and other websites. Google&rsquo;s use of advertising cookies enables it and its partners to serve ads based on your visits. You may opt out of personalised advertising at <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a>, opt out of some third-party vendors at <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info/choices</a>, and (in the EEA/UK) manage consent through our cookie banner before any advertising cookie is set. Where ads are not yet enabled on a page, no advertising cookies are set. Affiliate links are disclosed on the page itself; see our <a href="/editorial">editorial policy</a>.</p>
+
+        <h2>11. Changes</h2>
         <p>We will post updates here with a new “last updated” date.</p>
 
-        <p><strong>Contact:</strong> Apex, Doha, Qatar — <a href="mailto:legal@apex-nepal.com">legal@apex-nepal.com</a></p>
+        {/* TODO(owner, playbook §4): legal jurisdiction/address previously
+            said "Doha, Qatar" while the editorial base is Nepal. Confirm the
+            correct legal contact city/country and update this line plus
+            /terms (governing law) together. See SEO_PLAYBOOK_IMPLEMENTATION.md. */}
+        <p><strong>Contact:</strong> Apex Nepal, Nepal — <a href="mailto:legal@apex-nepal.com">legal@apex-nepal.com</a></p>
       </div>
     </div>
   );

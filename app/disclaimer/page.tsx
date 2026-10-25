@@ -23,7 +23,7 @@ export default function DisclaimerPage(){
         <p>Health & Wellness content is educational only, not medical advice, diagnosis, or treatment. Consult a qualified healthcare professional.</p>
 
         <h2>Legal / immigration disclaimer</h2>
-        <p>Visa, immigration, QID, labor-law content is general information, not legal advice. Qatar laws change. Confirm with MOI / official government portals or a licensed attorney.</p>
+        <p>Tax, visa, immigration and foreign-employment content is general information, not legal advice. Rules change — in Nepal and in destination countries. Confirm with the official government portal (for Nepal: IRD, NRB, Department of Foreign Employment) or a licensed professional before acting.</p>
 
         <h2>Affiliate disclosure</h2>
         <p>Some links are affiliate links. If you click and sign up, Apex may earn a commission at no extra cost to you. This helps fund independent testing. Commissions never influence our rankings. Sponsored content is clearly labeled “Sponsored”.</p>

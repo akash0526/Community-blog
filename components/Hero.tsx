@@ -112,19 +112,21 @@ export default function Hero({ resources, guides, categories }: HeroProps) {
 							</span>
 						</motion.div>
 
-						{/* Heading */}
+						{/* Heading — playbook §4: the old H1 ("Build Your Digital
+						    Future") contained no keyword. Same visual treatment,
+						    now it says what the site is and who it is for. */}
 						<div className="space-y-4">
-							<h1 className="font-display text-5xl font-bold leading-tight md:text-7xl">
-								Build Your
+							<h1 className="font-display text-5xl font-bold leading-tight md:text-6xl">
+								Tested Tools &amp; Guides for
 								<span className="gradient-text block">
-									Digital Future
+									Freelancers, Students &amp; Small Businesses in Nepal
 								</span>
 							</h1>
 
 							<p className="text-xl leading-relaxed text-[var(--ink-muted)]">
-								Join Nepal&rsquo;s fastest-growing tech community.
-								Share knowledge, collaborate on projects, and grow
-								together.
+								Payments, AI tools, hosting and online-work guides —
+								every one tested from Nepal, priced in NPR, and
+								corrected in public.
 							</p>
 						</div>
 

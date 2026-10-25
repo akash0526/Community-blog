@@ -10,6 +10,18 @@ import LazyCookieConsent from "@/components/LazyCookieConsent";
 import CookieSettingsButton from "@/components/CookieSettingsButton";
 import SiteEffects from "@/components/SiteEffects";
 import { SITE_URL } from "@/lib/articles";
+import {
+	SITE_NAME,
+	SITE_TAGLINE,
+	SITE_DESCRIPTION,
+	EDITORIAL_BASE,
+	SITE_COUNTRY,
+	FOUNDED,
+	CONTACT_EMAIL,
+	SOCIAL_PROFILES,
+	FOUNDER,
+	LOGO_PATH,
+} from "@/lib/siteConfig";
 // Privacy-first, cookieless analytics. Both scripts are served first-party
 // from /_vercel/… so they add no third-party origin, no cookies, and no
 // personal data — which is why they sit outside the cookie-consent gate.
@@ -29,22 +41,11 @@ import "@fontsource/mukta/latin-400.css";
 import "@fontsource/mukta/devanagari-400.css";
 import "./globals.css";
 
-const siteName = "Apex";
-const siteTagline = "Tested tools and guides for Nepal";
-const description =
-	"Apex Nepal publishes tested, cited resources for Nepali students, freelancers, bloggers, and small businesses: AI tools, hosting, payments, learning, and practical online-work guides.";
-const keywords = [
-	"apex",
-	"Nepal tools",
-	"AI tools Nepal",
-	"freelancing in Nepal",
-	"hosting Nepal",
-	"Payoneer Nepal",
-	"eSewa hosting",
-	"small business tools Nepal",
-	"student resources Nepal",
-	"nepal community",
-];
+// Playbook §10: one entity name everywhere — "Apex Nepal", never bare
+// "Apex" (an LED company and two trekking agencies share that name).
+const siteName = SITE_NAME;
+const siteTagline = SITE_TAGLINE;
+const description = SITE_DESCRIPTION;
 
 export const metadata: Metadata = {
 	metadataBase: new URL(SITE_URL),
@@ -54,9 +55,9 @@ export const metadata: Metadata = {
 	},
 	description,
 	applicationName: siteName,
-	keywords,
-	authors: [{ name: "Apex Editorial", url: SITE_URL }],
-	creator: "Apex",
+	// Playbook §4: the meta keywords tag was removed — Google ignores it.
+	authors: [{ name: "Apex Nepal Editorial", url: SITE_URL }],
+	creator: siteName,
 	publisher: siteName,
 	category: "technology",
 	alternates: {
@@ -99,11 +100,18 @@ export const metadata: Metadata = {
 			"max-video-preview": -1,
 		},
 	},
-	// Uncomment and paste your verification tokens once you add the site
-	// to Google Search Console / Bing Webmaster Tools:
 	verification: {
 		google: "3UGsGsVEXIWpZW81U1Zs9cJnMPPVOAiUeqp5Jr_1P-0",
-		//   other: { "msvalidate.01": "BING_SITE_VERIFICATION_CODE" },
+		// Bing Webmaster Tools (playbook §5.6 — Bing feeds ChatGPT search).
+		// Set BING_SITE_VERIFICATION in Vercel after importing the site
+		// from Search Console; no code change needed.
+		...(process.env.BING_SITE_VERIFICATION
+			? {
+					other: {
+						"msvalidate.01": process.env.BING_SITE_VERIFICATION,
+					},
+				}
+			: {}),
 	},
 };
 
@@ -135,21 +143,23 @@ export default function RootLayout({
 		"@context": "https://schema.org",
 		"@type": "WebSite",
 		"name": siteName,
-		"alternateName": ["Apex Nepal", "Apex Community", "Apex Blog"],
+		"alternateName": ["Apex Nepal Blog"],
 		"url": SITE_URL,
 		description,
-		"inLanguage": ["en", "ne"],
-		"potentialAction": {
-			"@type": "SearchAction",
-			"target": `${SITE_URL}/?q={search_term_string}`,
-			"query-input": "required name=search_term_string",
-		},
+		// Playbook §4: was ["en","ne"] with no Nepali content. Claim "en"
+		// until /ne/ posts actually exist (article-level detection stays).
+		"inLanguage": "en",
+		// No SearchAction: Google retired the sitelinks search box, and the
+		// old target (/?q=…) had no server-side search behind it. Filter
+		// parameter URLs are disallowed in robots.txt.
 		"publisher": {
 			"@type": "Organization",
 			"name": siteName,
 			"logo": {
 				"@type": "ImageObject",
-				"url": `${SITE_URL}/icon.svg`,
+				"url": `${SITE_URL}${LOGO_PATH}`,
+				"width": 512,
+				"height": 512,
 			},
 		},
 	};
@@ -158,16 +168,27 @@ export default function RootLayout({
 		"@type": "Organization",
 		"name": siteName,
 		"url": SITE_URL,
-		"logo": `${SITE_URL}/icon.svg`,
-		"sameAs": ["https://github.com/akash0526"],
-		"foundingDate": "2025-11-01",
-		"founders": [
-			{
-				"@type": "Person",
-				"name": "Akash Adhikari",
-				"url": `${SITE_URL}/authors/akash-adhikari`,
-			},
-		],
+		// Raster PNG logo (playbook §5.5) — was an SVG, which Google's
+		// logo guidelines don't accept.
+		"logo": {
+			"@type": "ImageObject",
+			"url": `${SITE_URL}${LOGO_PATH}`,
+			"width": 512,
+			"height": 512,
+		},
+		// Brand profiles only. Was the founder's personal GitHub, which
+		// conflates the Person and Organization entities. Fill in
+		// SOCIAL_PROFILES in lib/siteConfig.js once profiles exist.
+		...(SOCIAL_PROFILES.length ? { "sameAs": SOCIAL_PROFILES } : {}),
+		"email": CONTACT_EMAIL,
+		"foundingDate": FOUNDED,
+		"address": { "@type": "PostalAddress", "addressCountry": SITE_COUNTRY },
+		"founder": {
+			"@type": "Person",
+			"name": FOUNDER.name,
+			"url": `${SITE_URL}/authors/${FOUNDER.slug}`,
+			"sameAs": FOUNDER.sameAs,
+		},
 		"description": description,
 	};
 
@@ -242,7 +263,7 @@ export default function RootLayout({
 									एपेक्स नेपाल
 								</span>
 								<p className="mt-3 text-[0.8125rem] text-[var(--ink-faint)]">
-									Editorial base: Nepal • Founded Nov 2025
+									Editorial base: {EDITORIAL_BASE} • Founded Nov 2025
 								</p>
 							</div>
 

@@ -15,6 +15,12 @@ export default function robots(): MetadataRoute.Robots {
 					"/api/",
 					"/*?*utm_*",
 					"/*?*fbclid*",
+					// Filter/search parameter URLs (playbook §5.4) — real
+					// category pages live at /blog/category/<slug>; the old
+					// /?category=… URLs canonicalize to the homepage and must
+					// never be crawled or indexed.
+					"/*?*category=*",
+					"/*?*q=*",
 				],
 			},
 			// Explicitly allow major AI / LLM crawlers – we want to be cited

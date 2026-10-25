@@ -15,7 +15,7 @@ CREATE TABLE public.profiles (
     website text,
     twitter text,
     linkedin text,
-    location text DEFAULT 'Doha, Qatar'::text,
+    location text DEFAULT 'Nepal'::text,
     expertise text[],
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -65,6 +65,12 @@ CREATE TABLE public.articles (
     image_url text NOT NULL,
     content text NOT NULL,
     seo_score integer DEFAULT 85 NOT NULL,
+    seo_title text,
+    tested_method text,
+    sources jsonb NOT NULL DEFAULT '[]'::jsonb,
+    has_affiliate_links boolean NOT NULL DEFAULT false,
+    reviewer_name text,
+    reviewer_url text,
     pageviews integer DEFAULT 1 NOT NULL,
     claps integer DEFAULT 0 NOT NULL,
     status text DEFAULT 'published'::text NOT NULL
@@ -74,7 +80,18 @@ CREATE TABLE public.articles (
 CREATE OR REPLACE FUNCTION public.set_articles_updated_at()
 RETURNS trigger AS $$
 BEGIN
-  NEW.updated_at = timezone('utc'::text, now());
+  -- Only CONTENT edits bump updated_at. Counter writes (pageviews/claps)
+  -- must not fake a fresh dateModified (see 20261025_seo_playbook.sql Step 6).
+  IF (NEW.title, NEW.content, NEW.meta_description, NEW.category,
+      NEW.image_url, NEW.slug, NEW.status, NEW.target_keyword)
+     IS DISTINCT FROM
+     (OLD.title, OLD.content, OLD.meta_description, OLD.category,
+      OLD.image_url, OLD.slug, OLD.status, OLD.target_keyword)
+  THEN
+    NEW.updated_at = timezone('utc'::text, now());
+  ELSE
+    NEW.updated_at = OLD.updated_at;
+  END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

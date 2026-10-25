@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL, getAllPublishedSlugs, getAllAuthorSlugs } from "@/lib/articles";
+import { canonicalCategories } from "@/lib/categories";
 
 // Regenerate periodically so newly published articles appear in the sitemap
 // without requiring a full redeploy.
@@ -96,6 +97,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		changeFrequency: p.changeFrequency,
 		priority: p.priority,
 	}));
+
+	// Real category pages (playbook §5.4) — these replaced the crawlable
+	// /?category=… filter URLs that breadcrumbs used to point at.
+	for (const category of canonicalCategories) {
+		staticUrls.push({
+			url: `${SITE_URL}/blog/category/${category.slug}`,
+			lastModified: newestArticleDate,
+			changeFrequency: "weekly",
+			priority: 0.75,
+		});
+	}
 
 	// Individual author pages (E-E-A-T: Google crawls author entities).
 	try {

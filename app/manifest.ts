@@ -3,10 +3,10 @@ import type { MetadataRoute } from "next";
 // https://nextjs.org/docs/app/api-reference/file-conventions/metadata/manifest
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Apex Community Platform",
-    short_name: "Apex",
+    name: "Apex Nepal",
+    short_name: "Apex Nepal",
     description:
-      "An open multi-topic community publishing platform where creators share stories, technical guides, and ideas with a global audience.",
+      "Tested tools and guides for Nepali freelancers, students and small businesses: payments, AI tools, hosting and practical online-work guides.",
     start_url: "/",
     display: "standalone",
     background_color: "#F7F3EC",

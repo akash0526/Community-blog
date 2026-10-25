@@ -11,6 +11,8 @@ import {
 } from "@/lib/markdownImages";
 import { analyzeSeo, generateCleanSlug } from "@/lib/seoEngine";
 import { storyCategories } from "@/lib/categories";
+import { pingIndexNow } from "@/lib/indexnow";
+import { SITE_URL } from "@/lib/articles";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -28,7 +30,7 @@ import {
 const emptyDraft = {
 	title: "",
 	targetKeyword: "",
-	category: "Personal Stories",
+	category: "Freelancing & Remote Work",
 	metaDescription: "",
 	imageUrl: "",
 	content: "",
@@ -57,6 +59,7 @@ function StudioForm() {
 
 	// State fields
 	const [title, setTitle] = useState(emptyDraft.title);
+	const [seoTitle, setSeoTitle] = useState("");
 	const [targetKeyword, setTargetKeyword] = useState(emptyDraft.targetKeyword);
 	const [category, setCategory] = useState(emptyDraft.category);
 	const [metaDescription, setMetaDescription] = useState(
@@ -115,8 +118,9 @@ function StudioForm() {
 			if (found) {
 				setEditingId(found.id);
 				setTitle(found.title || "");
+				setSeoTitle(found.seo_title || "");
 				setTargetKeyword(found.target_keyword || "");
-				setCategory(found.category || "Personal Stories");
+				setCategory(found.category || "Freelancing & Remote Work");
 				setMetaDescription(found.meta_description || "");
 				setImageUrl(found.image_url || "");
 				setContent(found.content || "");
@@ -130,6 +134,7 @@ function StudioForm() {
 	const resetComposer = () => {
 		setEditingId(null);
 		setTitle(emptyDraft.title);
+		setSeoTitle("");
 		setTargetKeyword(emptyDraft.targetKeyword);
 		setCategory(emptyDraft.category);
 		setMetaDescription(emptyDraft.metaDescription);
@@ -150,11 +155,12 @@ function StudioForm() {
 		() =>
 			analyzeSeo({
 				title,
+				seoTitle,
 				targetKeyword,
 				metaDescription,
 				content,
 			}),
-		[title, targetKeyword, metaDescription, content],
+		[title, seoTitle, targetKeyword, metaDescription, content],
 	);
 
 	// Auth synchronization
@@ -424,25 +430,31 @@ function StudioForm() {
 
 			try {
 				let dbErr = null;
-				if (editingId && !editingId.startsWith("post-")) {
-					// Update existing row in cloud DB
-					const { error } = await supabase
-						.from("articles")
-						.update({
-							title,
-							slug,
-							category,
-							target_keyword: targetKeyword,
-							meta_description: metaDescription,
-							image_url: imageUrl,
-							content,
-							seo_score: audit.totalScore,
-							status: targetStatus,
-						})
-						.eq("id", editingId);
-					dbErr = error;
-				} else {
-					// Insert brand new row into cloud DB
+				// seo_title ships with the SEO-playbook Supabase migration. If the
+				// column doesn't exist yet, retry once without it instead of
+				// failing the whole publish.
+				const saveOnce = async (withSeoTitle) => {
+					const optional = withSeoTitle
+						? { seo_title: seoTitle.trim() || null }
+						: {};
+					if (editingId && !editingId.startsWith("post-")) {
+						const { error } = await supabase
+							.from("articles")
+							.update({
+								title,
+								slug,
+								category,
+								target_keyword: targetKeyword,
+								meta_description: metaDescription,
+								image_url: imageUrl,
+								content,
+								seo_score: audit.totalScore,
+								status: targetStatus,
+								...optional,
+							})
+							.eq("id", editingId);
+						return error;
+					}
 					const { error } = await supabase.from("articles").insert([
 						{
 							author_id: authorUuid,
@@ -456,9 +468,15 @@ function StudioForm() {
 							seo_score: audit.totalScore,
 							pageviews: 1,
 							status: targetStatus,
+							...optional,
 						},
 					]);
-					dbErr = error;
+					return error;
+				};
+
+				dbErr = await saveOnce(true);
+				if (dbErr && /seo_title/i.test(dbErr.message || "")) {
+					dbErr = await saveOnce(false);
 				}
 
 				if (!dbErr) {
@@ -495,7 +513,11 @@ function StudioForm() {
 			localStorage.setItem("apex_articles_v1", JSON.stringify(fallbackStore));
 
 			if (supabaseSuccess) {
-				// Cloud success
+				// Cloud success — ask Bing/IndexNow to index immediately
+				// (playbook 5.6; best effort, never blocks navigation).
+				if (targetStatus === "published") {
+					pingIndexNow(`${SITE_URL}/blog/${slug}`);
+				}
 			} else if (!isDemoUser && user?.id) {
 				setError(
 					"⚠️ Cloud save unavailable — saved locally to your browser. Your progress is fully backed up locally.",
@@ -711,6 +733,25 @@ function StudioForm() {
 											</option>
 										))}
 									</select>
+								</div>
+							</div>
+
+							<div>
+								<label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+									SEO Title (Google search result)
+								</label>
+								<input
+									type="text"
+									value={seoTitle}
+									onChange={(e) => setSeoTitle(e.target.value)}
+									placeholder="Keyword first, ≤60 chars — e.g. Send Money to Nepal 2026: Wise vs IME vs Bank"
+									className="input font-bold text-sm py-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 dark:border-slate-700"
+								/>
+								<div className="flex justify-between items-center text-[11px] font-bold text-slate-400 mt-1 px-1">
+									<span>Leave blank to use the headline. Long H1s get cut off in Google — keep this ≤60.</span>
+									<span className={seoTitle.length <= 60 ? "text-emerald-500 font-black" : "text-red-500 font-black"}>
+										{seoTitle.length}/60
+									</span>
 								</div>
 							</div>
 

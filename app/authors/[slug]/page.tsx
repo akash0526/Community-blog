@@ -7,18 +7,29 @@ import { cleanBio, cleanExcerpt } from "@/lib/seoUtils";
 export const revalidate = 120;
 
 async function findAuthorBySlug(slug: string){
-  const nameGuess = slug.replace(/-/g, ' ');
-  // Try exact full_name ilike
+  // 1) Canonical byline URL: exact `username` match (playbook §5.2 — one
+  //    author, one URL). Tolerates the column not existing yet.
   try{
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("username", slug.toLowerCase())
+      .maybeSingle();
+    if(!error && data) return data;
+  }catch{}
+  // 2) Name-derived slug, EXACT match only. The old code fell back to
+  //    `data[0]` of a first-name ilike search, which could render the
+  //    WRONG person at a byline URL. No exact match => 404.
+  try{
+    const nameGuess = slug.replace(/-/g, ' ');
     const { data } = await supabase
       .from("profiles")
       .select("*")
       .ilike("full_name", `%${nameGuess.split(' ')[0]}%`)
       .limit(20);
     if(data && data.length){
-      // find best match
       const exact = data.find(p => (p.full_name||'').toLowerCase().replace(/\s+/g,'-') === slug.toLowerCase());
-      return exact || data[0];
+      if(exact) return exact;
     }
   }catch{}
   return null;
@@ -40,15 +51,20 @@ export async function generateMetadata({ params }: { params: Promise<{slug:strin
   const { slug } = await params;
   const author = await findAuthorBySlug(slug);
   if(!author){
-    return { title: "Author not found | Apex", robots: { index:false } }
+    // Real 404 (same soft-404 fix as /blog/[slug]).
+    notFound();
   }
   const name = author.full_name;
+  // Zero-post bylines ("No published stories") stay reachable but out of
+  // the index (playbook §4) until they have articles.
+  const articles = author.id ? await getArticlesByAuthor(author.id) : [];
   return {
-    title: `${name} – Author at Apex`,
-    description: cleanBio(author.bio) || `${name} – ${author.professional_role||'Writer'} at Apex. Read all articles.`,
+    title: { absolute: `${name} – Author at Apex Nepal` },
+    description: cleanBio(author.bio) || `${name} – ${author.professional_role||'Writer'} at Apex Nepal. Read all articles.`,
     alternates: { canonical: `/authors/${slug}` },
+    ...(articles.length === 0 ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
-      title: `${name} – Apex`,
+      title: `${name} – Apex Nepal`,
       description: author.bio || "",
       url: `${SITE_URL}/authors/${slug}`,
       type: "profile",
@@ -90,6 +106,11 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
   const twitter = isRealUrl(profile.twitter) ? profile.twitter : null;
   const linkedin = isRealUrl(profile.linkedin) ? profile.linkedin : null;
 
+  const knowsAbout = Array.isArray(profile.expertise)
+    ? profile.expertise
+    : profile.expertise
+      ? String(profile.expertise).split(",").map((e: string) => e.trim())
+      : undefined;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -98,7 +119,8 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
     "image": profile.avatar_url,
     "jobTitle": profile.professional_role,
     "description": cleanBio(profile.bio),
-    "worksFor": { "@type": "Organization", "name": "Apex", "url": SITE_URL },
+    "worksFor": { "@type": "Organization", "name": "Apex Nepal", "url": SITE_URL },
+    ...(knowsAbout?.length ? { "knowsAbout": knowsAbout } : {}),
     "sameAs": [
       website,
       twitter,

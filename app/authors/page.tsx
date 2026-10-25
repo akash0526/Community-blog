@@ -2,8 +2,9 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export const metadata = {
-  title: "Authors – Apex",
-  description: "Meet the verified human authors publishing on Apex.",
+  title: { absolute: "Authors – Apex Nepal" },
+  description: "Meet the verified human authors publishing on Apex Nepal.",
+  alternates: { canonical: "/authors" },
 };
 
 export const revalidate = 300;
@@ -16,7 +17,7 @@ export default async function AuthorsIndex(){
   }catch{}
   if(authors.length===0){
     authors = [
-      { full_name:"Akash Adhikari", professional_role:"Founder & Lead Editor", bio:"Full-stack developer in Doha. Remittance tech & Qatar expat guides.", avatar_url:"https://avatars.githubusercontent.com/u/148329502?v=4", slug:"akash-adhikari" }
+      { full_name:"Akash Adhikari", professional_role:"Founder & Lead Editor", bio:"Full-stack developer (Next.js, Supabase) from Nepal. I test remittance rails, hosting, and AI tools from Nepali networks, and build Apex Nepal as an open publishing directory.", avatar_url:"https://avatars.githubusercontent.com/u/148329502?v=4", slug:"akash-adhikari" }
     ];
   }
   return (

@@ -15,6 +15,11 @@ interface CountUpProps {
 /**
  * Animated number counter (plan §10) — starts when scrolled into view,
  * runs exactly once, and always lands on the exact value (no drift).
+ *
+ * SEO (playbook §4): initial state is the FINAL value, so the server HTML
+ * (what Google and no-JS readers see) contains the real number instead of
+ * "0+". The count-up still runs on the client once the stat scrolls into
+ * view — it restarts from 0 at that point.
  */
 export function CountUp({
 	end,
@@ -23,7 +28,7 @@ export function CountUp({
 	prefix = "",
 	className = "",
 }: CountUpProps) {
-	const [count, setCount] = useState(0);
+	const [count, setCount] = useState(end);
 	const ref = useRef<HTMLSpanElement>(null);
 	const isInView = useInView(ref, { once: true });
 

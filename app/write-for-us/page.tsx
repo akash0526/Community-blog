@@ -9,18 +9,18 @@ export const metadata: Metadata = {
 
 export default function WriteForUsPage() {
 	return (
-		<div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+		<div className="flex-1 bg-[var(--paper)] text-[var(--ink)]">
 			<div className="max-w-4xl mx-auto px-6 py-16 sm:py-24">
-				<span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Community contributions</span>
+				<span className="text-xs font-black uppercase tracking-widest text-[var(--accent)]">Community contributions</span>
 				<h1 className="text-4xl sm:text-5xl font-black tracking-tight mt-3 mb-5">Write for Apex Nepal</h1>
-				<p className="text-lg text-slate-600 dark:text-slate-300 mb-10 leading-relaxed">
+				<p className="text-lg text-[var(--ink-muted)] mb-10 leading-relaxed">
 					Help Nepali students, freelancers, and small businesses find tools that actually work here. We welcome tested guides, resource suggestions, and correction notes.
 				</p>
 
 				<div className="grid gap-6 text-[15px] leading-relaxed">
-					<section className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-6">
+					<section className="rounded-3xl border border-[var(--hairline)] bg-[var(--sunken)] p-6">
 						<h2 className="text-2xl font-black mb-3">Topics we want</h2>
-						<ul className="list-disc pl-6 space-y-2 text-slate-700 dark:text-slate-300">
+						<ul className="list-disc pl-6 space-y-2 text-[var(--ink)]">
 							<li>AI tools that work well on Nepali internet and free tiers.</li>
 							<li>Freelancing profiles, proposals, portfolios, and payment workflows.</li>
 							<li>Hosting, blogging, domains, CDN, speed, and NPR cost breakdowns.</li>
@@ -29,14 +29,14 @@ export default function WriteForUsPage() {
 						</ul>
 					</section>
 
-					<section className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+					<section className="rounded-3xl border border-[var(--hairline)] bg-[var(--surface)] p-6">
 						<h2 className="text-2xl font-black mb-3">Quality bar</h2>
-						<p className="text-slate-700 dark:text-slate-300">Your piece should include screenshots or clear steps where possible, a Nepal-specific note, links to official sources, and an honest free alternative if an affiliate or paid tool is mentioned.</p>
+						<p className="text-[var(--ink)]">Your piece should include screenshots or clear steps where possible, a Nepal-specific note, links to official sources, and an honest free alternative if an affiliate or paid tool is mentioned.</p>
 					</section>
 
-					<section className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+					<section className="rounded-3xl border border-[var(--hairline)] bg-[var(--surface)] p-6">
 						<h2 className="text-2xl font-black mb-3">Disclosure rules</h2>
-						<p className="text-slate-700 dark:text-slate-300">Disclose paid relationships, referral links, free accounts, sponsored access, and conflicts of interest. We reject affiliate spam and thin rewrites.</p>
+						<p className="text-[var(--ink)]">Disclose paid relationships, referral links, free accounts, sponsored access, and conflicts of interest. We reject affiliate spam and thin rewrites.</p>
 					</section>
 
 					<section className="rounded-3xl bg-indigo-600 text-white p-6 sm:p-8">

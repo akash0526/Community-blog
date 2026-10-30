@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { X, Mail, Lock, User, Sparkles, AlertCircle } from "lucide-react";
 
@@ -14,6 +14,30 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [message, setMessage] = useState(null);
+	const dialogRef = useRef(null);
+
+	// Modal behaviour users expect: Escape closes, the page behind is
+	// locked, and the first field is focused so typing works immediately.
+	useEffect(() => {
+		if (!isOpen) return;
+		const onKeyDown = (event) => {
+			if (event.key === "Escape") onClose();
+		};
+		const previousOverflow = document.body.style.overflow;
+		document.body.style.overflow = "hidden";
+		document.addEventListener("keydown", onKeyDown);
+
+		const focusTimer = window.setTimeout(() => {
+			const field = dialogRef.current?.querySelector("input");
+			field?.focus();
+		}, 60);
+
+		return () => {
+			document.body.style.overflow = previousOverflow;
+			document.removeEventListener("keydown", onKeyDown);
+			window.clearTimeout(focusTimer);
+		};
+	}, [isOpen, onClose]);
 
 	if (!isOpen) return null;
 
@@ -34,7 +58,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 							professional_role: profession || "Community Creator",
 							bio:
 								bio || "Writing and sharing stories with the open community.",
-							avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName || email.split("@")[0])}&background=A8471F&color=fff`,
+							avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName || email.split("@")[0])}&background=5440d6&color=fff`,
 						},
 					},
 				});
@@ -82,7 +106,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 				full_name: "Demo Writer",
 				professional_role: "Community Creator",
 				bio: "Exploring open publishing, technology, and community storytelling.",
-				avatar_url: "https://ui-avatars.com/api/?name=Demo+Writer&background=A8471F&color=fff",
+				avatar_url: "https://ui-avatars.com/api/?name=Demo+Writer&background=5440d6&color=fff",
 			},
 		};
 
@@ -95,8 +119,19 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 	};
 
 	return (
-		<div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-			<div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-8 shadow-2xl relative overflow-y-auto max-h-[92vh]">
+		<div
+			className="animate-fadeIn fixed inset-0 z-[150] flex items-center justify-center bg-black/60 p-4"
+			onMouseDown={(event) => {
+				if (event.target === event.currentTarget) onClose();
+			}}
+		>
+			<div
+				ref={dialogRef}
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="auth-title"
+				className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[var(--radius-lg)] border border-[var(--hairline)] bg-[var(--surface)] p-8 shadow-2xl"
+			>
 				{/* Glow helper */}
 				<div className="absolute -right-20 -top-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -123,7 +158,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 							</span>
 						</span>
 					</div>
-					<h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+					<h3 id="auth-title" className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
 						{isSignUp ? "Join Apex" : "Welcome back"}
 					</h3>
 					<p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mt-1">

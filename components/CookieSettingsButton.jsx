@@ -16,7 +16,7 @@ export default function CookieSettingsButton({ className = "" }) {
 		<button
 			type="button"
 			onClick={reset}
-			className={`link-underline hover:text-slate-300 transition cursor-pointer ${className}`}
+			className={`link-underline hover:text-[var(--ink)] transition cursor-pointer ${className}`}
 		>
 			Cookie settings
 		</button>

@@ -95,12 +95,12 @@ export default async function CategoryPage({ params }) {
 			/>
 			<section className="hero" style={{ paddingBottom: "var(--section)" }}>
 				<div className="wrap">
-					<nav className="text-xs text-slate-500 mb-6 flex items-center gap-2" aria-label="Breadcrumb">
+					<nav className="mb-6 flex items-center gap-2 text-xs text-[var(--ink-faint)]" aria-label="Breadcrumb">
 						<Link href="/">Home</Link>
 						<span>/</span>
 						<Link href="/blog">Guides</Link>
 						<span>/</span>
-						<span className="text-slate-400">{category.value}</span>
+						<span className="text-[var(--ink-muted)]">{category.value}</span>
 					</nav>
 					<h1>{category.value}</h1>
 					<p className="lede" style={{ marginTop: "1.25rem", maxWidth: "62ch" }}>
@@ -114,7 +114,7 @@ export default async function CategoryPage({ params }) {
 							How we test
 						</Link>
 					</div>
-					<p className="text-sm text-slate-500 mt-4">
+					<p className="mt-4 text-sm text-[var(--ink-faint)]">
 						{total} published {total === 1 ? "guide" : "guides"} in this topic.
 					</p>
 				</div>
@@ -134,7 +134,7 @@ export default async function CategoryPage({ params }) {
 										name: art.profiles?.full_name || "Apex Nepal Editorial",
 										avatar:
 											art.profiles?.avatar_url ||
-											`https://ui-avatars.com/api/?name=${encodeURIComponent(art.profiles?.full_name || "Apex Nepal")}&background=A8471F&color=fff&size=64`,
+											`https://ui-avatars.com/api/?name=${encodeURIComponent(art.profiles?.full_name || "Apex Nepal")}&background=5440d6&color=fff&size=64`,
 									}}
 									date={formatDate(art.published_at || art.created_at)}
 									slug={art.slug}
@@ -157,14 +157,14 @@ export default async function CategoryPage({ params }) {
 					)}
 
 					<div className="mt-10 flex flex-wrap gap-2 text-sm">
-						<span className="text-slate-500 mr-1">Other topics:</span>
+						<span className="mr-1 text-[var(--ink-faint)]">Other topics:</span>
 						{canonicalCategories
 							.filter((c) => c.slug !== category.slug)
 							.map((c) => (
 								<Link
 									key={c.slug}
 									href={`/blog/category/${c.slug}`}
-									className="px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900"
+									className="pill"
 								>
 									{c.value}
 								</Link>

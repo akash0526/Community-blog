@@ -16,7 +16,7 @@ import { IconCheck } from "@/components/Icon";
 // out of the critical article bundle (INP/bundle weight on slow Nepali 4G).
 const DiscussionThread = dynamic(() => import("@/components/DiscussionThread"), {
   ssr: false,
-  loading: () => <div className="text-sm text-slate-500 py-6">Loading discussion…</div>,
+  loading: () => <div className="text-sm text-[var(--ink-faint)] py-6">Loading discussion…</div>,
 });
 
 // Affiliate links must carry rel="sponsored" (playbook §12.2). We can't know
@@ -34,7 +34,7 @@ function getAvatar(profile, fallbackSeed="apex"){
   const raw = profile?.avatar_url || "";
   if(!raw || raw.includes("dicebear") || raw.includes("bottts")){
     const name = encodeURIComponent(profile?.full_name || "Apex Editorial");
-    return `https://ui-avatars.com/api/?name=${name}&background=A8471F&color=fff&size=128`;
+    return `https://ui-avatars.com/api/?name=${name}&background=5440d6&color=fff&size=128`;
   }
   return raw;
 }
@@ -111,14 +111,14 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
   };
 
   if(loading){
-    return <div className="max-w-3xl mx-auto px-6 py-24"><div className="animate-pulse space-y-4"><div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-1/2"/><div className="h-12 bg-slate-200 dark:bg-slate-800 rounded"/><div className="h-64 bg-slate-100 dark:bg-slate-900 rounded-2xl"/></div></div>
+    return <div className="max-w-3xl mx-auto px-6 py-24"><div className="animate-pulse space-y-4"><div className="h-8 bg-[var(--sunken)] rounded w-1/2"/><div className="h-12 bg-[var(--sunken)] rounded"/><div className="h-64 bg-[var(--sunken)] rounded-2xl"/></div></div>
   }
   if(!article){
     return (
       <div className="max-w-2xl mx-auto px-6 py-24 text-center">
-        <h1 className="text-3xl font-black mb-3">Article not found</h1>
-        <p className="text-slate-600 dark:text-slate-400 mb-8">This story may have been moved or removed.</p>
-        <Link href="/" className="px-5 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold">← Back home</Link>
+        <h1 className="text-3xl font-semibold mb-3">Article not found</h1>
+        <p className="text-[var(--ink-muted)] mb-8">This story may have been moved or removed.</p>
+        <Link href="/" className="px-5 py-3 bg-[var(--ink)] text-[var(--paper)] rounded-xl font-bold">← Back home</Link>
       </div>
     )
   }
@@ -153,63 +153,63 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
   const reviewerUrl = String(article.reviewer_url || "").trim();
 
   const markdownComponents = {
-    h1: ({children}) => <h1 className="text-[28px] sm:text-[36px] font-black mt-12 mb-5 leading-tight text-slate-900 dark:text-white">{children}</h1>,
-    h2: ({children}) => <h2 className="text-[22px] sm:text-[28px] font-black mt-10 mb-4 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3">{children}</h2>,
-    h3: ({children}) => <h3 className="text-xl font-bold mt-8 mb-3 text-slate-900 dark:text-white">{children}</h3>,
-    p: ({children}) => <p className="text-[17px] leading-[1.75] text-slate-700 dark:text-slate-300 mb-6">{children}</p>,
-    ul: ({children}) => <ul className="list-disc pl-6 space-y-2 mb-6 text-slate-700 dark:text-slate-300">{children}</ul>,
-    ol: ({children}) => <ol className="list-decimal pl-6 space-y-2 mb-6 text-slate-700 dark:text-slate-300">{children}</ol>,
+    h1: ({children}) => <h1 className="text-[26px] sm:text-[32px] font-semibold mt-12 mb-4 leading-tight text-[var(--ink)]">{children}</h1>,
+    h2: ({children}) => <h2 className="text-[21px] sm:text-[26px] font-semibold mt-10 mb-4 text-[var(--ink)] border-b border-[var(--hairline)] pb-3">{children}</h2>,
+    h3: ({children}) => <h3 className="text-[19px] font-semibold mt-8 mb-3 text-[var(--ink)]">{children}</h3>,
+    p: ({children}) => <p className="text-[17px] leading-[1.75] text-[var(--ink)] mb-5">{children}</p>,
+    ul: ({children}) => <ul className="list-disc pl-6 space-y-2 mb-6 text-[var(--ink)]">{children}</ul>,
+    ol: ({children}) => <ol className="list-decimal pl-6 space-y-2 mb-6 text-[var(--ink)]">{children}</ol>,
     a: ({href, children}) => {
       const isInternal = !href || href.startsWith("/") || href.startsWith("#") || href.includes("apex-nepal.com");
       if (isInternal) {
-        return <a href={href} className="text-indigo-600 dark:text-indigo-400 underline font-semibold hover:text-indigo-700">{children}</a>;
+        return <a href={href} className="text-[var(--accent)] underline font-semibold hover:text-[var(--accent-strong)]">{children}</a>;
       }
       const rel = isAffiliateHref(href) ? "noopener noreferrer sponsored" : "noopener noreferrer";
-      return <a href={href} target="_blank" rel={rel} className="text-indigo-600 dark:text-indigo-400 underline font-semibold hover:text-indigo-700">{children}</a>;
+      return <a href={href} target="_blank" rel={rel} className="text-[var(--accent)] underline font-semibold hover:text-[var(--accent-strong)]">{children}</a>;
     },
-    blockquote: ({children}) => <blockquote className="border-l-4 border-slate-300 dark:border-slate-700 pl-5 italic my-8 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/50 py-4 rounded-r-xl">{children}</blockquote>,
+    blockquote: ({children}) => <blockquote className="border-l-4 border-[var(--hairline-strong)] pl-5 italic my-8 text-[var(--ink-muted)] bg-[var(--sunken)] py-4 rounded-r-xl">{children}</blockquote>,
     img: ({src,alt,title:caption}) => (
       <figure className="my-10">
         {/* eslint-disable-next-line @next/next/no-img-element -- Markdown images may come from arbitrary author-provided URLs. */}
-        <img src={imageKitDeliveryUrl(src)} alt={alt||title} className="rounded-2xl w-full h-auto border border-slate-200 dark:border-slate-800" loading="lazy" decoding="async" />
-        {(caption || alt) && <figcaption className="text-xs text-slate-500 mt-2 text-center">{caption || alt}</figcaption>}
+        <img src={imageKitDeliveryUrl(src)} alt={alt||title} className="rounded-2xl w-full h-auto border border-[var(--hairline)]" loading="lazy" decoding="async" />
+        {(caption || alt) && <figcaption className="text-xs text-[var(--ink-faint)] mt-2 text-center">{caption || alt}</figcaption>}
       </figure>
     ),
     code({inline,className,children,...props}){
-      if(inline) return <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[0.9em] font-mono" {...props}>{children}</code>
-      return <pre className="bg-slate-950 text-slate-100 p-5 rounded-2xl overflow-x-auto my-8 text-sm"><code>{children}</code></pre>
+      if(inline) return <code className="bg-[var(--sunken)] px-1.5 py-0.5 rounded text-[0.9em] font-mono" {...props}>{children}</code>
+      return <pre className="bg-[var(--sunken)] text-[var(--ink)] p-5 rounded-2xl overflow-x-auto my-8 text-sm"><code>{children}</code></pre>
     },
-    table: ({children}) => <div className="overflow-x-auto my-8"><table className="w-full text-sm border border-slate-200 dark:border-slate-800 rounded-xl">{children}</table></div>,
-    th: ({children}) => <th className="text-left px-4 py-3 bg-slate-50 dark:bg-slate-900 font-bold border-b border-slate-200 dark:border-slate-800">{children}</th>,
-    td: ({children}) => <td className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 align-top">{children}</td>,
+    table: ({children}) => <div className="overflow-x-auto my-8"><table className="w-full text-sm border border-[var(--hairline)] rounded-xl">{children}</table></div>,
+    th: ({children}) => <th className="text-left px-4 py-3 bg-[var(--sunken)] font-bold border-b border-[var(--hairline)]">{children}</th>,
+    td: ({children}) => <td className="px-4 py-3 border-b border-[var(--hairline)] align-top">{children}</td>,
   };
 
   return (
-    <div className="flex-1 bg-white dark:bg-slate-950">
+    <div className="flex-1 bg-[var(--paper)]">
       <article lang={contentLang} className="max-w-3xl mx-auto px-6 py-10 sm:py-16">
         {/* Breadcrumbs — real category page, never /?category= (playbook §5.4) */}
-        <nav className="text-xs text-slate-500 mb-6 flex items-center gap-2 flex-wrap" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-slate-700 dark:hover:text-slate-300">Home</Link>
+        <nav className="text-xs text-[var(--ink-faint)] mb-6 flex items-center gap-2 flex-wrap" aria-label="Breadcrumb">
+          <Link href="/" className="hover:text-[var(--ink)]">Home</Link>
           <span>/</span>
-          <Link href="/blog" className="hover:text-slate-700 dark:hover:text-slate-300">Guides</Link>
+          <Link href="/blog" className="hover:text-[var(--ink)]">Guides</Link>
           <span>/</span>
-          <Link href={categoryPage} className="hover:text-slate-700 dark:hover:text-slate-300">{category}</Link>
+          <Link href={categoryPage} className="hover:text-[var(--ink)]">{category}</Link>
           <span>/</span>
-          <span className="text-slate-400 truncate max-w-[200px]">{title.slice(0,60)}</span>
+          <span className="text-[var(--ink-faint)] truncate max-w-[200px]">{title.slice(0,60)}</span>
         </nav>
 
-        <Link href="/blog" className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-6">
+        <Link href="/blog" className="inline-flex items-center gap-2 text-xs font-bold text-[var(--ink-muted)] hover:text-[var(--ink)] mb-6">
           <ArrowLeft className="w-3.5 h-3.5"/> Back to stories
         </Link>
 
         {/* Header */}
         <header className="mb-8">
-          <div className="text-[11px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-3">{category}</div>
-          <h1 className="text-[30px] sm:text-[42px] font-black leading-[1.15] tracking-tight text-slate-900 dark:text-white mb-4">{title}</h1>
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--accent)] mb-3">{category}</div>
+          <h1 className="text-[30px] sm:text-[40px] font-semibold leading-[1.12] tracking-tight text-[var(--ink)] mb-4">{title}</h1>
           {description && (
-            <p className="text-[18px] text-slate-600 dark:text-slate-300 leading-relaxed">{description}</p>
+            <p className="text-[18px] text-[var(--ink-muted)] leading-relaxed">{description}</p>
           )}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500 mt-5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[var(--ink-faint)] mt-5">
             <time dateTime={article.published_at || article.created_at}>Published {published}</time>
             {updated && <><span>•</span><span>Updated {updated}</span></>}
             <span>•</span>
@@ -218,31 +218,31 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
         </header>
 
         {/* Author box – real E-E-A-T */}
-        <div className="flex items-start gap-4 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 mb-8">
-          <Image src={authorAvatar} alt={authorName} width={56} height={56} className="rounded-full object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0" />
+        <div className="flex items-start gap-4 p-5 rounded-2xl border border-[var(--hairline)] bg-[var(--sunken)] mb-8">
+          <Image src={authorAvatar} alt={authorName} width={56} height={56} className="rounded-full object-cover border border-[var(--hairline)] flex-shrink-0" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center flex-wrap gap-2">
-              <Link href={authorProfileHref} className="font-black text-slate-900 dark:text-white hover:text-indigo-600">
+              <Link href={authorProfileHref} className="font-semibold text-[var(--ink)] hover:text-[var(--accent)]">
                 {authorName}
               </Link>
-              <span className="text-[11px] bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded-full font-bold text-slate-700 dark:text-slate-300">Verified author</span>
+              <span className="text-[11px] bg-[var(--sunken)] px-2 py-0.5 rounded-full font-bold text-[var(--ink)]">Verified author</span>
             </div>
-            <div className="text-xs text-slate-600 dark:text-slate-400 font-semibold mt-0.5">{authorRole}</div>
-            {authorBio && <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed max-w-xl">{authorBio}</p>}
+            <div className="text-xs text-[var(--ink-muted)] font-semibold mt-0.5">{authorRole}</div>
+            {authorBio && <p className="text-xs text-[var(--ink-muted)] mt-2 leading-relaxed max-w-xl">{authorBio}</p>}
             <div className="text-[11px] mt-2 space-x-3">
-              {author.website && <a href={author.website} target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline font-bold">Website</a>}
-              {author.twitter && <a href={author.twitter} target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline font-bold">X</a>}
-              {author.linkedin && <a href={author.linkedin} target="_blank" rel="noopener" className="text-indigo-600 dark:text-indigo-400 underline font-bold">LinkedIn</a>}
-              <Link href={authorProfileHref} className="text-slate-600 dark:text-slate-400 underline">Full profile →</Link>
+              {author.website && <a href={author.website} target="_blank" rel="noopener" className="text-[var(--accent)] underline font-bold">Website</a>}
+              {author.twitter && <a href={author.twitter} target="_blank" rel="noopener" className="text-[var(--accent)] underline font-bold">X</a>}
+              {author.linkedin && <a href={author.linkedin} target="_blank" rel="noopener" className="text-[var(--accent)] underline font-bold">LinkedIn</a>}
+              <Link href={authorProfileHref} className="text-[var(--ink-muted)] underline">Full profile →</Link>
             </div>
           </div>
           <div className="flex gap-2 flex-shrink-0">
-            <button onClick={handleBookmark} className={`p-2.5 rounded-xl border text-xs font-bold transition ${bookmarked ? 'bg-indigo-600 text-white border-indigo-600':'border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'}`} aria-label="Bookmark">
+            <button onClick={handleBookmark} className={`p-2.5 rounded-xl border text-xs font-bold transition ${bookmarked ? 'bg-[var(--accent)] text-white border-[var(--accent)]':'border-[var(--hairline-strong)] hover:bg-[var(--sunken)]'}`} aria-label="Bookmark">
               <Bookmark className={`w-4 h-4 ${bookmarked?'fill-current':''}`} />
             </button>
-            <button onClick={handleShare} className="p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 relative" aria-label="Share">
+            <button onClick={handleShare} className="p-2.5 rounded-xl border border-[var(--hairline-strong)] hover:bg-[var(--sunken)] relative" aria-label="Share">
               <Share2 className="w-4 h-4" />
-              {shareToast && <span className="absolute -top-9 left-1/2 -translate-x-1/2 text-[10px] bg-slate-900 text-white px-2 py-1 rounded whitespace-nowrap">Link copied</span>}
+              {shareToast && <span className="absolute -top-9 left-1/2 -translate-x-1/2 text-[10px] bg-[var(--ink)] text-[var(--paper)] px-2 py-1 rounded whitespace-nowrap">Link copied</span>}
             </button>
           </div>
         </div>
@@ -250,17 +250,17 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
         {/* Affiliate disclosure (playbook §12.2) — shown when the post's
             has_affiliate_links flag is set in Supabase. */}
         {hasAffiliate && (
-          <div className="mb-8 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+          <div className="mb-8 p-4 rounded-xl bg-[var(--sunken)] border border-[var(--hairline)] text-xs text-[var(--ink)] leading-relaxed">
             <strong>Disclosure:</strong> Some links in this guide are affiliate links. If you sign up or buy through them, Apex Nepal may earn a commission at no extra cost to you. Commissions never decide our rankings — see <Link href="/editorial" className="underline font-bold">how we test and rank</Link>.
           </div>
         )}
 
         {/* Reviewed-by line for YMYL posts (playbook §8) */}
         {reviewerName && (
-          <div className="mb-8 text-xs text-slate-600 dark:text-slate-400">
+          <div className="mb-8 text-xs text-[var(--ink-muted)]">
             Reviewed by{" "}
             {reviewerUrl ? (
-              <a href={reviewerUrl} target="_blank" rel="noopener" className="font-bold underline text-indigo-600 dark:text-indigo-400">{reviewerName}</a>
+              <a href={reviewerUrl} target="_blank" rel="noopener" className="font-bold underline text-[var(--accent)]">{reviewerName}</a>
             ) : (
               <strong>{reviewerName}</strong>
             )}
@@ -282,7 +282,7 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
         {article.image_url && (
           <figure className="mb-10">
             <div className="relative w-full aspect-[16/9] max-h-[520px]">
-              <Image src={article.image_url} alt={title} fill className="rounded-2xl border border-slate-200 dark:border-slate-800 object-cover" sizes="(max-width: 768px) 100vw, 768px" quality={85} priority />
+              <Image src={article.image_url} alt={title} fill className="rounded-2xl border border-[var(--hairline)] object-cover" sizes="(max-width: 768px) 100vw, 768px" quality={85} priority />
             </div>
           </figure>
         )}
@@ -297,33 +297,33 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
         {/* How I tested this (playbook §6.3) — renders the post's own
             tested_method notes (dates, device, network, amounts, what
             failed) when filled in; falls back to the generic box. */}
-        <div className="mt-12 p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm">
-          <div className="font-black mb-2">{testedMethod ? "How I tested this" : "How we verified this"}</div>
+        <div className="mt-12 p-5 rounded-2xl bg-[var(--sunken)] border border-[var(--hairline)] text-sm">
+          <div className="font-semibold mb-2">{testedMethod ? "How I tested this" : "How we verified this"}</div>
           {testedMethod ? (
-            <p className="text-slate-600 dark:text-slate-400 text-[13px] leading-relaxed whitespace-pre-line">{testedMethod}</p>
+            <p className="text-[var(--ink-muted)] text-[13px] leading-relaxed whitespace-pre-line">{testedMethod}</p>
           ) : null}
-          <ul className="text-slate-600 dark:text-slate-400 space-y-1 list-disc pl-5 text-[13px] mt-2">
+          <ul className="text-[var(--ink-muted)] space-y-1 list-disc pl-5 text-[13px] mt-2">
             <li>Author: {authorName} – {authorRole}</li>
             {reviewerName && <li>Reviewed by: {reviewerName}</li>}
             <li>Published {published}{updated ? ` • Last updated ${updated}` : ""}</li>
-            <li>Full method: <Link href="/how-we-test" className="underline text-indigo-600 dark:text-indigo-400">How we test</Link> • <Link href="/corrections" className="underline text-indigo-600 dark:text-indigo-400">Corrections log</Link></li>
-            <li>Found an error? <a href="mailto:editor@apex-nepal.com" className="underline text-indigo-600 dark:text-indigo-400">editor@apex-nepal.com</a></li>
+            <li>Full method: <Link href="/how-we-test" className="underline text-[var(--accent)]">How we test</Link> • <Link href="/corrections" className="underline text-[var(--accent)]">Corrections log</Link></li>
+            <li>Found an error? <a href="mailto:editor@apex-nepal.com" className="underline text-[var(--accent)]">editor@apex-nepal.com</a></li>
           </ul>
         </div>
 
         {/* Sources list (playbook §4/§6.3): official/primary links for
             YMYL posts, from the `sources` column. */}
         {sources.length > 0 && (
-          <div className="mt-6 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 text-sm">
-            <div className="font-black mb-3">Sources</div>
+          <div className="mt-6 p-5 rounded-2xl border border-[var(--hairline)] text-sm">
+            <div className="font-semibold mb-3">Sources</div>
             <ol className="list-decimal pl-5 space-y-1.5 text-[13px]">
               {sources.map((s) => (
                 <li key={s.url}>
-                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 underline break-words">{s.label}</a>
+                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] underline break-words">{s.label}</a>
                 </li>
               ))}
             </ol>
-            {updated && <p className="text-xs text-slate-500 mt-3">Fees, limits and rules checked against these sources; last updated {updated}.</p>}
+            {updated && <p className="text-xs text-[var(--ink-faint)] mt-3">Fees, limits and rules checked against these sources; last updated {updated}.</p>}
           </div>
         )}
 
@@ -332,47 +332,47 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
             in the article body itself — see the implementation report. */}
         {(hub || related.length > 0) && (
           <div className="mt-12">
-            <h2 className="text-xl font-black mb-4">Keep reading</h2>
+            <h2 className="text-xl font-semibold mb-4">Keep reading</h2>
             <div className="grid gap-3">
               {related.map((r) => (
-                <Link key={r.slug} href={`/blog/${r.slug}`} className="block p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-1">{normalizeCategory(r.category, r.title) || "Guide"}</div>
+                <Link key={r.slug} href={`/blog/${r.slug}`} className="block p-4 rounded-2xl border border-[var(--hairline)] hover:bg-[var(--sunken)] transition">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--accent)] mb-1">{normalizeCategory(r.category, r.title) || "Guide"}</div>
                   <div className="font-bold leading-snug">{cleanTitle(r.title)}</div>
-                  {r.meta_description && <div className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mt-1">{cleanExcerpt(r.meta_description)}</div>}
+                  {r.meta_description && <div className="text-sm text-[var(--ink-muted)] line-clamp-2 mt-1">{cleanExcerpt(r.meta_description)}</div>}
                 </Link>
               ))}
             </div>
             {hub && (
               <p className="text-sm mt-4">
-                More in this series: <Link href={hub.href} className="font-bold underline text-indigo-600 dark:text-indigo-400">{hub.label}</Link>
+                More in this series: <Link href={hub.href} className="font-bold underline text-[var(--accent)]">{hub.label}</Link>
                 {" • "}
-                <Link href={categoryPage} className="underline text-slate-600 dark:text-slate-400">All {category} guides</Link>
+                <Link href={categoryPage} className="underline text-[var(--ink-muted)]">All {category} guides</Link>
               </p>
             )}
           </div>
         )}
 
         {/* Share / bookmark footer */}
-        <div className="flex flex-wrap items-center gap-3 mt-10 pt-6 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex flex-wrap items-center gap-3 mt-10 pt-6 border-t border-[var(--hairline)]">
           <button onClick={handleShare} className="btn btn--ghost !py-2 !text-[0.875rem]">Share article</button>
           <button onClick={handleBookmark} className="btn btn--ghost !py-2 !text-[0.875rem]">
             <IconCheck className="icon icon--15" />
             {bookmarked ? "Saved" : "Save to reading list"}
           </button>
-          <Link href="/corrections" className="text-xs text-slate-500 ml-auto underline">Report a correction</Link>
+          <Link href="/corrections" className="text-xs text-[var(--ink-faint)] ml-auto underline">Report a correction</Link>
         </div>
 
         {/* Author footer card */}
-        <div className="mt-12 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
+        <div className="mt-12 p-6 rounded-2xl border border-[var(--hairline)]">
           <div className="flex items-center gap-4">
             <Image src={authorAvatar} width={48} height={48} className="rounded-full" alt={authorName}/>
             <div>
-              <div className="font-black">{authorName}</div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">{authorRole}</div>
+              <div className="font-semibold">{authorName}</div>
+              <div className="text-xs text-[var(--ink-muted)]">{authorRole}</div>
             </div>
-            <Link href={authorProfileHref} className="ml-auto text-xs font-bold text-indigo-600 dark:text-indigo-400">View profile →</Link>
+            <Link href={authorProfileHref} className="ml-auto text-xs font-bold text-[var(--accent)]">View profile →</Link>
           </div>
-          {authorBio && <p className="text-sm text-slate-600 dark:text-slate-400 mt-3">{authorBio}</p>}
+          {authorBio && <p className="text-sm text-[var(--ink-muted)] mt-3">{authorBio}</p>}
         </div>
 
         {/* Comments */}
@@ -381,10 +381,10 @@ export default function ArticleContent({ serverArticle, slug, related = [], hub 
         </div>
 
         {/* CTA */}
-        <div className="mt-20 p-8 rounded-2xl bg-slate-900 text-white text-center">
-          <h3 className="text-xl font-black mb-2">Want to publish on Apex?</h3>
-          <p className="text-slate-300 text-sm mb-5">Real authors. Tested stories. Global audience.</p>
-          <Link href="/studio" className="inline-block px-5 py-3 bg-white text-slate-900 rounded-xl font-black text-sm">Write your story →</Link>
+        <div className="mt-20 p-8 rounded-2xl bg-[var(--ink)] text-[var(--paper)] text-center">
+          <h3 className="text-xl font-semibold mb-2">Want to publish on Apex?</h3>
+          <p className="mb-5 text-sm opacity-75">Real authors. Tested stories. Global audience.</p>
+          <Link href="/studio" className="inline-block px-5 py-3 bg-[var(--paper)] text-[var(--ink)] rounded-xl font-semibold text-sm">Write your story →</Link>
         </div>
 
       </article>

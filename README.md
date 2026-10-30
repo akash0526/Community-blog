@@ -54,6 +54,17 @@ Push your repository to GitHub, import it into Vercel, and add the Supabase vari
 
 ---
 
+## 🎨 Design system
+
+The front end runs on one token-driven system: warm paper, near-black ink, a
+single violet accent and hairline surfaces. Light and dark are symmetrical, all
+layout primitives live in `app/globals.css`, and motion is CSS-only (no
+animation library ships to the browser). See
+[`UI_REFRESH_2026.md`](./UI_REFRESH_2026.md) for the full rationale, the
+performance work and the conventions to keep.
+
+---
+
 ## 🛠️ Project File Anatomy
 
 ```
@@ -65,12 +76,13 @@ community-platform/
 │   ├── dashboard/page.jsx    # Author specific live telemetry dashboard
 │   ├── kanban/page.jsx       # Long-tail keyword cluster pipeline planner
 │   ├── studio/page.jsx       # Multi-user author studio & real-time live audit
-│   ├── layout.tsx            # Master Layout with Inter/Geist fonts
-│   ├── globals.css           # Premium custom Tailwind design system & variables
+│   ├── layout.tsx            # Root shell: fonts, metadata, header + footer
+│   ├── globals.css           # Design tokens + the whole component system
 │   └── page.jsx              # Homepage Community Hub & multi-user feed explorer
 ├── components/
 │   ├── AuthModal.jsx         # Supabase Auth Login/Signup + One-click demo failsafe
-│   └── Navbar.jsx            # Sticky responsive top navigation deck
+│   ├── Navbar.tsx            # Sticky responsive navigation with a mobile sheet
+│   └── NavigationProgress.tsx # 2px pending-navigation line (no page curtain)
 ├── lib/
 │   ├── seoEngine.js          # The 100-point real-time algorithmic evaluator
 │   ├── imagekitUpload.js      # Direct browser uploads to ImageKit

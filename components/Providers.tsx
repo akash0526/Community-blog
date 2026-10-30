@@ -1,16 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { MotionConfig } from "framer-motion";
 import { ThemeProvider } from "./ThemeProvider";
 
 /**
  * Client boundary for global providers.
  *
- * - MotionConfig: honour prefers-reduced-motion for every framer-motion
- *   animation on the site (transforms are disabled, not just sped up).
- * - ThemeProvider: next-themes, dark-first, writing `data-theme` (the
- *   attribute the whole CSS token system reads).
+ * Only next-themes lives here. framer-motion used to be imported at this
+ * level purely to configure `reducedMotion`, which pulled the whole
+ * animation library into the bundle of every page — reduced motion is now
+ * handled in CSS (globals.css §20), so the root bundle stays small.
  */
 export default function Providers({
 	children,
@@ -18,15 +17,13 @@ export default function Providers({
 	children: React.ReactNode;
 }) {
 	return (
-		<MotionConfig reducedMotion="user">
-			<ThemeProvider
-				attribute="data-theme"
-				defaultTheme="dark"
-				enableSystem
-				disableTransitionOnChange={false}
-			>
-				{children}
-			</ThemeProvider>
-		</MotionConfig>
+		<ThemeProvider
+			attribute="data-theme"
+			defaultTheme="system"
+			enableSystem
+			disableTransitionOnChange={false}
+		>
+			{children}
+		</ThemeProvider>
 	);
 }

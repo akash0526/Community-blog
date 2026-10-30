@@ -1,57 +1,44 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
 import {
-	Briefcase,
-	Compass,
-	CreditCard,
-	FileText,
-	Globe,
-	LogOut,
 	LayoutDashboard,
+	LogOut,
 	Menu,
 	Pen,
-	PenLine,
-	Sparkles,
-	Store,
 	User,
-	Users,
 	X,
-	type LucideIcon,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { ThemeToggle } from "./ThemeToggle";
-import { cn } from "@/lib/utils";
 
-// AuthModal (forms + supabase) is only needed after a click — keep it
-// out of the initial page-load bundles (PSI "unused JavaScript").
+// AuthModal (forms + Supabase) is only needed after a click — keep it out
+// of the initial page-load bundle.
 const AuthModal = dynamic(() => import("./AuthModal"), { ssr: false });
 
 interface NavItem {
 	label: string;
 	href: string;
-	icon: LucideIcon;
 }
 
 const NAV_LINKS: NavItem[] = [
-	{ label: "Resources", href: "/resources", icon: Compass },
-	{ label: "Guides", href: "/blog", icon: FileText },
-	{ label: "Tools", href: "/ai-tools", icon: Sparkles },
-	{ label: "Freelancing", href: "/freelancing-in-nepal", icon: Briefcase },
-	{ label: "About", href: "/about", icon: Users },
+	{ label: "Resources", href: "/resources" },
+	{ label: "Guides", href: "/blog" },
+	{ label: "Tools", href: "/ai-tools" },
+	{ label: "Freelancing", href: "/freelancing-in-nepal" },
+	{ label: "About", href: "/about" },
 ];
 
 const MOBILE_LINKS: NavItem[] = [
 	...NAV_LINKS,
-	{ label: "Hosting", href: "/blogging-hosting", icon: Globe },
-	{ label: "Payments", href: "/digital-payments", icon: CreditCard },
-	{ label: "Business tools", href: "/small-business-tools", icon: Store },
-	{ label: "Write for us", href: "/write-for-us", icon: PenLine },
+	{ label: "Hosting", href: "/blogging-hosting" },
+	{ label: "Payments", href: "/digital-payments" },
+	{ label: "Business tools", href: "/small-business-tools" },
+	{ label: "Write for us", href: "/write-for-us" },
 ];
 
 function avatarFor(user: SupabaseUser | null) {
@@ -60,18 +47,20 @@ function avatarFor(user: SupabaseUser | null) {
 	const name = encodeURIComponent(
 		user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Apex",
 	);
-	return `https://ui-avatars.com/api/?name=${name}&background=8b5cf6&color=fff&size=64`;
+	return `https://ui-avatars.com/api/?name=${name}&background=5440d6&color=fff&size=64`;
+}
+
+function isActive(pathname: string, href: string) {
+	return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 /**
- * Site navigation — glassmorphism redesign (plan §4).
+ * Site header.
  *
- * Keeps the behaviour of the previous header: lazy Supabase session
- * restore, demo-user support, avatar dropdown, shared AuthModal,
- * "Write a story" flow and active-route highlighting. The plan's
- * Home/Blogs/Community/Contact links do not exist on this site, so the
- * real routes are used instead. The scrolled glass state is driven by
- * SiteEffects toggling `.is-stuck` on #header (single source of truth).
+ * Deliberately quiet: flat paper background, one accent for the current
+ * section, no blur and no animated logo. Behaviour from the previous
+ * header is preserved: deferred Supabase session restore, demo sessions,
+ * avatar menu, shared AuthModal and the "Write a story" gate.
  */
 export default function Navbar() {
 	const pathname = usePathname();
@@ -80,20 +69,17 @@ export default function Navbar() {
 	const [authModalOpen, setAuthModalOpen] = useState(false);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [dropdownOpen, setDropdownOpen] = useState(false);
+	const accountRef = useRef<HTMLDivElement | null>(null);
 
-
+	// Restore the session after the page is interactive: the Supabase
+	// client is not needed to paint the header, so it stays off the
+	// critical path (FCP/LCP).
 	useEffect(() => {
-		// The Supabase client (~60 KB gzip) is not required to paint the
-		// header: defer it until the browser is idle after load so it
-		// leaves the FCP/LCP critical path (PSI "unused JavaScript" +
-		// LCP insights). Returning readers just see their avatar upgrade
-		// a moment later.
 		let cancelled = false;
 		let subscription: { unsubscribe: () => void } | null = null;
 		let idleHandle: number | null = null;
 
 		const initAuth = async () => {
-			// Demo session restores first — localStorage only, no network.
 			try {
 				const demo = localStorage.getItem("apex_demo_user");
 				if (demo && !cancelled) setUser(JSON.parse(demo));
@@ -133,6 +119,40 @@ export default function Navbar() {
 		};
 	}, []);
 
+	// Mobile sheet: lock the page behind it and let Escape dismiss it.
+	useEffect(() => {
+		if (!mobileMenuOpen) return;
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") setMobileMenuOpen(false);
+		};
+		const previousOverflow = document.body.style.overflow;
+		document.body.style.overflow = "hidden";
+		document.addEventListener("keydown", onKeyDown);
+		return () => {
+			document.body.style.overflow = previousOverflow;
+			document.removeEventListener("keydown", onKeyDown);
+		};
+	}, [mobileMenuOpen]);
+
+	// Avatar menu: dismiss on outside click or Escape.
+	useEffect(() => {
+		if (!dropdownOpen) return;
+		const onPointerDown = (event: PointerEvent) => {
+			if (!accountRef.current?.contains(event.target as Node)) {
+				setDropdownOpen(false);
+			}
+		};
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") setDropdownOpen(false);
+		};
+		document.addEventListener("pointerdown", onPointerDown);
+		document.addEventListener("keydown", onKeyDown);
+		return () => {
+			document.removeEventListener("pointerdown", onPointerDown);
+			document.removeEventListener("keydown", onKeyDown);
+		};
+	}, [dropdownOpen]);
+
 	const handleLogout = async () => {
 		const { supabase } = await import("@/lib/supabase");
 		await supabase.auth.signOut();
@@ -155,105 +175,82 @@ export default function Navbar() {
 	};
 
 	const displayName =
-		user?.user_metadata?.full_name ||
-		user?.email?.split("@")[0] ||
-		"Writer";
+		user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Writer";
 
 	return (
 		<>
 			<header id="header" className="header">
-				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-					<div className="flex h-20 items-center justify-between gap-4">
-						{/* Logo */}
-						<Link
-							href="/"
-							className="group relative"
-							aria-label="Apex Nepal home"
-							onClick={() => setMobileMenuOpen(false)}
-						>
-							<motion.span
-								whileHover={{ scale: 1.05 }}
-								whileTap={{ scale: 0.95 }}
-								className="gradient-text block font-display text-2xl font-bold"
-							>
-								Apex Nepal
-							</motion.span>
-
-							{/* Underline animation */}
-							<motion.span
-								aria-hidden="true"
-								className="absolute -bottom-1 left-0 h-0.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500"
-								initial={{ width: 0 }}
-								whileHover={{ width: "100%" }}
-								transition={{ duration: 0.3 }}
-							/>
+				<div className="wrap">
+					<div className="header__in">
+						<Link href="/" className="brand" aria-label="Apex Nepal — home">
+							Apex<span className="dot" aria-hidden="true" />
+							Nepal
 						</Link>
 
-						{/* Desktop Navigation */}
-						<div className="hidden items-center gap-6 md:flex lg:gap-8">
+						<nav className="nav" aria-label="Primary">
 							{NAV_LINKS.map((link) => (
-								<NavLink
+								<Link
 									key={link.href}
-									{...link}
-									active={
-										pathname === link.href ||
-										pathname.startsWith(`${link.href}/`)
-									}
-								/>
+									href={link.href}
+									className={isActive(pathname, link.href) ? "is-active" : undefined}
+									aria-current={isActive(pathname, link.href) ? "page" : undefined}
+								>
+									{link.label}
+								</Link>
 							))}
-						</div>
+						</nav>
 
-						<div className="flex items-center gap-3">
+						<div className="header__actions">
 							<ThemeToggle />
 
 							{user ? (
-								<div className="relative hidden md:block">
+								<div className="relative hidden md:block" ref={accountRef}>
 									<button
 										type="button"
 										onClick={() => setDropdownOpen((v) => !v)}
 										aria-expanded={dropdownOpen}
-										aria-haspopup="true"
-										// On mobile the name span is hidden and the avatar has
-										// alt="", so the button needs its own accessible name.
-										aria-label={`${displayName} account menu`}
-										className="glass flex h-10 items-center gap-2 rounded-full px-2 transition-all hover:glass-strong"
+										aria-haspopup="menu"
+										aria-label={`${displayName} — account menu`}
+										className="flex h-[38px] items-center gap-2 rounded-[10px] border border-[var(--hairline)] px-1.5 transition-colors hover:border-[var(--hairline-strong)]"
 									>
 										<Image
 											src={avatarFor(user)}
 											alt=""
-											width={28}
-											height={28}
-											className="h-7 w-7 rounded-full object-cover"
+											width={26}
+											height={26}
+											className="h-[26px] w-[26px] rounded-full object-cover"
 										/>
-										<span className="hidden max-w-[8rem] truncate text-[0.8125rem] font-medium xl:inline">
-											{displayName}
-										</span>
 									</button>
 
 									{dropdownOpen && (
-										<div className="glass-strong absolute right-0 top-[calc(100%+0.75rem)] z-50 w-64 rounded-2xl p-2 text-left shadow-2xl shadow-purple-500/10">
+										<div
+											role="menu"
+											className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-60 overflow-hidden rounded-[var(--radius)] border border-[var(--hairline)] bg-[var(--surface)] py-1.5 shadow-[var(--shadow)]"
+										>
 											<div className="border-b border-[var(--hairline)] px-3 pb-2 pt-1">
-												<div className="mb-1 text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-[var(--ink-faint)]">
-													Active author
+												<div className="truncate text-[0.8125rem] font-medium">
+													{displayName}
 												</div>
-												<div className="truncate text-[0.8125rem] text-[var(--ink-muted)]">
+												<div className="truncate text-[0.75rem] text-[var(--ink-faint)]">
 													{user.email || "Author session"}
 												</div>
 											</div>
 											<Link
 												href="/dashboard"
+												role="menuitem"
 												onClick={() => setDropdownOpen(false)}
-												className="flex items-center gap-2 rounded-lg px-3 py-2 text-[0.875rem] text-[var(--ink-muted)] transition-colors hover:bg-[var(--clay-tint)] hover:text-[var(--clay)]"
+												className="mt-1 flex items-center gap-2 px-3 py-2 text-[0.875rem] text-[var(--ink-muted)] transition-colors hover:bg-[var(--sunken)] hover:text-[var(--ink)]"
 											>
-												<LayoutDashboard size={15} />
+												<LayoutDashboard size={15} aria-hidden="true" />
 												Dashboard &amp; profile
 											</Link>
 											<button
 												type="button"
+												role="menuitem"
 												onClick={handleLogout}
-												className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-[0.875rem] text-[var(--ink-muted)] transition-colors hover:bg-[var(--clay-tint)] hover:text-[var(--clay)]"
+												className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-[0.875rem] text-[var(--ink-muted)] transition-colors hover:bg-[var(--sunken)] hover:text-[var(--ink)]"
 											>
-												<LogOut size={15} />
+												<LogOut size={15} aria-hidden="true" />
 												Sign out
 											</button>
 										</div>
@@ -263,162 +260,105 @@ export default function Navbar() {
 								<button
 									type="button"
 									onClick={() => setAuthModalOpen(true)}
-									aria-label="Log in / Join"
-									className="glass hidden h-10 w-10 place-items-center rounded-full transition-all hover:glass-strong md:grid"
+									className="icon-btn hidden md:grid"
+									aria-label="Log in or join"
+									title="Log in / Join"
 								>
-									<User size={16} />
+									<User aria-hidden="true" />
 								</button>
 							)}
 
-							<motion.button
+							<button
 								type="button"
-								whileHover={{ scale: 1.05 }}
-								whileTap={{ scale: 0.95 }}
 								onClick={startWriting}
-								aria-label="Write a story"
-								className="hidden items-center gap-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-purple-500/30 transition-shadow hover:shadow-purple-500/50 sm:flex"
+								className="btn btn--primary btn--sm hidden sm:inline-flex"
 							>
-								<Pen size={16} />
+								<Pen size={15} aria-hidden="true" />
 								<span className="hidden lg:inline">Write a story</span>
-							</motion.button>
+								<span className="lg:hidden">Write</span>
+							</button>
 
-							{/* Mobile Menu Button */}
 							<button
 								type="button"
 								onClick={() => setMobileMenuOpen((v) => !v)}
-								className="glass rounded-xl p-2.5 transition-all hover:glass-strong md:hidden"
+								className="icon-btn nav-toggle"
 								aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
 								aria-expanded={mobileMenuOpen}
+								aria-controls="mobile-nav"
 							>
-								{mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+								{mobileMenuOpen ? (
+									<X aria-hidden="true" />
+								) : (
+									<Menu aria-hidden="true" />
+								)}
 							</button>
 						</div>
 					</div>
 				</div>
 
-				{/* Mobile Menu */}
-				<motion.div
-					initial={false}
-					animate={mobileMenuOpen ? "open" : "closed"}
-					variants={{
-						open: { opacity: 1, height: "auto" },
-						closed: { opacity: 0, height: 0 },
-					}}
-					transition={{ duration: 0.3 }}
-					className="overflow-hidden bg-black/90 backdrop-blur-xl md:hidden"
-				>
-					<div className="space-y-3 px-4 pb-8 pt-4">
-						{MOBILE_LINKS.map((link, index) => (
-							<motion.div
-								key={link.href}
-								initial={{ x: -20, opacity: 0 }}
-								animate={
-									mobileMenuOpen
-										? { x: 0, opacity: 1 }
-										: { x: -20, opacity: 0 }
-								}
-								transition={{ delay: index * 0.05 }}
-							>
-								<Link
-									href={link.href}
-									onClick={() => setMobileMenuOpen(false)}
-									className="glass flex items-center gap-3 rounded-xl px-4 py-3 transition-all hover:glass-strong"
+				{mobileMenuOpen && (
+					<div className="nav-sheet" id="mobile-nav">
+						<div className="wrap">
+							<nav className="nav-mobile" aria-label="Mobile">
+								{MOBILE_LINKS.map((link) => (
+									<Link
+										key={link.href}
+										href={link.href}
+										aria-current={
+											isActive(pathname, link.href) ? "page" : undefined
+										}
+										onClick={() => setMobileMenuOpen(false)}
+									>
+										{link.label}
+										<span aria-hidden="true" className="text-[var(--ink-faint)]">
+											&rarr;
+										</span>
+									</Link>
+								))}
+							</nav>
+
+							<div className="nav-mobile__foot">
+								{user ? (
+									<Link
+										href="/dashboard"
+										className="btn btn--ghost"
+										onClick={() => setMobileMenuOpen(false)}
+									>
+										<LayoutDashboard size={16} aria-hidden="true" />
+										My dashboard
+									</Link>
+								) : (
+									<button
+										type="button"
+										className="btn btn--ghost"
+										onClick={() => {
+											setMobileMenuOpen(false);
+											setAuthModalOpen(true);
+										}}
+									>
+										<User size={16} aria-hidden="true" />
+										Log in / Join
+									</button>
+								)}
+								<button
+									type="button"
+									onClick={startWriting}
+									className="btn btn--primary"
 								>
-									<link.icon size={20} className="text-purple-400" />
-									<span className="font-medium">{link.label}</span>
-								</Link>
-							</motion.div>
-						))}
-
-						{user ? (
-							<Link
-								href="/dashboard"
-								onClick={() => setMobileMenuOpen(false)}
-								className="glass flex items-center gap-3 rounded-xl px-4 py-3 transition-all hover:glass-strong"
-							>
-								<LayoutDashboard size={20} className="text-purple-400" />
-								<span className="font-medium">My dashboard</span>
-							</Link>
-						) : (
-							<button
-								type="button"
-								onClick={() => {
-									setMobileMenuOpen(false);
-									setAuthModalOpen(true);
-								}}
-								className="glass flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-all hover:glass-strong"
-							>
-								<User size={20} className="text-purple-400" />
-								<span className="font-medium">Log in / Join</span>
-							</button>
-						)}
-
-						<motion.button
-							type="button"
-							initial={{ y: 20, opacity: 0 }}
-							animate={
-								mobileMenuOpen
-									? { y: 0, opacity: 1 }
-									: { y: 20, opacity: 0 }
-							}
-							transition={{ delay: MOBILE_LINKS.length * 0.05 }}
-							onClick={startWriting}
-							className="w-full rounded-full bg-gradient-to-r from-purple-500 to-blue-500 px-6 py-3 font-medium text-white shadow-lg"
-						>
-							Write a story
-						</motion.button>
+									<Pen size={16} aria-hidden="true" />
+									Write a story
+								</button>
+							</div>
+						</div>
 					</div>
-				</motion.div>
+				)}
 			</header>
 
-			{/* Shared Authentication Modal */}
 			<AuthModal
 				isOpen={authModalOpen}
 				onClose={() => setAuthModalOpen(false)}
 				onAuthSuccess={handleAuthSuccess}
 			/>
 		</>
-	);
-}
-
-function NavLink({
-	href,
-	label,
-	icon: Icon,
-	active,
-}: {
-	href: string;
-	label: string;
-	icon: LucideIcon;
-	active: boolean;
-}) {
-	return (
-		<Link href={href} className="group relative">
-			<motion.div
-				whileHover={{ y: -2 }}
-				className={cn(
-					"flex items-center gap-2 text-sm font-medium transition-colors",
-					active
-						? "text-[var(--ink)]"
-						: "text-[var(--ink-muted)] group-hover:text-[var(--ink)]",
-				)}
-			>
-				<Icon
-					size={16}
-					className="opacity-70 transition-opacity group-hover:opacity-100"
-				/>
-				{label}
-			</motion.div>
-
-			{/* Animated underline — rests fully drawn on the active route */}
-			<motion.span
-				aria-hidden="true"
-				className="absolute -bottom-1 left-0 h-0.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500"
-				initial={false}
-				animate={active ? { width: "100%" } : { width: 0 }}
-				whileHover={{ width: "100%" }}
-				transition={{ duration: 0.3 }}
-			/>
-		</Link>
 	);
 }

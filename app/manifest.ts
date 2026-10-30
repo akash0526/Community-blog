@@ -9,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "Tested tools and guides for Nepali freelancers, students and small businesses: payments, AI tools, hosting and practical online-work guides.",
     start_url: "/",
     display: "standalone",
-    background_color: "#F7F3EC",
-    theme_color: "#A8471F",
+    background_color: "#FBFAF8",
+    theme_color: "#FBFAF8",
     icons: [
       {
         src: "/icon.svg",

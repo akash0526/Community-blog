@@ -1,77 +1,89 @@
 "use client";
 
-// Brief §2.6 + §19 — scroll reveal, and §4 — the sticky header hairline.
-// Deliberately vanilla: IntersectionObserver + one passive scroll listener,
-// no new dependencies (§17).
+// Scroll reveal + the sticky-header hairline, in vanilla JS: one passive
+// scroll listener (rAF-throttled) and one IntersectionObserver. No animation
+// library, no per-frame layout reads.
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+
+const REVEAL_SELECTOR = ".reveal";
 
 export default function SiteEffects() {
 	const pathname = usePathname();
 
 	useEffect(() => {
 		const header = document.getElementById("header");
-		const onScroll = () => {
-			header?.classList.toggle("is-stuck", window.scrollY > 8);
+		let frame = 0;
+
+		const syncHeader = () => {
+			frame = 0;
+			header?.classList.toggle("is-stuck", window.scrollY > 4);
 		};
-		onScroll();
+
+		const onScroll = () => {
+			if (frame) return;
+			frame = window.requestAnimationFrame(syncHeader);
+		};
+
+		syncHeader();
 		window.addEventListener("scroll", onScroll, { passive: true });
+
+		const cleanupScroll = () => {
+			window.removeEventListener("scroll", onScroll);
+			if (frame) window.cancelAnimationFrame(frame);
+		};
 
 		const reduceMotion = window.matchMedia(
 			"(prefers-reduced-motion: reduce)",
 		).matches;
 
-		const revealNow = () => {
+		const revealAll = () => {
 			document
-				.querySelectorAll(".reveal:not(.in)")
+				.querySelectorAll(`${REVEAL_SELECTOR}:not(.in)`)
 				.forEach((el) => el.classList.add("in"));
 		};
 
 		if (reduceMotion || typeof IntersectionObserver === "undefined") {
-			revealNow();
-			return () => window.removeEventListener("scroll", onScroll);
+			revealAll();
+			return cleanupScroll;
 		}
 
 		const observer = new IntersectionObserver(
 			(entries) => {
-				let index = 0;
-				entries.forEach((entry) => {
-					if (!entry.isIntersecting) return;
-					const target = entry.target;
-					// Stagger by 60ms per index within the batch that just entered.
-					window.setTimeout(
-						() => target.classList.add("in"),
-						index * 60,
-					);
-					index += 1;
-					observer.unobserve(target);
-				});
+				for (const entry of entries) {
+					if (!entry.isIntersecting) continue;
+					entry.target.classList.add("in");
+					observer.unobserve(entry.target);
+				}
 			},
-			{ threshold: 0.12, rootMargin: "0px 0px -60px 0px" },
+			{ threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
 		);
 
-		const observeAll = () => {
-			const pending = document.querySelectorAll(".reveal:not(.in)");
-			pending.forEach((el) => observer.observe(el));
-			// Anything already on screen at observe-time fires immediately; content
-			// that mounts later (pagination, client-side filters) is picked up below.
-			if (pending.length === 0) return;
+		const observe = (root) => {
+			if (root.nodeType !== 1) return;
+			const element = root;
+			if (element.matches?.(REVEAL_SELECTOR) && !element.classList.contains("in")) {
+				observer.observe(element);
+			}
+			element
+				.querySelectorAll?.(`${REVEAL_SELECTOR}:not(.in)`)
+				.forEach((el) => observer.observe(el));
 		};
 
-		observeAll();
+		observe(document.body);
 
-		// Newly rendered nodes (e.g. "Load more" cards) also need observing.
-		let frame = 0;
-		const mutationObserver = new MutationObserver(() => {
-			window.cancelAnimationFrame(frame);
-			frame = window.requestAnimationFrame(observeAll);
+		// Cards rendered later (filters, "load more") are picked up by
+		// inspecting only the nodes that were actually added.
+		const mutationObserver = new MutationObserver((mutations) => {
+			for (const mutation of mutations) {
+				for (const node of mutation.addedNodes) observe(node);
+			}
 		});
 		mutationObserver.observe(document.body, { childList: true, subtree: true });
 
 		return () => {
-			window.removeEventListener("scroll", onScroll);
-			window.cancelAnimationFrame(frame);
+			cleanupScroll();
 			mutationObserver.disconnect();
 			observer.disconnect();
 		};

@@ -93,7 +93,7 @@ export default function DiscussionThread({ articleSlug }) {
 			user?.user_metadata?.avatar_url &&
 			!user.user_metadata.avatar_url.includes("dicebear")
 				? user.user_metadata.avatar_url
-				: `https://ui-avatars.com/api/?name=${encodeURIComponent(activeName)}&background=A8471F&color=fff`;
+				: `https://ui-avatars.com/api/?name=${encodeURIComponent(activeName)}&background=5440d6&color=fff`;
 		const activeRole =
 			user?.user_metadata?.professional_role || "Community Reader";
 
@@ -172,18 +172,18 @@ export default function DiscussionThread({ articleSlug }) {
 	return (
 		<section
 			id="discussion-thread"
-			className="mt-20 pt-12 border-t border-slate-200 dark:border-slate-800 text-left"
+			className="mt-20 pt-12 border-t border-[var(--hairline)] text-left"
 		>
 			<div className="flex items-center justify-between mb-10 flex-wrap gap-4">
 				<div className="flex items-center gap-3">
-					<span className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black shadow-sm">
+					<span className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 text-[var(--accent)] flex items-center justify-center font-black shadow-sm">
 						<MessageSquare className="w-5 h-5" />
 					</span>
-					<h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+					<h3 className="text-2xl sm:text-3xl font-black text-[var(--ink)]">
 						Community Discussion
 					</h3>
 				</div>
-				<span className="bg-slate-100 dark:bg-slate-800 px-3.5 py-1.5 rounded-full text-xs font-black text-slate-600 dark:text-slate-300">
+				<span className="bg-[var(--sunken)] px-3.5 py-1.5 rounded-full text-xs font-black text-[var(--ink-muted)]">
 					{comments.length}{" "}
 					{comments.length === 1 ? "Contribution" : "Contributions"}
 				</span>
@@ -192,9 +192,9 @@ export default function DiscussionThread({ articleSlug }) {
 			{/* Comment Submission Deck */}
 			<form
 				onSubmit={handleAddComment}
-				className="card bg-white dark:bg-slate-900 p-6 sm:p-8 mb-14 shadow-xl border border-slate-200 dark:border-slate-800 space-y-4"
+				className="card bg-[var(--surface)] p-6 sm:p-8 mb-14 shadow-xl border border-[var(--hairline)] space-y-4"
 			>
-				<div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-slate-100 dark:border-slate-800/80">
+				<div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-[var(--hairline)]">
 					<div className="flex items-center gap-2.5">
 						<User className="w-4 h-4 text-indigo-500 flex-shrink-0" />
 						<input
@@ -202,10 +202,10 @@ export default function DiscussionThread({ articleSlug }) {
 							value={authorName}
 							onChange={(e) => setAuthorName(e.target.value)}
 							placeholder="Your Display Name..."
-							className="bg-transparent font-black text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:text-indigo-600 dark:focus:text-indigo-400 transition"
+							className="bg-transparent font-black text-sm text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:text-indigo-600 dark:focus:text-indigo-400 transition"
 						/>
 					</div>
-					<span className="text-[11px] font-extrabold text-slate-400 sm:self-center uppercase tracking-wider">
+					<span className="text-[11px] font-extrabold text-[var(--ink-faint)] sm:self-center uppercase tracking-wider">
 						Be kind · No spam
 					</span>
 				</div>
@@ -216,7 +216,7 @@ export default function DiscussionThread({ articleSlug }) {
 					onChange={(e) => setContent(e.target.value)}
 					placeholder="What are your thoughts on this story? Leave an authentic perspective..."
 					maxLength={2000}
-					className="w-full bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-4 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition leading-relaxed resize-none"
+					className="w-full bg-[var(--sunken)] border border-[var(--hairline)] rounded-2xl p-4 text-sm font-medium text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:ring-2 focus:ring-indigo-500 transition leading-relaxed resize-none"
 				></textarea>
 				{formError && (
 					<p role="alert" className="text-xs font-bold text-amber-600 dark:text-amber-400">
@@ -236,7 +236,7 @@ export default function DiscussionThread({ articleSlug }) {
 								key={emoji}
 								type="button"
 								onClick={() => setContent((prev) => prev + " " + emoji)}
-								className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950 dark:hover:text-indigo-400 transition whitespace-nowrap cursor-pointer flex-shrink-0"
+								className="px-3 py-1.5 rounded-xl bg-[var(--sunken)] text-xs font-bold text-[var(--ink)] hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950 dark:hover:text-indigo-400 transition whitespace-nowrap cursor-pointer flex-shrink-0"
 							>
 								{emoji}
 							</button>
@@ -256,18 +256,18 @@ export default function DiscussionThread({ articleSlug }) {
 
 			{/* Comments Stream */}
 			{loading ? (
-				<div className="py-12 text-center font-bold text-slate-400">
+				<div className="py-12 text-center font-bold text-[var(--ink-faint)]">
 					⚡ Loading community perspectives...
 				</div>
 			) : comments.length === 0 ? (
-				<div className="py-16 text-center bg-slate-50 dark:bg-slate-900/60 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-8 shadow-sm">
+				<div className="py-16 text-center bg-[var(--sunken)]/60 rounded-3xl border border-[var(--hairline)] p-8 shadow-sm">
 					<div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950 flex items-center justify-center text-xl mx-auto mb-3">
 						💡
 					</div>
-					<h4 className="font-black text-base text-slate-900 dark:text-white mb-1">
+					<h4 className="font-black text-base text-[var(--ink)] mb-1">
 						Start the open conversation
 					</h4>
-					<p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+					<p className="text-xs text-[var(--ink-faint)] max-w-sm mx-auto">
 						Be the first community member to drop a perspective, reflection, or
 						question on this piece!
 					</p>
@@ -277,7 +277,7 @@ export default function DiscussionThread({ articleSlug }) {
 					{comments.map((comm) => (
 						<div
 							key={comm.id}
-							className="card bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-sm transition hover:shadow-md border-slate-200/80 dark:border-slate-800 flex flex-col justify-between"
+							className="card bg-[var(--surface)] p-6 sm:p-7 shadow-sm transition hover:shadow-md border-[var(--hairline)] flex flex-col justify-between"
 						>
 							<div>
 								{/* Author Header */}
@@ -288,21 +288,21 @@ export default function DiscussionThread({ articleSlug }) {
 											comm.author_avatar &&
 											!comm.author_avatar.includes("dicebear")
 												? comm.author_avatar
-												: `https://ui-avatars.com/api/?name=${encodeURIComponent(comm.author_name || "Apex")}&background=A8471F&color=fff&size=64`
+												: `https://ui-avatars.com/api/?name=${encodeURIComponent(comm.author_name || "Apex")}&background=5440d6&color=fff&size=64`
 										}
 										alt={comm.author_name || "Commenter"}
 										width={40}
 										height={40}
-										className="rounded-full object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0"
+										className="rounded-full object-cover border border-[var(--hairline)] flex-shrink-0"
 									/>
 										<div>
-											<div className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
+											<div className="font-black text-sm text-[var(--ink)] flex items-center gap-1.5 flex-wrap">
 												<span>{comm.author_name}</span>
-												<span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">
+												<span className="bg-[var(--sunken)] text-[var(--ink-muted)] text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">
 													{comm.author_role}
 												</span>
 											</div>
-											<div className="text-[11px] font-semibold text-slate-400 mt-0.5">
+											<div className="text-[11px] font-semibold text-[var(--ink-faint)] mt-0.5">
 												{comm.created_at
 													? new Date(comm.created_at).toLocaleDateString(
 															"en-US",
@@ -325,15 +325,15 @@ export default function DiscussionThread({ articleSlug }) {
 							</div>
 
 							{/* Actions Foot */}
-							<div className="flex items-center justify-end pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80">
+							<div className="flex items-center justify-end pt-4 mt-4 border-t border-[var(--hairline)]">
 								<button
 									type="button"
 									onClick={() => handleLikeComment(comm.id)}
-									className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-rose-50 dark:bg-slate-800/60 dark:hover:bg-rose-950/50 text-slate-600 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-400 text-xs font-black transition cursor-pointer transform hover:scale-105 border border-slate-200/60 dark:border-slate-700/60"
+									className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-rose-50 dark:bg-slate-800/60 dark:hover:bg-rose-950/50 text-[var(--ink-muted)] hover:text-rose-500 dark:hover:text-rose-400 text-xs font-black transition cursor-pointer transform hover:scale-105 border border-slate-200/60 dark:border-slate-700/60"
 								>
 									<Heart className="w-3.5 h-3.5 fill-current text-rose-500" />
 									<span>{comm.likes || 0}</span>
-									<span className="font-semibold text-slate-400 ml-0.5 hidden sm:inline">
+									<span className="font-semibold text-[var(--ink-faint)] ml-0.5 hidden sm:inline">
 										Likes
 									</span>
 								</button>

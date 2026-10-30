@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft, Search } from "lucide-react";
 
 export const metadata = {
 	title: "Page not found",
@@ -8,24 +9,23 @@ export const metadata = {
 
 export default function GlobalNotFound() {
 	return (
-		<div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex items-center">
-			<div className="max-w-2xl mx-auto px-6 py-24 text-center">
-				<div className="text-7xl font-black gradient-text mb-4">404</div>
-				<h1 className="text-2xl sm:text-3xl font-black mb-3">This page wandered off.</h1>
-				<p className="text-slate-600 dark:text-slate-400 mb-8">
-					The link may be broken, or the story may have moved. Try the archive instead.
+		<div className="flex flex-1 items-center px-6 py-24">
+			<div className="mx-auto max-w-xl text-center">
+				<p className="font-display text-[clamp(3.5rem,10vw,5.5rem)] font-semibold leading-none tracking-tight text-[var(--accent)]">
+					404
 				</p>
-				<div className="flex flex-col sm:flex-row gap-3 justify-center">
-					<Link
-						href="/"
-						className="btn btn-primary px-7 py-3.5 rounded-xl font-black text-sm"
-					>
-						← Back home
+				<h1 className="mt-4 text-2xl sm:text-3xl">This page wandered off.</h1>
+				<p className="mt-3 text-[0.9375rem] leading-relaxed text-[var(--ink-muted)]">
+					The link may be broken, or the story may have moved. The archive is
+					the fastest way back.
+				</p>
+				<div className="mt-7 flex flex-col justify-center gap-2.5 sm:flex-row">
+					<Link href="/" className="btn btn--primary">
+						<ArrowLeft size={15} aria-hidden="true" />
+						Back home
 					</Link>
-					<Link
-						href="/blog"
-						className="btn btn-secondary px-7 py-3.5 rounded-xl font-bold text-sm"
-					>
+					<Link href="/blog" className="btn btn--ghost">
+						<Search size={15} aria-hidden="true" />
 						Browse all stories
 					</Link>
 				</div>

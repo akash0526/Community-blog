@@ -142,39 +142,39 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
   };
 
   return (
-    <div className="flex-1 bg-white dark:bg-slate-950">
+    <div className="flex-1 bg-[var(--paper)]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="max-w-4xl mx-auto px-6 py-14 sm:py-20">
         <div className="flex flex-col sm:flex-row gap-8 items-start mb-12">
-          <img src={profile.avatar_url?.includes('dicebear') ? `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name)}&background=A8471F&color=fff&size=256` : profile.avatar_url} 
-            alt={profile.full_name} className="w-28 h-28 rounded-2xl object-cover border border-slate-200 dark:border-slate-800" />
+          <img src={profile.avatar_url?.includes('dicebear') ? `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name)}&background=5440d6&color=fff&size=256` : profile.avatar_url} 
+            alt={profile.full_name} className="w-28 h-28 rounded-2xl object-cover border border-[var(--hairline)]" />
           <div className="flex-1">
             <h1 className="text-3xl sm:text-4xl font-black mb-2">{profile.full_name}</h1>
-            <div className="text-indigo-600 dark:text-indigo-400 font-bold text-sm mb-3">{profile.professional_role || "Contributing Writer"}</div>
-            {cleanBio(profile.bio) && <p className="text-slate-700 dark:text-slate-300 max-w-2xl leading-relaxed">{cleanBio(profile.bio)}</p>}
+            <div className="text-[var(--accent)] font-bold text-sm mb-3">{profile.professional_role || "Contributing Writer"}</div>
+            {cleanBio(profile.bio) && <p className="text-[var(--ink)] max-w-2xl leading-relaxed">{cleanBio(profile.bio)}</p>}
             <div className="flex flex-wrap gap-3 text-xs mt-4 font-bold">
               {profile.location ? (
-                <span className="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">{profile.location}</span>
+                <span className="px-3 py-1.5 rounded-full bg-[var(--sunken)]">{profile.location}</span>
               ) : null}
               <a href="mailto:editor@apex-nepal.com" className="px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">Contact</a>
-              {website && <a href={website} target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">Website →</a>}
-              {twitter && <a href={twitter} target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">X →</a>}
-              {linkedin && <a href={linkedin} target="_blank" rel="noopener" className="underline text-slate-600 dark:text-slate-400">LinkedIn →</a>}
+              {website && <a href={website} target="_blank" rel="noopener" className="underline text-[var(--ink-muted)]">Website →</a>}
+              {twitter && <a href={twitter} target="_blank" rel="noopener" className="underline text-[var(--ink-muted)]">X →</a>}
+              {linkedin && <a href={linkedin} target="_blank" rel="noopener" className="underline text-[var(--ink-muted)]">LinkedIn →</a>}
             </div>
             {profile.expertise && (
               <div className="flex flex-wrap gap-2 mt-4 text-[11px]">
                 {(Array.isArray(profile.expertise) ? profile.expertise : String(profile.expertise).split(',')).map((e:string,i:number)=>(
-                  <span key={i} className="px-2.5 py-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full font-bold">{e.trim()}</span>
+                  <span key={i} className="px-2.5 py-1 bg-[var(--sunken)] border border-[var(--hairline)] rounded-full font-bold">{e.trim()}</span>
                 ))}
               </div>
             )}
           </div>
         </div>
 
-        <div className="border-t border-slate-200 dark:border-slate-800 pt-10">
+        <div className="border-t border-[var(--hairline)] pt-10">
           <h2 className="text-xl font-black mb-6">Articles by {profile.full_name.split(' ')[0]}</h2>
           {articles.length === 0 ? (
-            <div className="text-slate-600 dark:text-slate-400 text-sm">
+            <div className="text-[var(--ink-muted)] text-sm">
               <p className="mb-3">No published stories under this byline yet.</p>
               <p>
                 Read the{" "}
@@ -191,18 +191,18 @@ export default async function AuthorPage({ params }: { params: Promise<{slug:str
           ) : (
             <div className="grid gap-5">
               {articles.map(a=>(
-                <Link key={a.slug} href={`/blog/${a.slug}`} className="block p-5 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-900 transition">
-                  <div className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1">{a.category}</div>
+                <Link key={a.slug} href={`/blog/${a.slug}`} className="block p-5 border border-[var(--hairline)] rounded-2xl hover:bg-[var(--sunken)] transition">
+                  <div className="text-[11px] text-[var(--ink-faint)] font-bold uppercase tracking-wider mb-1">{a.category}</div>
                   <div className="font-black text-lg mb-1">{a.title}</div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">{cleanExcerpt(a.meta_description)}</div>
-                  <div className="text-xs text-slate-500 mt-2">{a.published_at ? new Date(a.published_at).toLocaleDateString() : ""}</div>
+                  <div className="text-sm text-[var(--ink-muted)] line-clamp-2">{cleanExcerpt(a.meta_description)}</div>
+                  <div className="text-xs text-[var(--ink-faint)] mt-2">{a.published_at ? new Date(a.published_at).toLocaleDateString() : ""}</div>
                 </Link>
               ))}
             </div>
           )}
         </div>
 
-        <div className="mt-16 text-xs text-slate-500 border-t border-slate-200 dark:border-slate-800 pt-6">
+        <div className="mt-16 text-xs text-[var(--ink-faint)] border-t border-[var(--hairline)] pt-6">
           <p>Apex author profiles include: full name, photo, credentials, bio, location, social links, and full article archive. <Link href="/editorial" className="underline">Learn about our E-E-A-T standards</Link>.</p>
         </div>
       </div>

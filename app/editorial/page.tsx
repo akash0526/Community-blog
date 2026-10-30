@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function EditorialPage(){
   return (
-    <div className="flex-1 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="flex-1 bg-[var(--paper)] text-[var(--ink)]">
       <div className="max-w-3xl mx-auto px-6 py-16 sm:py-20 prose prose-slate dark:prose-invert prose-lg">
         <h1>Editorial Policy</h1>
         <p className="lead">Last updated: July 7, 2026 — v1.0</p>

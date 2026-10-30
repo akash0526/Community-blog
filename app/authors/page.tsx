@@ -24,19 +24,19 @@ export default async function AuthorsIndex(){
   return (
     <div className="max-w-5xl mx-auto px-6 py-16">
       <h1 className="text-4xl font-black mb-3">Authors</h1>
-      <p className="text-slate-600 dark:text-slate-300 mb-10 max-w-2xl">Every Apex byline links to a real human with credentials, bio, and social proof. No AI farms. No robot avatars.</p>
+      <p className="text-[var(--ink-muted)] mb-10 max-w-2xl">Every Apex byline links to a real human with credentials, bio, and social proof. No AI farms. No robot avatars.</p>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {authors.map((a: { slug?: string; username?: string; full_name?: string; avatar_url?: string; professional_role?: string; bio?: string })=>{
           // Canonical byline URL: username column wins (was name-only,
           // which linked to the pre-merge duplicate URL for the founder).
           const slug = a.slug || authorSlugFor(a);
-          const avatar = a.avatar_url?.includes('dicebear') ? `https://ui-avatars.com/api/?name=${encodeURIComponent(a.full_name || "Apex")}&background=A8471F&color=fff` : a.avatar_url;
+          const avatar = a.avatar_url?.includes('dicebear') ? `https://ui-avatars.com/api/?name=${encodeURIComponent(a.full_name || "Apex")}&background=5440d6&color=fff` : a.avatar_url;
           return (
-            <Link key={slug} href={`/authors/${slug}`} className="border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:shadow-md transition bg-white dark:bg-slate-900">
+            <Link key={slug} href={`/authors/${slug}`} className="border border-[var(--hairline)] rounded-2xl p-5 hover:shadow-md transition bg-[var(--surface)]">
               <img src={avatar} className="w-14 h-14 rounded-full mb-3 object-cover" alt={a.full_name}/>
               <div className="font-black">{a.full_name}</div>
-              <div className="text-xs text-indigo-600 dark:text-indigo-400 font-bold mb-2">{a.professional_role}</div>
-              <div className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3">{a.bio}</div>
+              <div className="text-xs text-[var(--accent)] font-bold mb-2">{a.professional_role}</div>
+              <div className="text-xs text-[var(--ink-muted)] line-clamp-3">{a.bio}</div>
             </Link>
           )
         })}

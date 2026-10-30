@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 import {
 	getPaginatedArticles,
 	getPublishedArticleCount,
@@ -10,7 +11,6 @@ import NewsletterForm from "@/components/NewsletterForm";
 import Hero from "@/components/Hero";
 import { BlogCard } from "@/components/BlogCard";
 import { FeaturesSection } from "@/components/sections/FeaturesSection";
-import { StatsSection } from "@/components/sections/StatsSection";
 import { CTASection } from "@/components/sections/CTASection";
 import {
 	monthlyPicks,
@@ -20,7 +20,6 @@ import {
 } from "@/lib/resources";
 import { cleanExcerpt } from "@/lib/seoUtils";
 import {
-	IconArrowRight,
 	IconBook,
 	IconBriefcase,
 	IconCard,
@@ -37,52 +36,48 @@ export const metadata = {
 
 const PAGE_SIZE = 12;
 
-// §9 — the three picks that have photography in public/redesign/ become
-// media cards; the rest stay text cards in the same grid.
+// The three picks with photography in public/redesign/ become media cards;
+// the rest stay text cards in the same grid.
 const PICK_PHOTOS: Record<string, { src: string; alt: string }> = {
 	DeepSeek: {
 		src: "/redesign/deepseek.jpg",
-		alt: "A hand on a mechanical keyboard beside a notebook of merge-sort diagrams, with a laptop of code behind",
+		alt: "A hand on a mechanical keyboard beside a notebook of merge-sort diagrams",
 	},
 	Harper: {
 		src: "/redesign/harper.jpg",
-		alt: "A manuscript open on a laptop screen with tracked changes, reading glasses and a pen on the desk",
+		alt: "A manuscript open on a laptop screen with tracked changes and reading glasses",
 	},
 	Photopea: {
 		src: "/redesign/photopea.jpg",
-		alt: "A vector logo edit open on a laptop beside fanned Pantone swatches and type specimens",
+		alt: "A vector logo edit open on a laptop beside fanned Pantone swatches",
 	},
 };
 
 const RESOURCE_COUNT = countResources();
 const CATEGORY_COUNTS = countByCategory();
 
-// §6 — ticker topics. Duplicated once inside the component so the 42s
-// loop is seamless.
 const TICKER_ITEMS = resourceCategories.map((category) => category.title);
 
-// Six tiles, one per directory category, with counts taken from
-// lib/resources.js.
+// Six tiles, one per directory category, with counts from lib/resources.js.
 const CATEGORY_TILES = [
 	{
-		variant: "tile--wide",
 		icon: IconCard,
 		title: "Getting paid",
-		copy: "Payment gateways, remittance routes and payout options that actually clear for Nepali freelancers and businesses.",
+		copy: "Payment gateways, remittance routes and payout options that actually clear for Nepali freelancers.",
 		count: CATEGORY_COUNTS.payments,
 		href: "/digital-payments",
 	},
 	{
 		icon: IconSparkle,
 		title: "AI tools",
-		copy: "Free and paid assistants that work on NTC/Ncell — no VPN required.",
+		copy: "Free and paid assistants that work on NTC and Ncell — no VPN required.",
 		count: CATEGORY_COUNTS["ai-tools"],
 		href: "/ai-tools",
 	},
 	{
 		icon: IconBriefcase,
 		title: "Freelancing",
-		copy: "CVs, portfolios, remote boards and time-zone tools for the first client.",
+		copy: "CVs, portfolios, remote boards and time-zone tools for your first client.",
 		count: CATEGORY_COUNTS.freelancing,
 		href: "/freelancing-in-nepal",
 	},
@@ -143,20 +138,19 @@ function formatDate(value: unknown) {
 function readTimeFor(art: { content?: string }) {
 	if (!art?.content) return undefined;
 	const minutes = Math.max(2, Math.round(art.content.split(/\s+/).length / 200));
-	return `${minutes} min read`;
+	return `${minutes} min`;
 }
 
 export default async function Homepage() {
 	// Without Supabase credentials (local demo / CI) the queries fail
-	// closed with an empty list — fall back to the seeded articles so
-	// the homepage still renders real-looking content.
+	// closed with an empty list — fall back to the seeded articles so the
+	// homepage still renders real-looking content.
 	const hasSupabase = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 	let articles: ArticleRow[];
 	let totalCount: number;
 	if (hasSupabase) {
-		// Two independent queries — run them concurrently (saves a
-		// round-trip on the real backend).
+		// Two independent queries — run them concurrently.
 		const [rows, count] = await Promise.all([
 			getPaginatedArticles(PAGE_SIZE, 0),
 			getPublishedArticleCount(),
@@ -165,8 +159,7 @@ export default async function Homepage() {
 		totalCount = count;
 	} else {
 		// No credentials: never touch the (placeholder) Supabase client —
-		// an unreachable project would add a multi-second timeout to
-		// every request before the fallback below is applied.
+		// an unreachable project would add a multi-second timeout.
 		articles = fallbackArticles as unknown as ArticleRow[];
 		totalCount = fallbackArticles.length;
 	}
@@ -178,14 +171,12 @@ export default async function Homepage() {
 
 	return (
 		<div className="flex-1">
-			{/* ═══ NEW GLASSMORPHISM HERO (plan §5) ═══ */}
 			<Hero
 				resources={RESOURCE_COUNT}
 				guides={Math.max(totalCount, 1)}
 				categories={resourceCategories.length}
 			/>
 
-			{/* ═══ §6 TICKER ═══ */}
 			<div className="ticker" aria-hidden="true">
 				<div className="ticker__track">
 					{[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
@@ -196,22 +187,23 @@ export default async function Homepage() {
 				</div>
 			</div>
 
-			{/* ═══ ANIMATION PLAN §9 — why APEX (glass feature cards) ═══ */}
-		<FeaturesSection />
-
-		{/* ═══ §7 CATEGORIES — bento grid ═══ */}
-			<section className="section">
+			{/* ═══ Explore ═══ */}
+			<section className="section" id="explore">
 				<div className="wrap">
-					<p className="eyebrow reveal">
-						<span className="num">02</span> Explore
-					</p>
-					<h2 className="reveal" style={{ maxWidth: "16ch" }}>
-						Start where you are.
-					</h2>
-					<p className="lede reveal" style={{ marginTop: "1.125rem" }}>
-						Six working categories, each one checked on Nepali internet
-						with Nepali payment methods — not copied from a global list.
-					</p>
+					<div className="section-head--split">
+						<div>
+							<p className="eyebrow">Explore</p>
+							<h2>Start where you are.</h2>
+							<p className="lede">
+								Six working categories, each one checked on Nepali internet
+								with Nepali payment methods — not copied from a global list.
+							</p>
+						</div>
+						<Link href="/resources" className="link link--arrow reveal">
+							All resources
+							<ArrowRight size={15} aria-hidden="true" />
+						</Link>
+					</div>
 
 					<div className="bento">
 						{CATEGORY_TILES.map((tile) => {
@@ -220,7 +212,7 @@ export default async function Homepage() {
 								<Link
 									key={tile.title}
 									href={tile.href}
-									className={`tile reveal${tile.variant ? ` ${tile.variant}` : ""}`}
+									className="tile"
 								>
 									<div>
 										<span className="tile__icon">
@@ -229,8 +221,8 @@ export default async function Homepage() {
 										<h3>{tile.title}</h3>
 										<p>{tile.copy}</p>
 									</div>
-									<div className="tile__count" aria-hidden="true">
-										{tile.count}
+									<div className="tile__count">
+										{tile.count} entries
 									</div>
 								</Link>
 							);
@@ -239,32 +231,25 @@ export default async function Homepage() {
 				</div>
 			</section>
 
-			{/* ═══ §8 MOTIF DIVIDER — used once per page ═══ */}
-			<div className="wrap">
-				<div className="motif" aria-hidden="true" />
-			</div>
-
-			{/* ═══ §9 FEATURED — glass BlogCards (plan §6) ═══ */}
-			<section className="section">
+			{/* ═══ Featured stories ═══ */}
+			<section className="section pt-0">
 				<div className="wrap">
 					<div className="section-head--split">
 						<div>
-							<p className="eyebrow reveal">
-								<span className="num">03</span> Featured
-							</p>
-							<h2 className="reveal">Picked this week.</h2>
+							<p className="eyebrow">Latest</p>
+							<h2>Fresh from the community.</h2>
 						</div>
 						<Link
 							href={featured.length ? "/blog" : "/resources"}
-							className="link link--arrow reveal"
+							className="link link--arrow"
 						>
 							{featured.length ? "See all stories" : "See all resources"}
-							<IconArrowRight className="icon icon--15" />
+							<ArrowRight size={15} aria-hidden="true" />
 						</Link>
 					</div>
 
 					{featured.length > 0 ? (
-						<div className="cards">
+						<div className="cards !mt-0">
 							{featured.map((art) => (
 								<BlogCard
 									key={art.id || art.slug}
@@ -272,18 +257,15 @@ export default async function Homepage() {
 									excerpt={cleanExcerpt(art.meta_description)}
 									image={art.image_url || "/opengraph-image"}
 									author={{
-										name:
-											art.profiles?.full_name || "Apex Editorial",
+										name: art.profiles?.full_name || "Apex Editorial",
 										avatar:
 											art.profiles?.avatar_url ||
 											`https://ui-avatars.com/api/?name=${encodeURIComponent(
 												art.profiles?.full_name || "Apex",
-											)}&background=8b5cf6&color=fff&size=64`,
+											)}&background=5440d6&color=fff&size=64`,
 									}}
 									date={
-										formatDate(
-											art.published_at || art.created_at,
-										) || "Recently"
+										formatDate(art.published_at || art.created_at) || "Recently"
 									}
 									readTime={readTimeFor(art)}
 									slug={art.slug}
@@ -292,132 +274,112 @@ export default async function Homepage() {
 							))}
 						</div>
 					) : (
-						<p className="lede" style={{ marginTop: "1.125rem" }}>
-							No stories are published yet —{" "}
-							<Link href="/write-for-us" className="link">
-								be the first to submit one
+						<div className="glass mt-1 flex flex-col items-start gap-4 p-8">
+							<div>
+								<h3>No stories have been published yet</h3>
+								<p className="mt-1 text-[0.9375rem] text-[var(--ink-muted)]">
+									Be the first — the studio takes about ten minutes.
+								</p>
+							</div>
+							<Link href="/studio" className="btn btn--primary">
+								Write the first story
+								<ArrowRight className="arrow" aria-hidden="true" />
 							</Link>
-							.
-						</p>
+						</div>
 					)}
 				</div>
 			</section>
 
-			{/* ═══ ANIMATION PLAN §11 — community stats (real data) ═══ */}
-		<StatsSection
-			stats={[
-				{ value: RESOURCE_COUNT, suffix: "+", label: "Resources" },
-				{ value: Math.max(totalCount, 1), suffix: "+", label: "Guides" },
-				{
-					value: resourceCategories.length,
-					label: "Categories",
-				},
-				{ value: 100, suffix: "%", label: "Tested" },
-			]}
-		/>
+			<FeaturesSection />
 
-		{/* ═══ §10 EDITORIAL QUOTE ═══ */}
+			{/* ═══ Editorial quote ═══ */}
 			<section className="quote-band">
-				<div className="wrap" style={{ paddingBlock: "var(--section)" }}>
+				<div className="wrap">
 					<div className="quote">
-						<div className="quote__img reveal">
+						<div className="quote__img">
 							<Image
 								src="/redesign/quote-kathmandu.jpg"
-								alt="A carved wooden lattice window set in weathered red brick, with a notebook and a clay cup of tea on the ledge below it"
+								alt="A carved wooden lattice window set in weathered red brick"
 								width={1408}
 								height={768}
 								loading="lazy"
 								quality={60}
-								sizes="(max-width: 860px) 320px, 40vw"
+								sizes="(max-width: 900px) 92vw, 32vw"
 							/>
 						</div>
 						<div>
-							<p className="eyebrow reveal">
-								<span className="num">04</span> Why this exists
-							</p>
-							<blockquote className="reveal">
-								<span className="mark">&ldquo;</span>Most advice for
-								builders assumes you&rsquo;re in San Francisco. This
-								assumes you&rsquo;re in Kathmandu — and that everything
-								should still work.
+							<p className="eyebrow">Why this exists</p>
+							<blockquote>
+								<span className="mark">&ldquo;</span>Most advice for builders
+								assumes you&rsquo;re in San Francisco. This assumes you&rsquo;re
+								in Kathmandu — and that everything should still work.
 								<span className="mark">&rdquo;</span>
 							</blockquote>
-							<p className="quote__support reveal">
+							<p className="quote__support">
 								Every entry is checked against one question: does this
-								actually function from Nepal, today?
+								actually function from Nepal, today?{" "}
+								<Link href="/how-we-test" className="link">
+									Read the method
+								</Link>
+								.
 							</p>
 						</div>
 					</div>
 				</div>
 			</section>
 
-			{/* ═══ §11 NEWSLETTER — the one centred block on the page ═══ */}
-			<section className="news">
-				<div className="wrap news__in">
-					<p className="eyebrow">
-						<span className="num">05</span> Newsletter
-					</p>
-					<h2>One email. Every Thursday.</h2>
-					<p className="news__copy">
-						New resources, a short note on what changed, and nothing else.
-					</p>
-					<NewsletterForm />
-				</div>
-			</section>
-
-			{/* ═══ Sections the site already had, kept and re-tokenised ═══ */}
+			{/* ═══ This month&rsquo;s picks ═══ */}
 			<section className="section">
 				<div className="wrap">
 					<div className="section-head--split">
 						<div>
-							<p className="eyebrow reveal">
-								<span className="num">06</span> Start here
-							</p>
-							<h2 className="reveal">Pick your Nepal-ready kit</h2>
+							<p className="eyebrow">This month&rsquo;s picks</p>
+							<h2>Useful right now in Nepal</h2>
 						</div>
-						<Link href="/resources" className="link reveal">
-							View all resources
-						</Link>
+						<span className="text-[0.8125rem] text-[var(--ink-faint)]">
+							Rotated monthly
+						</span>
 					</div>
 
-					<div className="cards">
-						={[
-							{
-								title: "Student Starter Kit",
-								copy: "Free courses, free AI study help, free books. NPR 0 to start learning.",
-								href: "/resources#students",
-								foot: "Includes: MIT + Khan Academy guide",
-							},
-							{
-								title: "First-Client Freelancer Kit",
-								copy: "Profile, proposals, portfolio and payments — everything to earn your first $100.",
-								href: "/resources#freelancing",
-								foot: "Includes: First client on Upwork",
-							},
-							{
-								title: "Shop Owner Kit",
-								copy: "Free design, free billing tools and online visibility for your pasal.",
-								href: "/resources#business",
-								foot: "Includes: Free tools for a shop",
-							},
-						].map((kit) => (
-							<Link
-								key={kit.title}
-								href={kit.href}
-								className="card reveal !p-6 !gap-3"
-							>
-								<span className="card__tag">Kit</span>
-								<h3>{kit.title}</h3>
-								<p>{kit.copy}</p>
-								<span className="card__foot">
-									<span>{kit.foot}</span>
-									<IconArrowRight className="icon icon--15" />
-								</span>
-							</Link>
-						))}
+					<div className="cards !mt-0">
+						{monthlyPicks.map((pick) => {
+							const photo = PICK_PHOTOS[pick.name];
+							return (
+								<Link
+									key={pick.name}
+									href={`/resources#${pick.categoryId}`}
+									className="card"
+								>
+									{photo && (
+										<div className="card__media">
+											<Image
+												src={photo.src}
+												alt={photo.alt}
+												width={1408}
+												height={768}
+												loading="lazy"
+												quality={60}
+												sizes="(max-width: 860px) 92vw, 360px"
+											/>
+										</div>
+									)}
+									<div className="card__body">
+										<span className="card__tag">{pick.badge}</span>
+										<h3>{pick.name}</h3>
+										<p>{pick.what}</p>
+										<p className="text-[0.8125rem]">
+											<strong className="font-semibold text-[var(--ink)]">
+												Why Nepal:
+											</strong>{" "}
+											{pick.why}
+										</p>
+									</div>
+								</Link>
+							);
+						})}
 					</div>
 
-					<div className="mt-6 border border-[var(--hairline)] bg-[var(--sunken)] px-5 py-4 text-[0.875rem] text-[var(--ink-muted)]">
+					<p className="mt-6 text-[0.875rem] text-[var(--ink-muted)]">
 						Every tool tested from Nepal · Prices verified Sept 2026 ·{" "}
 						<Link href="/how-we-test" className="link">
 							How we test
@@ -430,108 +392,66 @@ export default async function Homepage() {
 						<Link href="/corrections" className="link">
 							Corrections
 						</Link>
-					</div>
-				</div>
-			</section>
-
-			<section className="section" style={{ paddingTop: 0 }}>
-				<div className="wrap">
-					<div className="section-head--split">
-						<div>
-							<p className="eyebrow reveal">
-								<span className="num">07</span> This
-								month&rsquo;s picks
-							</p>
-							<h2 className="reveal">Useful now in Nepal</h2>
-						</div>
-						<span className="text-[0.8125rem] text-[var(--ink-faint)]">
-							Rotated monthly
-						</span>
-					</div>
-
-					<div className="cards">
-						{monthlyPicks.map((pick) => {
-							const photo = PICK_PHOTOS[pick.name];
-							return (
-								<Link
-									key={pick.name}
-									href={`/resources#${pick.categoryId}`}
-									className="card reveal"
-								>
-									{photo && (
-										<div className="card__media">
-											<Image
-												src={photo.src}
-												alt={photo.alt}
-												width={1408}
-												height={768}
-												loading="lazy"
-												quality={60}
-												sizes="(max-width: 860px) 90vw, calc((min(100vw, 1180px) - 136px) / 3)"
-											/>
-										</div>
-									)}
-									<div className="card__body">
-										<span className="card__tag">{pick.badge}</span>
-										<h3>{pick.name}</h3>
-										<p>{pick.what}</p>
-										<p className="text-[0.8125rem]">
-											<strong className="font-semibold">
-												Why Nepal:
-											</strong>{" "}
-											{pick.why}
-										</p>
-									</div>
-								</Link>
-							);
-						})}
-					</div>
-				</div>
-			</section>
-
-			{/* Community feed + search keeps its behaviour, gains the new
-			    tokens. */}
-			<section className="section" id="feed" style={{ paddingTop: 0 }}>
-				<div className="wrap">
-					<p className="eyebrow reveal">
-						<span className="num">08</span> The ledger
 					</p>
-					<h2 className="reveal">Latest from the community</h2>
-					<div className="mt-8">
-						{showFeed ? (
+				</div>
+			</section>
+
+			{/* ═══ Community feed ═══ */}
+			<section className="section pt-0">
+				<div className="wrap">
+					<div className="section-head">
+						<p className="eyebrow">The ledger</p>
+						<h2>Latest from the community</h2>
+						<p className="lede">
+							Everything published by writers on Apex, newest first. Filter by
+							topic or search the whole archive.
+						</p>
+					</div>
+
+					{showFeed ? (
 						<CommunityFeed
-							// CommunityFeed is untyped JS and infers its
-							// default `initialArticles = []` as never[].
 							initialArticles={rest as unknown as never[]}
 							hasMore={hasMore}
 							initialOffset={PAGE_SIZE}
 						/>
-						) : articles.length > 0 ? (
-							<p className="lede" style={{ marginTop: "1.125rem" }}>
-								That&rsquo;s the latest story.{" "}
-								<Link href="/write-for-us" className="link">
-									Write the next one
-								</Link>
-								.
-							</p>
-				) : (
-						<div className="card !p-10">
-							<h3 className="mb-2">No published stories yet</h3>
-							<p className="mb-6 text-[0.9375rem] text-[var(--ink-muted)]">
-								Be the first to publish on Apex.
-							</p>
+					) : articles.length > 0 ? (
+						<p className="lede">
+							That&rsquo;s the latest story.{" "}
+							<Link href="/write-for-us" className="link">
+								Write the next one
+							</Link>
+							.
+						</p>
+					) : (
+						<div className="glass flex flex-col items-start gap-4 p-8">
+							<div>
+								<h3>No published stories yet</h3>
+								<p className="mt-1 text-[0.9375rem] text-[var(--ink-muted)]">
+									Be the first to publish on Apex.
+								</p>
+							</div>
 							<Link href="/studio" className="btn btn--primary">
-								Create first story
-								<IconArrowRight />
+								Create the first story
+								<ArrowRight className="arrow" aria-hidden="true" />
 							</Link>
 						</div>
 					)}
 				</div>
-			</div>
-		</section>
+			</section>
 
-		{/* ═══ ANIMATION PLAN §12 — closing call-to-action ═══ */}
-		<CTASection />
-	</div>
-);
+			{/* ═══ Newsletter ═══ */}
+			<section className="news">
+				<div className="wrap news__in">
+					<p className="eyebrow">Newsletter</p>
+					<h2>One email. Every Thursday.</h2>
+					<p className="news__copy">
+						New resources, a short note on what changed, and nothing else.
+					</p>
+					<NewsletterForm />
+				</div>
+			</section>
+
+			<CTASection />
+		</div>
+	);
 }

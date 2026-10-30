@@ -2,27 +2,23 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { motion, AnimatePresence } from "framer-motion";
 import { useHasHydrated } from "@/hooks/useHasHydrated";
 
-
 /**
- * Animated theme toggle (plan §3).
+ * Theme toggle. CSS-only transition (no framer-motion) so the control
+ * costs nothing beyond the two icons.
  *
- * Uses `resolvedTheme` rather than `theme` so the toggle works correctly
- * while the site is in "system" mode (theme can then be the string
- * "system", which a naive `theme === "dark"` check mishandles).
+ * Uses `resolvedTheme` rather than `theme` so the toggle is correct while
+ * the site follows the system setting (where `theme` is the string
+ * "system" and a naive `theme === "dark"` check mislabels).
  */
 export function ThemeToggle() {
 	const { resolvedTheme, setTheme } = useTheme();
 	const mounted = useHasHydrated();
 
-	// Avoid hydration mismatch: the icon depends on the resolved theme,
-	// which only exists on the client. Reserve the 44px slot with an
-	// invisible placeholder instead of unmounting — appearing after
-	// hydration would shift the neighbouring auth buttons (CLS).
+	// Reserve the slot before hydration so the header never shifts (CLS).
 	if (!mounted) {
-		return <span aria-hidden="true" className="block h-11 w-11" />;
+		return <span aria-hidden="true" className="block h-[38px] w-[38px]" />;
 	}
 
 	const isDark = resolvedTheme === "dark";
@@ -31,43 +27,11 @@ export function ThemeToggle() {
 		<button
 			type="button"
 			onClick={() => setTheme(isDark ? "light" : "dark")}
-			className="glass group relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full transition-all duration-300 hover:glass-strong"
-			aria-label="Toggle theme"
+			className="icon-btn"
+			aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+			title={isDark ? "Light theme" : "Dark theme"}
 		>
-			{/* Animated background */}
-			<motion.div
-				aria-hidden="true"
-				className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20"
-				animate={{
-					scale: isDark ? 1 : 0,
-					opacity: isDark ? 1 : 0,
-				}}
-				transition={{ duration: 0.3 }}
-			/>
-
-			<AnimatePresence mode="wait">
-				{isDark ? (
-					<motion.div
-						key="moon"
-						initial={{ rotate: -90, opacity: 0 }}
-						animate={{ rotate: 0, opacity: 1 }}
-						exit={{ rotate: 90, opacity: 0 }}
-						transition={{ duration: 0.3 }}
-					>
-						<Moon className="h-5 w-5 text-purple-400" />
-					</motion.div>
-				) : (
-					<motion.div
-						key="sun"
-						initial={{ rotate: 90, opacity: 0 }}
-						animate={{ rotate: 0, opacity: 1 }}
-						exit={{ rotate: -90, opacity: 0 }}
-						transition={{ duration: 0.3 }}
-					>
-						<Sun className="h-5 w-5 text-yellow-400" />
-					</motion.div>
-				)}
-			</AnimatePresence>
+			{isDark ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
 		</button>
 	);
 }

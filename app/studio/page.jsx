@@ -186,7 +186,7 @@ function StudioForm() {
 							full_name: "Community Storyteller",
 							professional_role: "Community Creator",
 							bio: "Writing and sharing stories with the open community.",
-							avatar_url: "https://ui-avatars.com/api/?name=Story&background=A8471F&color=fff",
+							avatar_url: "https://ui-avatars.com/api/?name=Story&background=5440d6&color=fff",
 						},
 					};
 					setUser(autoDemo);
@@ -340,7 +340,7 @@ function StudioForm() {
 				user?.user_metadata?.full_name || "Community Storyteller";
 			const activeAuthorAvatar =
 				user?.user_metadata?.avatar_url ||
-				"https://ui-avatars.com/api/?name=Comm&background=A8471F&color=fff";
+				"https://ui-avatars.com/api/?name=Comm&background=5440d6&color=fff";
 			const activeAuthorRole =
 				user?.user_metadata?.professional_role ||
 				user?.user_metadata?.profession ||
